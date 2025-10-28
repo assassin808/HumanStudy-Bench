@@ -143,6 +143,9 @@ class Study001Config(BaseStudyConfig):
         never_conformed_count = 0
         always_conformed_count = 0
         
+        # 同时收集 neutral/practice 上的错误率，近似作为 control 误差率
+        control_error_rates = []
+
         for participant in individual_data:
             conf_rate = participant.get("conformity_rate")
             if conf_rate is not None:
@@ -151,6 +154,21 @@ class Study001Config(BaseStudyConfig):
                     never_conformed_count += 1
                 elif conf_rate == 1.0:
                     always_conformed_count += 1
+
+            # 计算该参与者在 neutral+practice 试次上的错误率
+            trials = participant.get("responses", [])
+            neutral_total = 0
+            neutral_errors = 0
+            for r in trials:
+                tinfo = (r or {}).get("trial_info", {})
+                ttype = tinfo.get("trial_type", "")
+                if ttype in ("neutral", "practice"):
+                    neutral_total += 1
+                    is_correct = r.get("is_correct")
+                    if is_correct is not None and not is_correct:
+                        neutral_errors += 1
+            if neutral_total > 0:
+                control_error_rates.append(neutral_errors / neutral_total)
         
         # 描述性统计
         if conformity_rates:
@@ -165,11 +183,40 @@ class Study001Config(BaseStudyConfig):
                 "always_conformed": always_conformed_count,
                 "at_least_once": len([r for r in conformity_rates if r > 0])
             }
+            # 为评分器提供需要的统计字段名别名
+            conformity_stats["conformity_rate_mean"] = conformity_stats["mean"]
+            conformity_stats["conformity_rate_sd"] = conformity_stats["sd"]
+            proportion_who_conformed = conformity_stats["at_least_once"] / max(n_participants, 1)
+            conformity_stats["proportion_who_conformed"] = float(proportion_who_conformed)
         else:
             conformity_stats = {}
         
         # Trial-by-trial analysis（可选）
         trial_conformity = self._analyze_trial_patterns(raw_responses)
+
+        # 控制组（以 neutral+practice 误差率近似）
+        control_error_rate_mean = float(np.mean(control_error_rates)) if control_error_rates else 0.0
+        control_stats = {
+            "n": n_participants,
+            "error_rate_mean": control_error_rate_mean,
+            "control_error_rate": control_error_rate_mean
+        }
+
+        # 简单推断统计：实验组(critical错误率=从众率) vs 控制组(中性错误率) 的组间差异
+        inferential = raw_results.get("inferential_statistics", {}).copy()
+        try:
+            from scipy.stats import ttest_ind
+            if conformity_rates and control_error_rates:
+                t_res = ttest_ind(conformity_rates, control_error_rates, equal_var=False)
+                p_val = float(t_res.pvalue)
+                inferential["group_comparison"] = {
+                    "test": "independent_t_test",
+                    "comparison": "experimental_vs_control_error_rate",
+                    "p_value": p_val
+                }
+        except Exception:
+            # scipy 不可用时忽略推断统计
+            pass
         
         # 构建增强的结果
         enhanced_results = {
@@ -177,9 +224,23 @@ class Study001Config(BaseStudyConfig):
                 "conformity_rate": {
                     "experimental": conformity_stats
                 },
+                "control_accuracy": {
+                    "control": control_stats
+                },
+                "conformity_by_group": {
+                    "experimental_group": {
+                        "conformity_rate_mean": conformity_stats.get("conformity_rate_mean", 0.0),
+                        "conformity_rate_sd": conformity_stats.get("conformity_rate_sd", 0.0),
+                        "participants_who_never_conformed": conformity_stats.get("never_conformed", 0),
+                        "participants_who_always_conformed": conformity_stats.get("always_conformed", 0)
+                    },
+                    "control_group": {
+                        "error_rate_mean": control_stats.get("error_rate_mean", 0.0)
+                    }
+                },
                 "trial_patterns": trial_conformity
             },
-            "inferential_statistics": raw_results.get("inferential_statistics", {}),
+            "inferential_statistics": inferential,
             "individual_data": individual_data,
             "raw_responses": raw_responses,
             "study_specific": {

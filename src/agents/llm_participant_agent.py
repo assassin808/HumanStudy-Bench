@@ -187,56 +187,147 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         
         return response_data
     
-    def _call_llm(self, system_prompt: str, user_message: str) -> str:
+    def _call_llm(self, system_prompt: str, user_message: str, max_retries: int = 3) -> str:
         """
-        Make actual API call to LLM.
+        Make actual API call to LLM with automatic retry on failure.
         
         Supports both OpenRouter (for models like mistralai/mistral-nemo) and OpenAI API.
+        
+        Args:
+            system_prompt: System prompt for the LLM
+            user_message: User message/prompt
+            max_retries: Maximum number of retry attempts (default: 3)
         """
         import logging
+        import time
+        import random as _rnd
         logger = logging.getLogger(__name__)
         
         try:
             from openai import OpenAI
-            
-            # Create client with appropriate base URL and timeout
-            if self.is_openrouter:
-                client = OpenAI(
-                    api_key=self.api_key,
-                    base_url=self.api_base,
-                    timeout=30.0  # 30 second timeout
-                )
-            else:
-                client = OpenAI(
-                    api_key=self.api_key,
-                    timeout=30.0
-                )
-            
-            logger.debug(f"[P{self.participant_id}] Calling {self.model}...")
-            
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message}
-                ],
-                temperature=0.7,
-                max_tokens=150
-            )
-            
-            result = response.choices[0].message.content.strip()
-            logger.debug(f"[P{self.participant_id}] Response received: {result[:50]}...")
-            return result
-        
+            # Import exception classes for robust retry detection (best-effort)
+            try:
+                from openai import APITimeoutError, APIConnectionError, APIStatusError  # type: ignore
+            except Exception:  # pragma: no cover - optional availability across versions
+                APITimeoutError = APIConnectionError = APIStatusError = None  # type: ignore
+            try:
+                import httpx  # type: ignore
+            except Exception:  # pragma: no cover
+                httpx = None  # type: ignore
+            try:
+                import httpcore  # type: ignore
+            except Exception:  # pragma: no cover
+                httpcore = None  # type: ignore
         except ImportError:
             raise ImportError(
                 "OpenAI package required for LLM agent. "
                 "Install with: pip install openai"
             )
-        except Exception as e:
-            provider = "OpenRouter" if self.is_openrouter else "OpenAI"
-            logger.error(f"[P{self.participant_id}] API call failed: {e}")
-            raise RuntimeError(f"{provider} API call failed: {e}")
+        
+        # Create client with appropriate base URL and timeout
+        # Optional HTTP client with connection pooling
+        http_client = None
+        try:
+            # Use modest pool limits to improve reuse and avoid connection churn
+            if httpx is not None:
+                http_client = httpx.Client(
+                    limits=httpx.Limits(max_keepalive_connections=20, max_connections=20)
+                )
+        except Exception:
+            http_client = None
+
+        if self.is_openrouter:
+            client = OpenAI(
+                api_key=self.api_key,
+                base_url=self.api_base,
+                timeout=45.0,  # Bump timeout to reduce spurious request timeouts
+                max_retries=0,  # We handle retries manually for better control
+                http_client=http_client
+            )
+        else:
+            client = OpenAI(
+                api_key=self.api_key,
+                timeout=45.0,
+                max_retries=0,
+                http_client=http_client
+            )
+        
+        last_exception = None
+        
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    # Exponential backoff + jitter to avoid synchronized retries
+                    base_wait = 2 ** (attempt - 1)
+                    wait_time = base_wait + _rnd.uniform(0.0, 0.75)
+                    logger.debug(f"[P{self.participant_id}] Retry {attempt}/{max_retries} after {wait_time:.2f}s...")
+                    time.sleep(wait_time)
+                
+                logger.debug(f"[P{self.participant_id}] Calling {self.model}...")
+                
+                response = client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message}
+                    ],
+                    temperature=0.7,
+                    max_tokens=150
+                )
+                
+                result = response.choices[0].message.content.strip()
+                logger.debug(f"[P{self.participant_id}] Response received: {result[:50]}...")
+                
+                if attempt > 0:
+                    logger.debug(f"[P{self.participant_id}] ✅ Succeeded after {attempt} retries")
+                
+                return result
+            
+            except Exception as e:
+                last_exception = e
+                error_msg = str(e).lower()
+
+                # Determine if we should retry (types + common transient indicators)
+                retryable_exc = False
+                # By exception type
+                try:
+                    if APITimeoutError is not None and isinstance(e, APITimeoutError):
+                        retryable_exc = True
+                except Exception:
+                    pass
+                try:
+                    if httpx is not None and isinstance(e, getattr(httpx, 'ReadTimeout', tuple())):
+                        retryable_exc = True
+                except Exception:
+                    pass
+                try:
+                    if httpcore is not None and isinstance(e, getattr(httpcore, 'ReadTimeout', tuple())):
+                        retryable_exc = True
+                except Exception:
+                    pass
+                # HTTP status based
+                status_code = getattr(e, 'status_code', None) or getattr(e, 'status', None)
+                if isinstance(status_code, int) and status_code in (429, 500, 502, 503):
+                    retryable_exc = True
+
+                # Message patterns
+                keywords = ['connection', 'timeout', 'timed out', 'rate limit', '429', '503', '502', '500', 'deadline exceeded']
+                message_hint = any(k in error_msg for k in keywords)
+
+                should_retry = retryable_exc or message_hint
+
+                if should_retry and attempt < max_retries - 1:
+                    logger.warning(f"[P{self.participant_id}] API call failed (attempt {attempt + 1}/{max_retries}): {e}")
+                    continue
+                else:
+                    # Last attempt or non-retryable error
+                    provider = "OpenRouter" if self.is_openrouter else "OpenAI"
+                    logger.error(f"[P{self.participant_id}] API call failed after {attempt + 1} attempts: {e}")
+                    raise RuntimeError(f"{provider} API call failed: {e}")
+        
+        # Should not reach here, but just in case
+        provider = "OpenRouter" if self.is_openrouter else "OpenAI"
+        raise RuntimeError(f"{provider} API call failed after {max_retries} attempts: {last_exception}")
     
     def _simulate_response(
         self,
@@ -538,11 +629,45 @@ class ParticipantPool:
         print(f"Model: {self.model} (Real LLM: {self.use_real_llm})")
         print(f"{'='*70}\n")
         
-        # Each participant receives instructions
-        # Give instructions to participants
+        # Each participant receives instructions (with progress and optional parallelism)
         print("Giving instructions to participants...")
-        for participant in self.participants:
-            participant.receive_instructions(instructions)
+        from tqdm import tqdm
+        if self.use_real_llm and self.num_workers > 1:
+            # Parallelize instruction acknowledgments to reduce startup time
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            import logging
+            logger = logging.getLogger(__name__)
+            pbar = tqdm(total=len(self.participants), desc="Instructions", unit="p")
+            errors = 0
+            try:
+                with ThreadPoolExecutor(max_workers=self.num_workers) as ex:
+                    futures = {ex.submit(p.receive_instructions, instructions): p for p in self.participants}
+                    for fut in as_completed(futures):
+                        p = futures[fut]
+                        try:
+                            fut.result()
+                        except Exception as e:
+                            logger.error(f"[P{p.participant_id}] Instruction failed: {e}")
+                            errors += 1
+                        finally:
+                            pbar.update(1)
+            finally:
+                pbar.close()
+            if errors:
+                print(f"⚠️  {errors} participants failed during instructions (continuing)")
+        else:
+            # Sequential with progress bar
+            pbar = tqdm(total=len(self.participants), desc="Instructions", unit="p")
+            import logging
+            logger = logging.getLogger(__name__)
+            for participant in self.participants:
+                try:
+                    participant.receive_instructions(instructions)
+                except Exception as e:
+                    logger.error(f"[P{participant.participant_id}] Instruction failed: {e}")
+                finally:
+                    pbar.update(1)
+            pbar.close()
 
         # Prepare progress bar and parallel execution across participants
         total_api_calls = len(self.participants) * len(trials)
@@ -585,12 +710,18 @@ class ParticipantPool:
                 """Run all trials for a single participant."""
                 try:
                     logger.info(f"[P{participant.participant_id}] Starting {len(trials)} trials")
+                    # Initial stagger to avoid synchronized request bursts across workers
+                    import time as _t
+                    import random as _r
+                    _t.sleep(_r.uniform(0.0, 0.5))
                     for trial_idx, trial in enumerate(trials):
                         try:
                             if prompt_builder:
                                 trial_prompt = prompt_builder.build_trial_prompt(trial)
                             else:
                                 trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
+                            # Small per-trial jitter to desynchronize calls across participants
+                            _t.sleep(_r.uniform(0.0, 0.2))
                             participant.complete_trial(trial_prompt, trial)
                             logger.debug(f"[P{participant.participant_id}] Completed trial {trial_idx + 1}/{len(trials)}")
                         except Exception as e:

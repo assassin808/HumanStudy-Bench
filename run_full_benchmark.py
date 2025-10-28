@@ -21,6 +21,11 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from src.core.benchmark import HumanStudyBench
 from src.agents.llm_participant_agent import ParticipantPool
@@ -29,8 +34,13 @@ from src.evaluation.scorer import Scorer
 from src.core.study_config import get_study_config
 
 
+def _slugify(text: str) -> str:
+    return ''.join(c if c.isalnum() else '_' for c in text)
+
+
 def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-nemo", 
-              n_participants=None, random_seed=42, num_workers: int = None):
+              n_participants=None, random_seed=42, num_workers: int = None,
+              use_cache: bool = False, cache_dir: str = "results/cache"):
     """
     运行单个研究
     
@@ -41,6 +51,9 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         model: 模型名称
         n_participants: 参与者数量（None = 使用 specification 中的数量）
         random_seed: 随机种子（保证可复现）
+        num_workers: 并行 worker 数量
+        use_cache: 是否启用缓存（如存在则加载缓存，否则运行并保存）
+        cache_dir: 缓存目录
     
     Returns:
         Dict with study results and evaluation
@@ -48,38 +61,50 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
     print("\n" + "="*80)
     print(f"Running {study_id}")
     print("="*80)
-    
+
     # Load study
     study = benchmark.load_study(study_id)
     print(f"Study: {study.metadata['title']}")
     print(f"Author: {study.metadata['authors'][0]} ({study.metadata['year']})")
     print(f"Domain: {study.metadata['domain']}")
     print(f"Difficulty: {study.metadata['difficulty']}")
-    
+
     # Create prompt builder
     builder = get_prompt_builder(study_id)
     instructions = builder.get_instructions()
-    
+
     # Determine participant count
     if n_participants is None:
         n_participants = study.specification['participants']['n']
-    
+
     print(f"\nParticipants: {n_participants}")
     print(f"Model: {model} (Real LLM: {use_real_llm})")
-    
+
     # Get study config (encapsulates all study-specific logic)
     # Study object doesn't have path, reconstruct from materials_path
     study_path = study.materials_path.parent  # materials_path = study_path / "materials"
     study_config = get_study_config(study_id, study_path, study.specification)
     print(f"Config: {study_config}")
-    
+
     # Create trials using study config
     trials = study_config.create_trials()
     print(f"Trials: {len(trials)}")
-    
-    # Create participant pool
+
+    # Cache setup
     start_time = time.time()
-    
+    model_slug = _slugify(model)
+    cache_path = Path(cache_dir) / f"{study_id}__{model_slug}__n{n_participants}__seed{random_seed}.json"
+    raw_results = None
+    if use_cache and cache_path.exists():
+        print(f"\n🔄 Loading cached raw results from {cache_path}")
+        try:
+            with open(cache_path, 'r') as f:
+                cached = json.load(f)
+            raw_results = cached.get('raw_results') or cached
+        except Exception as e:
+            print(f"⚠️  Failed to load cache: {e} (will run experiment)")
+
+    # Create participant pool
     pool = ParticipantPool(
         study_specification=study.specification,
         n_participants=n_participants,
@@ -88,24 +113,43 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         random_seed=random_seed,
         num_workers=num_workers
     )
-    
+
     # Run experiment
-    raw_results = pool.run_experiment(trials, instructions, prompt_builder=builder)
-    
+    if raw_results is None:
+        # Ensure cache dir exists if needed
+        if use_cache:
+            Path(cache_dir).mkdir(parents=True, exist_ok=True)
+
+        raw_results = pool.run_experiment(trials, instructions, prompt_builder=builder)
+
+        # Save cache
+        if use_cache:
+            payload = {
+                "version": 1,
+                "study_id": study_id,
+                "model": model,
+                "n_participants": n_participants,
+                "random_seed": random_seed,
+                "raw_results": raw_results,
+            }
+            with open(cache_path, 'w') as f:
+                json.dump(payload, f)
+            print(f"💾 Cached raw results to {cache_path}")
+
     # Apply study-specific result aggregation
     results = study_config.aggregate_results(raw_results)
-    
+
     elapsed = time.time() - start_time
     print(f"\n⏱️  Experiment completed in {elapsed:.1f}s")
-    
+
     # Evaluate with scorer (may use custom_scoring from config)
     scorer = Scorer()
     custom_scores = study_config.custom_scoring(results, study.ground_truth)
     if custom_scores:
         print(f"\n📊 Custom scoring applied: {custom_scores}")
-    
+
     score_result = scorer.score_study(study, results)
-    
+
     # Display results
     print("\n" + "-"*80)
     print("RESULTS")
@@ -189,6 +233,8 @@ def main():
                        help="随机种子，用于可复现性（默认：42）")
     parser.add_argument("--num-workers", type=int, default=None,
                        help="并行 worker 数（仅在 --real-llm 时生效，默认: min(8,n_participants))")
+    parser.add_argument("--use-cache", action="store_true", help="启用结果缓存（优先加载缓存，否则运行后保存）")
+    parser.add_argument("--cache-dir", type=str, default="results/cache", help="缓存目录")
     
     args = parser.parse_args()
     
@@ -226,7 +272,9 @@ def main():
                 model=args.model,
                 n_participants=args.n_participants,
                 random_seed=args.random_seed,
-                num_workers=args.num_workers
+                num_workers=args.num_workers,
+                use_cache=args.use_cache,
+                cache_dir=args.cache_dir
             )
             
             if result:
