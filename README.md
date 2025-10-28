@@ -175,6 +175,71 @@ print(f"Score: {score:.1f}% - {report['grade']}")
 See more examples in the `examples/` directory:
 - `10_llm_participant_demo.py` - Full experiment with auto-generated profiles
 - `11_custom_profiles.py` - Custom participant personalities
+- `30_prompt_builder_demo.py` - Prompt builder demonstration
+- `40_openrouter_demo.py` - Using OpenRouter API with multiple models
+
+## 🚀 Using OpenRouter (Recommended)
+
+HumanStudyBench now supports **OpenRouter** with **`mistralai/mistral-nemo`** as the default model!
+
+### Why OpenRouter?
+- 🌐 **Unified API** for multiple LLM providers (OpenAI, Anthropic, Google, Meta, etc.)
+- 💰 **Cost-effective** default model (~$0.15/1M tokens)
+- 🔄 **Easy switching** between models
+- 📊 **Transparent pricing**
+
+### Quick Start with OpenRouter
+
+```bash
+# 1. Get API key from https://openrouter.ai/
+export OPENROUTER_API_KEY="sk-or-v1-..."
+
+# 2. Run demo
+python examples/40_openrouter_demo.py
+```
+
+### Code Example
+
+```python
+from src.core.benchmark import HumanStudyBench
+from src.agents.llm_participant_agent import ParticipantPool
+from src.agents.prompt_builder import get_prompt_builder
+
+# Load study
+benchmark = HumanStudyBench("data")
+study = benchmark.load_study("study_001")
+builder = get_prompt_builder("study_001")
+
+# Create pool with OpenRouter (default: mistralai/mistral-nemo)
+pool = ParticipantPool(
+    study_specification=study.specification,
+    n_participants=50,
+    use_real_llm=True,
+    model="mistralai/mistral-nemo",  # Default, or try others
+    random_seed=42  # For reproducibility
+)
+
+# Run experiment
+results = pool.run_experiment(trials, instructions, prompt_builder=builder)
+```
+
+### Available Models
+
+```python
+# Default (recommended)
+model="mistralai/mistral-nemo"
+
+# Other popular choices
+model="anthropic/claude-3-sonnet"    # High quality reasoning
+model="google/gemini-pro"             # Google's flagship
+model="meta-llama/llama-3-70b-instruct"  # Open source
+model="openai/gpt-4-turbo"           # Via OpenRouter
+
+# Still supports direct OpenAI (backward compatible)
+model="gpt-4"  # Will use OPENAI_API_KEY
+```
+
+**Full guide**: [`docs/openrouter_guide.md`](docs/openrouter_guide.md)
 
 ## Project Structure
 

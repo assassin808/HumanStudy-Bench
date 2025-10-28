@@ -24,7 +24,7 @@ flake8>=4.0.0
 mypy>=0.950
 
 # Optional: For LLM agents
-# openai>=1.0.0
+openai>=1.0.0  # Required for OpenRouter and OpenAI API
 # anthropic>=0.3.0
 # langchain>=0.1.0
 

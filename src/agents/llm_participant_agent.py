@@ -26,10 +26,11 @@ class LLMParticipantAgent:
         self,
         participant_id: int,
         profile: Dict[str, Any],
-        model: str = "gpt-4",
+        model: str = "mistralai/mistral-nemo",
         api_key: Optional[str] = None,
         use_real_llm: bool = False,
-        system_prompt_override: Optional[str] = None
+        system_prompt_override: Optional[str] = None,
+        api_base: Optional[str] = None
     ):
         """
         Initialize a participant agent.
@@ -37,15 +38,28 @@ class LLMParticipantAgent:
         Args:
             participant_id: Unique identifier for this participant
             profile: Participant characteristics (age, gender, traits, etc.)
-            model: LLM model to use ("gpt-4", "gpt-3.5-turbo", "claude-3", etc.)
-            api_key: API key for LLM service
+            model: LLM model to use (default: "mistralai/mistral-nemo" for OpenRouter)
+                   Examples: "mistralai/mistral-nemo", "gpt-4", "gpt-3.5-turbo", "anthropic/claude-3-sonnet"
+            api_key: API key for LLM service (OPENROUTER_API_KEY or OPENAI_API_KEY)
             use_real_llm: If True, makes actual API calls. If False, simulates responses.
             system_prompt_override: Optional custom system prompt
+            api_base: Optional API base URL (default: "https://openrouter.ai/api/v1" for OpenRouter models)
         """
         self.participant_id = participant_id
         self.profile = profile
         self.model = model
-        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        
+        # Determine API key and base URL
+        # Check if model is OpenRouter model (contains "/" like "mistralai/mistral-nemo")
+        self.is_openrouter = "/" in model or api_base == "https://openrouter.ai/api/v1"
+        
+        if self.is_openrouter:
+            self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
+            self.api_base = api_base or "https://openrouter.ai/api/v1"
+        else:
+            self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+            self.api_base = api_base
+        
         self.use_real_llm = use_real_llm
         self.system_prompt_override = system_prompt_override
         
@@ -56,9 +70,10 @@ class LLMParticipantAgent:
         self.trial_responses = []
         
         if use_real_llm and not self.api_key:
+            key_name = "OPENROUTER_API_KEY" if self.is_openrouter else "OPENAI_API_KEY"
             raise ValueError(
-                "API key required for real LLM usage. "
-                "Set OPENAI_API_KEY environment variable or pass api_key parameter."
+                f"API key required for real LLM usage. "
+                f"Set {key_name} environment variable or pass api_key parameter."
             )
     
     def _construct_system_prompt(self) -> str:
@@ -135,121 +150,71 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
     
     def complete_trial(
         self,
-        trial_info: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        trial_prompt: str,  # 改为直接接受 prompt
+        trial_info: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Participant completes a single experimental trial.
         
         Args:
-            trial_info: Information about the current trial
-                - For Asch: {
-                    "trial_number": 5,
-                    "standard_line_length": 10,
-                    "comparison_lines": {"A": 8, "B": 10, "C": 12},
-                    "correct_answer": "B",
-                    "confederate_responses": ["A", "A", "A", "A", "A", "A"]  # if critical trial
-                  }
-            context: Additional context (e.g., previous trials, group behavior)
+            trial_prompt: Pre-built trial prompt (from PromptBuilder)
+            trial_info: Optional metadata about the trial
             
         Returns:
             Participant's response and metadata
         """
-        system_prompt = self._construct_system_prompt()
-        
-        # Construct trial scenario
-        trial_prompt = self._construct_trial_prompt(trial_info, context)
-        
         if self.use_real_llm:
+            system_prompt = self._construct_system_prompt()
             response_text = self._call_llm(system_prompt, trial_prompt)
             # Parse response to extract choice
-            choice = self._parse_response(response_text, trial_info)
+            choice = self._parse_response(response_text, trial_info or {})
         else:
             # Simulated response
-            choice, response_text = self._simulate_response(trial_info, context)
+            choice, response_text = self._simulate_response(trial_info or {}, None)
         
         # Record response
         response_data = {
             "participant_id": self.participant_id,
-            "trial_number": trial_info.get("trial_number", len(self.trial_responses) + 1),
+            "trial_number": trial_info.get("trial_number") if trial_info else len(self.trial_responses) + 1,
             "response": choice,
             "response_text": response_text,
-            "correct_answer": trial_info.get("correct_answer"),
-            "is_correct": choice == trial_info.get("correct_answer"),
-            "trial_info": trial_info,
-            "context": context
+            "correct_answer": trial_info.get("correct_answer") if trial_info else None,
+            "is_correct": choice == trial_info.get("correct_answer") if trial_info and trial_info.get("correct_answer") else None,
+            "trial_info": trial_info
         }
         
         self.trial_responses.append(response_data)
         
         return response_data
     
-    def _construct_trial_prompt(
-        self,
-        trial_info: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
-    ) -> str:
-        """
-        Construct the prompt for a specific trial based on study type.
-        """
-        study_type = trial_info.get("study_type", "asch_conformity")
-        
-        if study_type == "asch_conformity":
-            return self._construct_asch_trial_prompt(trial_info, context)
-        else:
-            # Generic trial prompt
-            return f"Trial {trial_info.get('trial_number')}: {trial_info.get('description', 'Please respond.')}"
-    
-    def _construct_asch_trial_prompt(
-        self,
-        trial_info: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
-    ) -> str:
-        """
-        Construct prompt for Asch conformity trial.
-        """
-        trial_num = trial_info.get("trial_number", 1)
-        standard = trial_info.get("standard_line_length", 10)
-        comparisons = trial_info.get("comparison_lines", {"A": 8, "B": 10, "C": 12})
-        confederates = trial_info.get("confederate_responses", [])
-        
-        # Build visual description
-        comp_desc = "\n".join([f"  Line {letter}: {length} inches" 
-                              for letter, length in comparisons.items()])
-        
-        prompt = f"""Trial {trial_num}:
-
-The experimenter shows a card with lines:
-
-STANDARD LINE: {standard} inches
-
-COMPARISON LINES:
-{comp_desc}
-
-Question: Which comparison line (A, B, or C) matches the standard line in length?
-"""
-        
-        # If there are confederate responses (critical trial)
-        if confederates:
-            prompt += f"\n\nThe other participants have already responded:\n"
-            for i, response in enumerate(confederates, 1):
-                prompt += f"  Participant {i}: \"{response}\"\n"
-            prompt += "\nNow it's your turn. What is your answer? (Just say A, B, or C)"
-        else:
-            # Neutral trial
-            prompt += "\nWhat is your answer? (Just say A, B, or C)"
-        
-        return prompt
-    
     def _call_llm(self, system_prompt: str, user_message: str) -> str:
         """
         Make actual API call to LLM.
+        
+        Supports both OpenRouter (for models like mistralai/mistral-nemo) and OpenAI API.
         """
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
-            import openai
-            openai.api_key = self.api_key
+            from openai import OpenAI
             
-            response = openai.ChatCompletion.create(
+            # Create client with appropriate base URL and timeout
+            if self.is_openrouter:
+                client = OpenAI(
+                    api_key=self.api_key,
+                    base_url=self.api_base,
+                    timeout=30.0  # 30 second timeout
+                )
+            else:
+                client = OpenAI(
+                    api_key=self.api_key,
+                    timeout=30.0
+                )
+            
+            logger.debug(f"[P{self.participant_id}] Calling {self.model}...")
+            
+            response = client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -259,7 +224,9 @@ Question: Which comparison line (A, B, or C) matches the standard line in length
                 max_tokens=150
             )
             
-            return response.choices[0].message.content.strip()
+            result = response.choices[0].message.content.strip()
+            logger.debug(f"[P{self.participant_id}] Response received: {result[:50]}...")
+            return result
         
         except ImportError:
             raise ImportError(
@@ -267,7 +234,9 @@ Question: Which comparison line (A, B, or C) matches the standard line in length
                 "Install with: pip install openai"
             )
         except Exception as e:
-            raise RuntimeError(f"LLM API call failed: {e}")
+            provider = "OpenRouter" if self.is_openrouter else "OpenAI"
+            logger.error(f"[P{self.participant_id}] API call failed: {e}")
+            raise RuntimeError(f"{provider} API call failed: {e}")
     
     def _simulate_response(
         self,
@@ -281,9 +250,40 @@ Question: Which comparison line (A, B, or C) matches the standard line in length
         - ~37% chance to conform on critical trials
         - ~1% chance to err on neutral trials
         - Individual differences based on profile
+        
+        For Milgram obedience:
+        - Simulates whether participant continues to next shock level
+        - Based on authority_obedience trait
         """
         import random
         
+        study_type = trial_info.get("study_type", "")
+        
+        # Milgram obedience simulation
+        if "milgram" in study_type.lower() or "obedience" in study_type.lower():
+            shock_level = trial_info.get("shock_level", trial_info.get("voltage", 0))
+            
+            # Get obedience tendency from profile
+            obedience = self.profile.get("personality_traits", {}).get(
+                "authority_obedience", 0.65
+            )
+            
+            # Probability of continuing decreases with shock level
+            # Base: 65% go to max, declining probability
+            base_prob = obedience
+            shock_factor = shock_level / 30.0  # Normalize to 0-1
+            continue_prob = base_prob * (1.0 - 0.3 * shock_factor)  # Decreases with shock level
+            
+            if random.random() < continue_prob:
+                choice = "continue"
+                response_text = "continue"
+            else:
+                choice = "stop"
+                response_text = "stop"
+            
+            return choice, response_text
+        
+        # Asch conformity simulation (original logic)
         correct = trial_info.get("correct_answer")
         confederates = trial_info.get("confederate_responses", [])
         
@@ -309,8 +309,15 @@ Question: Which comparison line (A, B, or C) matches the standard line in length
             # Neutral trial - almost always correct
             if random.random() < 0.01:  # 1% error rate
                 # Rare error
-                options = trial_info.get("comparison_lines", {}).keys()
-                choice = random.choice([o for o in options if o != correct])
+                options = trial_info.get("comparison_lines", {})
+                if options:
+                    wrong_options = [o for o in options.keys() if o != correct]
+                    if wrong_options:
+                        choice = random.choice(wrong_options)
+                    else:
+                        choice = correct
+                else:
+                    choice = correct
                 response_text = f"{choice}"
             else:
                 choice = correct
@@ -385,8 +392,11 @@ class ParticipantPool:
         study_specification: Dict[str, Any],
         n_participants: Optional[int] = None,
         use_real_llm: bool = False,
-        model: str = "gpt-4",
-        api_key: Optional[str] = None
+        model: str = "mistralai/mistral-nemo",
+        api_key: Optional[str] = None,
+        random_seed: Optional[int] = None,
+        api_base: Optional[str] = None,
+        num_workers: Optional[int] = None
     ):
         """
         Initialize participant pool based on study specification.
@@ -395,14 +405,23 @@ class ParticipantPool:
             study_specification: Study specification with participant requirements
             n_participants: Number of participants (default: use study's n)
             use_real_llm: Whether to use real LLM API calls
-            model: LLM model to use
-            api_key: API key for LLM service
+            model: LLM model to use (default: "mistralai/mistral-nemo" via OpenRouter)
+            api_key: API key for LLM service (OPENROUTER_API_KEY or OPENAI_API_KEY)
+            random_seed: Random seed for reproducible profile generation
+            api_base: Optional API base URL for OpenRouter or custom endpoints
         """
         self.specification = study_specification
         self.n_participants = n_participants or study_specification["participants"]["n"]
         self.use_real_llm = use_real_llm
         self.model = model
         self.api_key = api_key
+        self.random_seed = random_seed
+        self.api_base = api_base
+        # Number of worker threads to use for parallel participant execution
+        # If None, and using real LLMs, default to min(8, n_participants)
+        self.num_workers = num_workers if num_workers is not None else (
+            min(8, self.n_participants) if self.use_real_llm else 1
+        )
         
         # Create participant profiles from specification
         self.profiles = self._generate_profiles()
@@ -415,7 +434,8 @@ class ParticipantPool:
                 profile=profile,
                 model=model,
                 api_key=api_key,
-                use_real_llm=use_real_llm
+                use_real_llm=use_real_llm,
+                api_base=api_base
             )
             self.participants.append(agent)
     
@@ -427,6 +447,10 @@ class ParticipantPool:
         realistic participant profiles.
         """
         import numpy as np
+        
+        # Set random seed for reproducibility
+        if self.random_seed is not None:
+            np.random.seed(self.random_seed)
         
         spec = self.specification["participants"]
         profiles = []
@@ -454,20 +478,37 @@ class ParticipantPool:
                     gender = g
                     break
             
-            # Sample personality traits
-            # For Asch: conformity tendency with individual differences
-            conformity_tendency = np.random.beta(2, 3)  # Skewed toward moderate conformity
-            conformity_tendency = np.clip(conformity_tendency, 0.0, 1.0)
+            # Sample personality traits based on study type
+            study_type = self.specification.get("study_type", "")
+            
+            if "milgram" in study_type.lower() or "obedience" in study_type.lower():
+                # For Milgram: authority obedience and empathy
+                authority_obedience = np.random.beta(2.5, 2)  # Skewed toward higher obedience (~65%)
+                authority_obedience = np.clip(authority_obedience, 0.0, 1.0)
+                empathy = np.random.beta(2, 2)  # Balanced distribution
+                empathy = np.clip(empathy, 0.0, 1.0)
+                
+                personality_traits = {
+                    "authority_obedience": authority_obedience,
+                    "empathy": empathy,
+                    "moral_courage": 1.0 - authority_obedience
+                }
+            else:
+                # For Asch and other studies: conformity tendency
+                conformity_tendency = np.random.beta(2, 3)  # Skewed toward moderate conformity
+                conformity_tendency = np.clip(conformity_tendency, 0.0, 1.0)
+                
+                personality_traits = {
+                    "conformity_tendency": conformity_tendency,
+                    "independence": 1.0 - conformity_tendency
+                }
             
             profile = {
                 "participant_id": i,
                 "age": age,
                 "gender": gender,
                 "education": spec.get("recruitment_source", "college student"),
-                "personality_traits": {
-                    "conformity_tendency": conformity_tendency,
-                    "independence": 1.0 - conformity_tendency
-                }
+                "personality_traits": personality_traits
             }
             
             profiles.append(profile)
@@ -477,7 +518,8 @@ class ParticipantPool:
     def run_experiment(
         self,
         trials: List[Dict[str, Any]],
-        instructions: str
+        instructions: str,
+        prompt_builder: Optional[Any] = None
     ) -> Dict[str, Any]:
         """
         Run the experiment with all participants.
@@ -485,6 +527,8 @@ class ParticipantPool:
         Args:
             trials: List of trial specifications
             instructions: Experimental instructions
+            prompt_builder: Optional PromptBuilder for generating trial prompts.
+                           If None, trials must contain pre-built prompts or use legacy format.
             
         Returns:
             Aggregated results from all participants
@@ -495,20 +539,128 @@ class ParticipantPool:
         print(f"{'='*70}\n")
         
         # Each participant receives instructions
+        # Give instructions to participants
         print("Giving instructions to participants...")
         for participant in self.participants:
             participant.receive_instructions(instructions)
-        
-        # Each participant completes all trials
-        print(f"Running {len(trials)} trials per participant...")
-        for trial_idx, trial in enumerate(trials):
-            if (trial_idx + 1) % 5 == 0:
-                print(f"  Progress: Trial {trial_idx + 1}/{len(trials)}")
+
+        # Prepare progress bar and parallel execution across participants
+        total_api_calls = len(self.participants) * len(trials)
+        print(f"Running {len(trials)} trials per participant... (total API calls: {total_api_calls})")
+
+        # If only one worker or not using real LLMs, run sequentially but keep progress prints
+        if self.num_workers <= 1 or not self.use_real_llm:
+            from tqdm import tqdm
+            pbar = tqdm(total=total_api_calls, desc="API calls", unit="call")
+            for trial_idx, trial in enumerate(trials):
+                # periodic progress summary
+                if (trial_idx + 1) % 5 == 0:
+                    print(f"  Progress: Trial {trial_idx + 1}/{len(trials)}")
+
+                for participant in self.participants:
+                    if prompt_builder:
+                        trial_prompt = prompt_builder.build_trial_prompt(trial)
+                    else:
+                        trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
+                    participant.complete_trial(trial_prompt, trial)
+                    pbar.update(1)
+
+            pbar.close()
+            print("Experiment complete!\n")
+        else:
+            # Parallelize by running each participant's full trial sequence concurrently
+            from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
+            from tqdm import tqdm
+            import logging
             
-            for participant in self.participants:
-                participant.complete_trial(trial)
-        
-        print("Experiment complete!\n")
+            # Setup logging
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s [%(levelname)s] %(message)s',
+                datefmt='%H:%M:%S'
+            )
+            logger = logging.getLogger(__name__)
+
+            def run_for_participant(participant: LLMParticipantAgent):
+                """Run all trials for a single participant."""
+                try:
+                    logger.info(f"[P{participant.participant_id}] Starting {len(trials)} trials")
+                    for trial_idx, trial in enumerate(trials):
+                        try:
+                            if prompt_builder:
+                                trial_prompt = prompt_builder.build_trial_prompt(trial)
+                            else:
+                                trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
+                            participant.complete_trial(trial_prompt, trial)
+                            logger.debug(f"[P{participant.participant_id}] Completed trial {trial_idx + 1}/{len(trials)}")
+                        except Exception as e:
+                            logger.error(f"[P{participant.participant_id}] Trial {trial_idx + 1} failed: {e}")
+                            raise
+                    logger.info(f"[P{participant.participant_id}] Completed all trials")
+                    return participant.participant_id
+                except Exception as e:
+                    logger.error(f"[P{participant.participant_id}] Failed: {e}")
+                    raise
+
+            # Use a progress bar over total API calls
+            pbar = tqdm(total=total_api_calls, desc="API calls", unit="call")
+            
+            try:
+                with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
+                    logger.info(f"Starting {len(self.participants)} participants with {self.num_workers} workers")
+                    futures = {executor.submit(run_for_participant, participant): participant for participant in self.participants}
+
+                    # Monitor progress by polling participants' responses
+                    import time
+                    last_count = 0
+                    timeout_counter = 0
+                    max_stall_time = 60  # 60 seconds without progress = timeout
+                    
+                    while any(not f.done() for f in futures):
+                        current_count = sum(len(p.trial_responses) for p in self.participants)
+                        delta = current_count - last_count
+                        
+                        if delta > 0:
+                            pbar.update(delta)
+                            last_count = current_count
+                            timeout_counter = 0  # Reset timeout counter
+                        else:
+                            timeout_counter += 1
+                            if timeout_counter > max_stall_time * 20:  # 20 checks per second * 60s
+                                logger.error(f"⚠️  Stalled at {current_count}/{total_api_calls} calls for {max_stall_time}s")
+                                # Check for exceptions in futures
+                                for future, participant in futures.items():
+                                    if future.done():
+                                        try:
+                                            future.result(timeout=0)
+                                        except Exception as e:
+                                            logger.error(f"[P{participant.participant_id}] Exception: {e}")
+                                raise TimeoutError(f"Experiment stalled at {current_count}/{total_api_calls} calls")
+                        
+                        time.sleep(0.05)
+
+                    # Wait for all futures to complete and collect any exceptions
+                    for future, participant in futures.items():
+                        try:
+                            result = future.result(timeout=5)
+                            logger.debug(f"[P{result}] Finished successfully")
+                        except Exception as e:
+                            logger.error(f"[P{participant.participant_id}] Exception during execution: {e}")
+                            raise
+
+                    # Final update
+                    current_count = sum(len(p.trial_responses) for p in self.participants)
+                    delta = current_count - last_count
+                    if delta > 0:
+                        pbar.update(delta)
+                        
+            except Exception as e:
+                logger.error(f"Experiment failed: {e}")
+                raise
+            finally:
+                pbar.close()
+
+            print("Experiment complete!\n")
         
         # Collect all results
         return self.aggregate_results()
@@ -516,6 +668,9 @@ class ParticipantPool:
     def aggregate_results(self) -> Dict[str, Any]:
         """
         Aggregate results from all participants for analysis.
+        
+        Note: This provides basic aggregation for Asch-style conformity studies.
+        For other study types, you may need to implement custom aggregation.
         """
         import numpy as np
         
@@ -542,20 +697,12 @@ class ParticipantPool:
                             "never_conformed": sum(1 for r in conformity_rates if r == 0.0),
                             "always_conformed": sum(1 for r in conformity_rates if r == 1.0)
                         }
-                    },
-                    "error_rate": {
-                        "control": {
-                            "n": 0,  # Not implemented in this example
-                            "mean": 0.01,
-                            "sd": 0.02
-                        }
                     }
+                    # Note: Control group data would need to be collected separately
                 },
                 "inferential_statistics": {
-                    "group_comparison": {
-                        "test": "simulated",
-                        "note": "Control group not implemented in this example"
-                    }
+                    # Note: Real inferential statistics (t-tests, etc.) should be
+                    # computed by the evaluation/scorer module, not here
                 },
                 "individual_data": summaries,
                 "raw_responses": [p.trial_responses for p in self.participants]
