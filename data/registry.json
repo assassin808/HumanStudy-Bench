@@ -1,0 +1,86 @@
+{
+  "version": "0.1.0",
+  "last_updated": "2025-10-27",
+  "total_studies": 2,
+  "studies": [
+    {
+      "id": "study_001",
+      "title": "Effects of Group Pressure upon the Modification and Distortion of Judgments",
+      "domain": "social_psychology",
+      "subdomain": "conformity",
+      "difficulty": "easy",
+      "tags": ["conformity", "social_influence", "group_pressure", "asch", "social_norms"],
+      "status": "active",
+      "added_date": "2025-10-27",
+      "version": "1.0",
+      "estimated_time_minutes": 20
+    },
+    {
+      "id": "study_002",
+      "title": "Behavioral Study of Obedience",
+      "domain": "social_psychology",
+      "subdomain": "obedience_to_authority",
+      "difficulty": "medium",
+      "tags": ["obedience", "authority", "social_influence", "moral_conflict", "milgram", "destructive_obedience"],
+      "status": "active",
+      "added_date": "2025-10-27",
+      "version": "1.0",
+      "estimated_time_minutes": 60
+    }
+  ],
+  "statistics": {
+    "by_domain": {
+      "cognitive_psychology": 0,
+      "social_psychology": 2,
+      "developmental_psychology": 0,
+      "behavioral_economics": 0,
+      "neuroscience": 0
+    },
+    "by_difficulty": {
+      "easy": 1,
+      "medium": 1,
+      "hard": 0
+    },
+    "by_status": {
+      "active": 2,
+      "deprecated": 0,
+      "in_review": 0
+    }
+  },
+  "domains": {
+    "cognitive_psychology": {
+      "description": "Studies of mental processes including attention, memory, perception, and decision-making",
+      "subdomains": ["attention", "memory", "perception", "language", "decision_making"]
+    },
+    "social_psychology": {
+      "description": "Studies of how people's thoughts, feelings, and behaviors are influenced by others",
+      "subdomains": ["conformity", "obedience_to_authority", "attitudes", "group_dynamics", "social_cognition", "prosocial_behavior"]
+    },
+    "developmental_psychology": {
+      "description": "Studies of psychological development across the lifespan",
+      "subdomains": ["cognitive_development", "social_development", "language_acquisition"]
+    },
+    "behavioral_economics": {
+      "description": "Studies combining psychology and economics to understand economic decision-making",
+      "subdomains": ["choice_under_uncertainty", "temporal_discounting", "fairness", "cooperation"]
+    },
+    "neuroscience": {
+      "description": "Studies of brain and nervous system function underlying behavior",
+      "subdomains": ["neuroimaging", "electrophysiology", "neuropsychology"]
+    }
+  },
+  "difficulty_levels": {
+    "easy": {
+      "description": "Simple designs with clear-cut effects and standard measures",
+      "criteria": ["Simple 2x2 or single-factor design", "Large effect sizes", "Minimal confounds"]
+    },
+    "medium": {
+      "description": "Within-subjects or mixed designs with moderate complexity",
+      "criteria": ["Multiple DVs or IVs", "Counterbalancing required", "Moderately complex analyses"]
+    },
+    "hard": {
+      "description": "Complex factorial designs with subtle effects",
+      "criteria": ["Complex interactions", "Individual differences important", "Advanced statistical methods"]
+    }
+  }
+}

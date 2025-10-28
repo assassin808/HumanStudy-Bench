@@ -1,0 +1,35 @@
+ASCH CONFORMITY EXPERIMENT - PARTICIPANT INSTRUCTIONS
+=====================================================
+
+Thank you for participating in this study on visual perception.
+
+TASK DESCRIPTION:
+-----------------
+In this experiment, you will be making judgments about line lengths. You will see a series of cards, each showing:
+
+1. A STANDARD LINE on the left side
+2. THREE COMPARISON LINES (labeled A, B, C) on the right side
+
+Your task is simple: Identify which of the three comparison lines matches the standard line in length.
+
+PROCEDURE:
+----------
+- You will be seated with several other participants
+- The experimenter will show each card to the group
+- Participants will announce their judgments aloud in order, going around the room
+- When it's your turn, please state your answer clearly (e.g., "Line A", "Line B", or "Line C")
+- There will be approximately 18 trials in total
+
+IMPORTANT NOTES:
+---------------
+- This is a test of visual perception
+- The differences in line lengths are quite obvious
+- Please make your judgments as accurately as possible
+- There are no trick questions - just judge what you see
+- Your responses will be recorded by the experimenter
+
+The experiment will take approximately 15-20 minutes.
+
+If you have any questions, please ask the experimenter now.
+
+When you're ready, we'll begin with a couple of practice trials.

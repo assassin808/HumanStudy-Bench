@@ -1,0 +1,42 @@
+# Asch Conformity Experiment - Trial Prompt Template
+# This presents each trial to the LLM agent
+
+Trial {{trial_number}}:
+
+The experimenter places a card on the easel. You can clearly see:
+
+┌─────────────────────────────────────────────┐
+│                                             │
+│  STANDARD LINE:        COMPARISON LINES:    │
+│                                             │
+│                             A    B    C     │
+│      │                      │    │    │     │
+│      │                      │    │    │     │
+│      │                      │    │    │     │
+│      │                      │    │    │     │
+│                                             │
+└─────────────────────────────────────────────┘
+
+STANDARD LINE: {{standard_length}} inches
+
+COMPARISON LINES:
+  Line A: {{comparison_lines.A}} inches
+  Line B: {{comparison_lines.B}} inches  
+  Line C: {{comparison_lines.C}} inches
+
+The experimenter asks: "Which comparison line matches the standard line in length?"
+
+{{#if confederate_responses}}
+The other participants respond in order around the room:
+{{#each confederate_responses}}
+  Participant {{@index}}: "{{this}}"
+{{/each}}
+
+Everyone has said "{{confederate_first}}". The room is quiet. All eyes turn to you.
+
+Now it's your turn.
+{{else}}
+Now it's your turn to respond.
+{{/if}}
+
+What is your answer? (Just state A, B, or C)

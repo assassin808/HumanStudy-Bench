@@ -1,0 +1,66 @@
+WORD PAIRS FOR MILGRAM MEMORY TASK
+===================================
+
+MEMORIZATION PHASE - Read these pairs to the Learner:
+-----------------------------------------------------
+
+1. Blue - Box
+2. Nice - Day
+3. Wild - Duck
+4. Bold - Girl
+5. Strong - Arm
+6. Soft - Hair
+7. Cool - Wind
+8. Fast - Bird
+9. Brave - Woman
+10. True - Answer
+11. Hard - Rock
+12. Wet - Water
+13. Slow - Dance
+14. Rich - Boy
+15. Short - Time
+16. Fat - Man
+17. Old - Tree
+18. Deep - Well
+19. Black - Cloud
+20. Thin - Book
+21. Dark - Night
+22. Sharp - Needle
+23. White - Snow
+24. Long - Road
+25. Sad - Face
+
+TEST PHASE - Multiple Choice Format:
+------------------------------------
+
+For each word pair, present the first word with 4 options (correct answer in random position):
+
+Example Format:
+"Blue: Sky, Ink, Box, Lamp"
+"Nice: Weather, Day, Time, Place"
+"Wild: Animal, Duck, Nature, Horse"
+etc.
+
+The Learner (confederate) will make ERRORS according to the experimental protocol.
+
+PREDETERMINED ERROR SCHEDULE:
+-----------------------------
+The Learner makes errors frequently enough to reach higher shock levels.
+Typically makes about 3 errors for every 1 correct answer.
+
+This ensures most participants reach significant voltage levels and face the moral dilemma central to the experiment.
+
+CORRECT ANSWERS (for reference):
+---------------------------------
+1. Box (not Sky, Ink, or Lamp)
+2. Day (not Weather, Time, or Place)
+3. Duck (not Animal, Nature, or Horse)
+4. Girl (not Boy, Woman, or Child)
+5. Arm (not Leg, Hand, or Body)
+6. Hair (not Skin, Nail, or Face)
+7. Wind (not Air, Breeze, or Storm)
+8. Bird (not Wing, Nest, or Sky)
+9. Woman (not Girl, Lady, or Person)
+10. Answer (not Question, Problem, or Solution)
+
+[Additional pairs follow same format...]
