@@ -11,6 +11,47 @@ import random
 from scipy import stats
 
 from src.core.study_config import BaseStudyConfig, StudyConfigRegistry
+from src.agents.prompt_builder import PromptBuilder
+
+
+class Study003PromptBuilder(PromptBuilder):
+    """
+    Custom PromptBuilder for Study 003 (Framing Effect).
+    
+    Handles frame-specific prompt generation by loading positive_frame.txt
+    or negative_frame.txt based on participant's framing_condition.
+    """
+    
+    def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
+        """
+        Build trial prompt with frame-specific scenario.
+        
+        Args:
+            trial_data: Trial information, may include 'participant_profile' 
+                       with 'framing_condition' key
+        
+        Returns:
+            Trial prompt with appropriate frame text
+        """
+        # Extract framing condition from participant profile
+        participant_profile = trial_data.get('participant_profile', {})
+        framing_condition = participant_profile.get('framing_condition')
+        
+        if framing_condition:
+            # Load frame-specific material (positive_frame.txt or negative_frame.txt)
+            frame_file = self.materials_path / f"{framing_condition}.txt"
+            if frame_file.exists():
+                with open(frame_file, 'r') as f:
+                    frame_text = f.read().strip()
+                # Add frame text to trial data for template
+                trial_data = {**trial_data, 'scenario': frame_text, 'frame': framing_condition}
+        
+        # Use parent class method to handle template filling
+        if self.trial_template:
+            return self._fill_template(self.trial_template, trial_data)
+        else:
+            return self._build_generic_trial_prompt(trial_data)
+
 
 
 @StudyConfigRegistry.register("study_003")
@@ -29,6 +70,15 @@ class Study003Config(BaseStudyConfig):
         self.frames = ["positive_frame", "negative_frame"]
         self.options = ["Program A", "Program B"]
     
+    
+    def get_prompt_builder(self) -> PromptBuilder:
+        """
+        Return Study 003 specific PromptBuilder.
+        
+        Returns:
+            Study003PromptBuilder instance that handles framing conditions
+        """
+        return Study003PromptBuilder(self.study_path)
     def generate_participant_profiles(self, n_participants: int, 
                                      random_seed: Optional[int] = None) -> List[Dict[str, Any]]:
         """

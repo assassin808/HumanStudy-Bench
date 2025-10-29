@@ -1,32 +1,8 @@
 {
   "version": "0.1.0",
   "last_updated": "2025-10-28",
-  "total_studies": 3,
+  "total_studies": 1,
   "studies": [
-    {
-      "id": "study_001",
-      "title": "Effects of Group Pressure upon the Modification and Distortion of Judgments",
-      "domain": "social_psychology",
-      "subdomain": "conformity",
-      "difficulty": "easy",
-      "tags": ["conformity", "social_influence", "group_pressure", "asch", "social_norms"],
-      "status": "active",
-      "added_date": "2025-10-27",
-      "version": "1.0",
-      "estimated_time_minutes": 20
-    },
-    {
-      "id": "study_002",
-      "title": "Behavioral Study of Obedience",
-      "domain": "social_psychology",
-      "subdomain": "obedience_to_authority",
-      "difficulty": "medium",
-      "tags": ["obedience", "authority", "social_influence", "moral_conflict", "milgram", "destructive_obedience"],
-      "status": "active",
-      "added_date": "2025-10-27",
-      "version": "1.0",
-      "estimated_time_minutes": 60
-    },
     {
       "id": "study_003",
       "title": "The Framing of Decisions and the Psychology of Choice",
@@ -43,18 +19,18 @@
   "statistics": {
     "by_domain": {
       "cognitive_psychology": 0,
-      "social_psychology": 2,
+      "social_psychology": 0,
       "developmental_psychology": 0,
       "behavioral_economics": 1,
       "neuroscience": 0
     },
     "by_difficulty": {
-      "easy": 2,
-      "medium": 1,
+      "easy": 1,
+      "medium": 0,
       "hard": 0
     },
     "by_status": {
-      "active": 3,
+      "active": 1,
       "deprecated": 0,
       "in_review": 0
     }

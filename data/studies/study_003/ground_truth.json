@@ -3,6 +3,21 @@
   "title": "The Framing of Decisions and the Psychology of Choice",
   "authors": ["Amos Tversky", "Daniel Kahneman"],
   "year": 1981,
+  "evaluation_framework": {
+    "description": "Two-tier evaluation: phenomenon-level and data-level matching",
+    "type_1": {
+      "name": "phenomenon_level_match",
+      "description": "Tests whether agent exhibits the target psychological phenomenon (framing effect)",
+      "approach": "Uses original statistical methods from the paper (p-values, significance tests)",
+      "critical": true
+    },
+    "type_2": {
+      "name": "data_level_match",
+      "description": "Tests how closely agent data matches human baseline data",
+      "approach": "Uses effect size metrics (Cohen's h) to quantify similarity",
+      "critical": false
+    }
+  },
   "original_results": {
     "sample_size": 152,
     "positive_frame_n": 76,
@@ -67,68 +82,112 @@
   "validation_criteria": {
     "required_tests": [
       {
-        "test_id": "framing_effect_direction",
-        "test_name": "Framing Effect Direction Test",
-        "description": "Verify that risk aversion is higher in positive frame than negative frame",
-        "type": "direction_test",
+        "test_id": "P1",
+        "test_name": "Framing Effect Presence",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent exhibits framing effect (cognitive phenomenon)",
+        "method": {
+          "test": "chi_square",
+          "alpha": 0.05,
+          "direction": "two_sided",
+          "rationale": "Original paper used chi-square test, χ²(1) = 41.7, p < 0.001"
+        },
         "critical": true,
-        "weight": 0.30
+        "weight": 2.0
       },
       {
-        "test_id": "positive_frame_risk_aversion",
-        "test_name": "Positive Frame Risk Aversion Test",
-        "description": "In positive frame, majority should prefer certain option (risk averse)",
-        "type": "range_test",
-        "statistic": "positive_frame_option_A_proportion",
-        "min": 0.65,
-        "max": 0.85,
+        "test_id": "P2",
+        "test_name": "Framing Effect Direction",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether effect direction matches human pattern (positive > negative)",
+        "method": {
+          "test": "proportion_difference",
+          "direction": "positive_greater_than_negative",
+          "alpha": 0.05,
+          "rationale": "Positive frame should show more risk aversion than negative frame"
+        },
         "critical": true,
-        "weight": 0.25
+        "weight": 2.0
       },
       {
-        "test_id": "negative_frame_risk_seeking",
-        "test_name": "Negative Frame Risk Seeking Test",
-        "description": "In negative frame, majority should prefer risky option (risk seeking)",
-        "type": "range_test",
-        "statistic": "negative_frame_option_B_proportion",
-        "min": 0.70,
-        "max": 0.90,
-        "critical": true,
-        "weight": 0.25
-      },
-      {
-        "test_id": "statistical_significance",
-        "test_name": "Statistical Significance Test",
-        "description": "Framing effect should be statistically significant",
-        "type": "statistical_significance",
-        "statistic": "p_value",
-        "threshold": 0.05,
-        "comparison": "less_than",
+        "test_id": "D1",
+        "test_name": "Positive Frame Data Match",
+        "test_type": "data_level",
+        "description": "Measures how closely agent data matches human data in positive frame",
+        "human_baseline": {
+          "proportion": 0.72,
+          "n": 76,
+          "source": "Tversky & Kahneman (1981), Table 1"
+        },
+        "method": {
+          "effect_size": "cohens_h",
+          "thresholds": {
+            "excellent": 0.20,
+            "good": 0.50,
+            "acceptable": 0.80
+          },
+          "rationale": "Cohen's h quantifies difference between two proportions (Cohen, 1988)"
+        },
         "critical": false,
-        "weight": 0.15
+        "weight": 1.0
       },
       {
-        "test_id": "effect_size",
-        "test_name": "Effect Size Test",
-        "description": "Framing effect should be large (>40 percentage points)",
-        "type": "range_test",
-        "statistic": "framing_effect_size",
-        "min": 0.40,
-        "max": 0.65,
+        "test_id": "D2",
+        "test_name": "Negative Frame Data Match",
+        "test_type": "data_level",
+        "description": "Measures how closely agent data matches human data in negative frame",
+        "human_baseline": {
+          "proportion": 0.22,
+          "n": 76,
+          "source": "Tversky & Kahneman (1981), Table 1"
+        },
+        "method": {
+          "effect_size": "cohens_h",
+          "thresholds": {
+            "excellent": 0.20,
+            "good": 0.50,
+            "acceptable": 0.80
+          },
+          "rationale": "Cohen's h for proportion difference"
+        },
         "critical": false,
-        "weight": 0.05
+        "weight": 1.0
+      },
+      {
+        "test_id": "D3",
+        "test_name": "Effect Size Data Match",
+        "test_type": "data_level",
+        "description": "Measures how closely the magnitude of framing effect matches human data",
+        "human_baseline": {
+          "effect_size": 1.092,
+          "metric": "cohens_h",
+          "calculation": "h = 2 * (arcsin(√0.72) - arcsin(√0.22))",
+          "source": "Calculated from original proportions"
+        },
+        "method": {
+          "metric": "absolute_difference",
+          "thresholds": {
+            "excellent": 0.20,
+            "good": 0.40,
+            "acceptable": 0.60
+          },
+          "rationale": "Absolute difference in effect sizes"
+        },
+        "critical": false,
+        "weight": 0.5
       }
     ],
     "scoring": {
-      "total_points": 1.0,
-      "test_weights": {
-        "framing_effect_direction": 0.30,
-        "positive_frame_risk_aversion": 0.25,
-        "negative_frame_risk_seeking": 0.25,
-        "statistical_significance": 0.15,
-        "effect_size": 0.05
-      },
-      "passing_threshold": 0.70
+      "total_weight": 6.5,
+      "critical_requirement": "All phenomenon-level tests must pass",
+      "passing_threshold": 0.70,
+      "grading_scale": {
+        "perfect": 1.00,
+        "excellent": 0.90,
+        "good": 0.80,
+        "pass": 0.70,
+        "fail": 0.00
+      }
     },
     "pass_threshold": 0.70,
     "interpretation_guide": {

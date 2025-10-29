@@ -56,7 +56,7 @@ class HumanStudyBench:
         Load a specific study by ID.
         
         Args:
-            study_id: Study identifier (e.g., 'study_001')
+            study_id: Study identifier (e.g., 'study_003')
             
         Returns:
             Study object

@@ -30,7 +30,7 @@ class BaseStudyConfig(ABC):
     def __init__(self, study_path: Path, specification: Dict[str, Any]):
         """
         Args:
-            study_path: 研究目录路径 (e.g., data/studies/study_001/)
+            study_path: 研究目录路径 (e.g., data/studies/study_003/)
             specification: 研究 specification.json 内容
         """
         self.study_path = Path(study_path)
@@ -52,7 +52,7 @@ class BaseStudyConfig(ABC):
         Returns:
             List of trial dictionaries，每个包含：
             - trial_number: int
-            - study_type: str (e.g., "asch_conformity", "milgram_obedience")
+            - study_type: str (e.g., "framing_effect")
             - trial_type: str (e.g., "practice", "critical", "neutral")
             - 其他 study-specific 字段
         """
@@ -138,8 +138,8 @@ class StudyConfigRegistry:
         装饰器：注册 study 配置类
         
         Usage:
-            @StudyConfigRegistry.register("study_001")
-            class Study001Config(BaseStudyConfig):
+            @StudyConfigRegistry.register("study_003")
+            class Study003Config(BaseStudyConfig):
                 ...
         """
         def decorator(config_class):
@@ -190,7 +190,7 @@ def get_study_config(
     工厂函数：根据 study_id 创建对应的配置实例
     
     Args:
-        study_id: 研究 ID (e.g., "study_001")
+        study_id: 研究 ID (e.g., "study_003")
         study_path: 研究目录
         specification: specification.json 内容
     
@@ -201,16 +201,14 @@ def get_study_config(
         ValueError: 如果找不到对应的配置类
     
     Example:
-        >>> config = get_study_config("study_001", Path("data/studies/study_001"), spec)
+        >>> config = get_study_config("study_003", Path("data/studies/study_003"), spec)
         >>> trials = config.create_trials()
         >>> builder = config.get_prompt_builder()
     """
     # Lazy import to avoid circular dependency
     # 新增 study 时在这里添加 import
-    if study_id == "study_001":
-        from src.studies.study_001_config import Study001Config
-    elif study_id == "study_002":
-        from src.studies.study_002_config import Study002Config
+    if study_id == "study_003":
+        from src.studies.study_003_config import Study003Config
     elif study_id == "study_003":
         from src.studies.study_003_config import Study003Config
     

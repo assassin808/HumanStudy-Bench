@@ -352,12 +352,12 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         """
         Simulate participant response without LLM (for testing).
         
-        For Asch conformity:
+        For framing studies:
         - ~37% chance to conform on critical trials
         - ~1% chance to err on neutral trials
         - Individual differences based on profile
         
-        For Milgram obedience:
+        For decision-making studies:
         - Simulates whether participant continues to next shock level
         - Based on authority_obedience trait
         """
@@ -365,8 +365,6 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         
         study_type = trial_info.get("study_type", "")
         
-        # Milgram obedience simulation
-        if "milgram" in study_type.lower() or "obedience" in study_type.lower():
             shock_level = trial_info.get("shock_level", trial_info.get("voltage", 0))
             
             # Get obedience tendency from profile
@@ -389,7 +387,6 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
             
             return choice, response_text
         
-        # Asch conformity simulation (original logic)
         correct = trial_info.get("correct_answer")
         confederates = trial_info.get("confederate_responses", [])
         
@@ -597,8 +594,6 @@ class ParticipantPool:
             # Sample personality traits based on study type
             study_type = self.specification.get("study_type", "")
             
-            if "milgram" in study_type.lower() or "obedience" in study_type.lower():
-                # For Milgram: authority obedience and empathy
                 authority_obedience = np.random.beta(2.5, 2)  # Skewed toward higher obedience (~65%)
                 authority_obedience = np.clip(authority_obedience, 0.0, 1.0)
                 empathy = np.random.beta(2, 2)  # Balanced distribution
@@ -610,7 +605,6 @@ class ParticipantPool:
                     "moral_courage": 1.0 - authority_obedience
                 }
             else:
-                # For Asch and other studies: conformity tendency
                 conformity_tendency = np.random.beta(2, 3)  # Skewed toward moderate conformity
                 conformity_tendency = np.clip(conformity_tendency, 0.0, 1.0)
                 
@@ -831,7 +825,7 @@ class ParticipantPool:
         """
         Aggregate results from all participants for analysis.
         
-        Note: This provides basic aggregation for Asch-style conformity studies.
+        Note: This provides basic aggregation for behavioral economics studies.
         For other study types, you may need to implement custom aggregation.
         """
         import numpy as np
