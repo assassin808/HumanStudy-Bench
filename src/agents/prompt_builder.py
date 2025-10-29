@@ -76,10 +76,24 @@ class PromptBuilder:
         
         Args:
             trial_data: Trial-specific information (stimuli, confederate responses, etc.)
+                       May include 'participant_profile' for frame-specific prompts
             
         Returns:
             Complete trial prompt string
         """
+        # Check if this is a framing study (Study 003)
+        participant_profile = trial_data.get('participant_profile', {})
+        framing_condition = participant_profile.get('framing_condition')
+        
+        if framing_condition:
+            # Load frame-specific material
+            frame_file = self.materials_path / f"{framing_condition}.txt"
+            if frame_file.exists():
+                with open(frame_file, 'r') as f:
+                    frame_text = f.read().strip()
+                # Add frame text to trial data for template
+                trial_data = {**trial_data, 'scenario': frame_text, 'frame': framing_condition}
+        
         if self.trial_template:
             return self._fill_template(self.trial_template, trial_data)
         else:

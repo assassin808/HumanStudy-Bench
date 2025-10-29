@@ -87,22 +87,37 @@ class LLMParticipantAgent:
         
         # Build profile description
         age = self.profile.get('age', 'unknown age')
-        gender = self.profile.get('gender', 'unspecified gender')
+        gender = self.profile.get('gender')  # May be None if not specified
         education = self.profile.get('education', 'college student')
+        background = self.profile.get('background')  # Custom background text
+        
+        # Build identity section
+        identity_parts = [f"- Age: {age} years old"]
+        
+        # Only include gender if it's specified
+        if gender is not None:
+            identity_parts.append(f"- Gender: {gender}")
+        
+        # Include education/background
+        if background:
+            # Use custom background text if provided
+            identity_parts.append(f"- Background: {background}")
+        else:
+            # Fallback to education field
+            identity_parts.append(f"- Education: {education}")
         
         # Extract personality traits if available
         traits = self.profile.get('personality_traits', {})
-        trait_desc = ""
         if traits:
-            trait_list = [f"{k}: {v}" for k, v in traits.items()]
-            trait_desc = f"\n\nYour personality traits: {', '.join(trait_list)}"
+            trait_list = [f"{k}: {v:.2f}" for k, v in traits.items()]
+            identity_parts.append(f"- Personality traits: {', '.join(trait_list)}")
+        
+        identity_section = "\n".join(identity_parts)
         
         prompt = f"""You are participating in a psychology experiment as a human participant.
 
 YOUR IDENTITY:
-- Age: {age} years old
-- Gender: {gender}
-- Background: {education}{trait_desc}
+{identity_section}
 
 IMPORTANT INSTRUCTIONS:
 1. You are NOT an AI assistant. You are a real human participating in this experiment.
@@ -487,7 +502,8 @@ class ParticipantPool:
         api_key: Optional[str] = None,
         random_seed: Optional[int] = None,
         api_base: Optional[str] = None,
-        num_workers: Optional[int] = None
+        num_workers: Optional[int] = None,
+        profiles: Optional[List[Dict[str, Any]]] = None
     ):
         """
         Initialize participant pool based on study specification.
@@ -500,6 +516,12 @@ class ParticipantPool:
             api_key: API key for LLM service (OPENROUTER_API_KEY or OPENAI_API_KEY)
             random_seed: Random seed for reproducible profile generation
             api_base: Optional API base URL for OpenRouter or custom endpoints
+            num_workers: Number of parallel workers for participant execution
+            profiles: Optional pre-generated participant profiles (if None, will auto-generate)
+            random_seed: Random seed for reproducible profile generation
+            api_base: Optional API base URL for OpenRouter or custom endpoints
+            num_workers: Number of parallel workers for participant execution
+            profiles: Optional pre-generated participant profiles (if None, will auto-generate)
         """
         self.specification = study_specification
         self.n_participants = n_participants or study_specification["participants"]["n"]
@@ -514,8 +536,11 @@ class ParticipantPool:
             min(8, self.n_participants) if self.use_real_llm else 1
         )
         
-        # Create participant profiles from specification
-        self.profiles = self._generate_profiles()
+        # Create participant profiles from specification or use provided ones
+        if profiles is not None:
+            self.profiles = profiles
+        else:
+            self.profiles = self._generate_profiles()
         
         # Create participant agents
         self.participants: List[LLMParticipantAgent] = []
@@ -683,8 +708,11 @@ class ParticipantPool:
                     print(f"  Progress: Trial {trial_idx + 1}/{len(trials)}")
 
                 for participant in self.participants:
+                    # Merge participant profile into trial for frame-specific prompts
+                    trial_with_profile = {**trial, "participant_profile": participant.profile}
+                    
                     if prompt_builder:
-                        trial_prompt = prompt_builder.build_trial_prompt(trial)
+                        trial_prompt = prompt_builder.build_trial_prompt(trial_with_profile)
                     else:
                         trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
                     participant.complete_trial(trial_prompt, trial)
@@ -716,8 +744,11 @@ class ParticipantPool:
                     _t.sleep(_r.uniform(0.0, 0.5))
                     for trial_idx, trial in enumerate(trials):
                         try:
+                            # Merge participant profile into trial for frame-specific prompts
+                            trial_with_profile = {**trial, "participant_profile": participant.profile}
+                            
                             if prompt_builder:
-                                trial_prompt = prompt_builder.build_trial_prompt(trial)
+                                trial_prompt = prompt_builder.build_trial_prompt(trial_with_profile)
                             else:
                                 trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
                             # Small per-trial jitter to desynchronize calls across participants

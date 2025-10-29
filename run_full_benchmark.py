@@ -90,6 +90,12 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
     trials = study_config.create_trials()
     print(f"Trials: {len(trials)}")
 
+    # Generate participant profiles using study config if available
+    profiles = None
+    if hasattr(study_config, 'generate_participant_profiles'):
+        print(f"Using study-specific participant profile generation...")
+        profiles = study_config.generate_participant_profiles(n_participants, random_seed)
+
     # Cache setup
     start_time = time.time()
     model_slug = _slugify(model)
@@ -111,7 +117,8 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         use_real_llm=use_real_llm,
         model=model,
         random_seed=random_seed,
-        num_workers=num_workers
+        num_workers=num_workers,
+        profiles=profiles  # Pass custom profiles if available
     )
 
     # Run experiment

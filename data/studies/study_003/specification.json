@@ -1,0 +1,129 @@
+{
+  "study_id": "study_003",
+  "design": {
+    "type": "between_subjects",
+    "between_subjects_variables": [
+      {
+        "name": "framing_condition",
+        "type": "categorical",
+        "levels": ["positive_frame", "negative_frame"],
+        "description": "Positive frame: outcomes described as lives saved (gains). Negative frame: outcomes described as lives lost (losses)."
+      }
+    ],
+    "within_subjects_variables": [],
+    "dependent_variables": [
+      {
+        "name": "choice",
+        "type": "categorical",
+        "categories": ["option_A", "option_B"],
+        "measurement": "Which program the participant chooses"
+      },
+      {
+        "name": "proportion_risk_averse",
+        "type": "continuous",
+        "unit": "proportion",
+        "measurement": "Proportion choosing the certain option (A in positive frame, B in negative frame)",
+        "range": [0, 1]
+      },
+      {
+        "name": "proportion_risk_seeking",
+        "type": "continuous",
+        "unit": "proportion",
+        "measurement": "Proportion choosing the risky option (B in positive frame, A in negative frame)",
+        "range": [0, 1]
+      }
+    ],
+    "counterbalancing": "none",
+    "randomization": "random_assignment_to_frame"
+  },
+  "participants": {
+    "n": 152,
+    "positive_frame_n": 76,
+    "negative_frame_n": 76,
+    "age_range": [18, 65],
+    "age_mean": null,
+    "age_sd": null,
+    "gender_distribution": {
+      "male": null,
+      "female": null,
+      "other": null,
+      "note": "Gender distribution not reported in original study"
+    },
+    "recruitment_source": "university_students_and_faculty",
+    "recruitment_criteria": [
+      "adult",
+      "able_to_understand_english",
+      "no_prior_exposure_to_problem"
+    ],
+    "exclusion_criteria": [
+      "prior_exposure_to_asian_disease_problem"
+    ],
+    "compensation": "volunteer"
+  },
+  "procedure": {
+    "description": "Participants read a scenario about an unusual disease outbreak expected to kill 600 people. They choose between two programs to combat the disease. The options are objectively identical but framed differently: positive frame describes outcomes as lives saved (gains), negative frame describes outcomes as lives lost (losses). The certain option saves/loses exactly 200 people. The risky option has 1/3 probability of saving/losing all 600, and 2/3 probability of saving/losing none.",
+    "steps": [
+      {
+        "step": 1,
+        "description": "Present scenario and decision problem",
+        "duration_minutes": 3,
+        "materials": "materials/scenario.txt",
+        "details": "Participant reads: 'Imagine that the U.S. is preparing for the outbreak of an unusual Asian disease, which is expected to kill 600 people. Two alternative programs to combat the disease have been proposed. Assume that the exact scientific estimate of the consequences of the programs are as follows: [Frame-specific options]'"
+      },
+      {
+        "step": 2,
+        "description": "Make choice",
+        "duration_minutes": 2,
+        "details": "Participant selects Program A or Program B"
+      },
+      {
+        "step": 3,
+        "description": "Debriefing",
+        "duration_minutes": 5,
+        "details": "Explain the framing manipulation and discuss implications for decision making"
+      }
+    ],
+    "total_duration_minutes": 10
+  },
+  "materials": {
+    "scenario_text": "Imagine that the U.S. is preparing for the outbreak of an unusual Asian disease, which is expected to kill 600 people. Two alternative programs to combat the disease have been proposed. Assume that the exact scientific estimate of the consequences of the programs are as follows:",
+    "positive_frame": {
+      "option_A": "If Program A is adopted, 200 people will be saved.",
+      "option_B": "If Program B is adopted, there is 1/3 probability that 600 people will be saved, and 2/3 probability that no people will be saved."
+    },
+    "negative_frame": {
+      "option_A": "If Program A is adopted, 400 people will die.",
+      "option_B": "If Program B is adopted, there is 1/3 probability that nobody will die, and 2/3 probability that 600 people will die."
+    },
+    "question": "Which of the two programs would you favor?"
+  },
+  "instructions": {
+    "general": "You will read a scenario about a public health crisis and evaluate two proposed programs. Please read carefully and make your choice based on the information provided.",
+    "task": "Choose between Program A and Program B based on their expected outcomes.",
+    "response_format": "Select either 'Program A' or 'Program B'"
+  },
+  "trials": [
+    {
+      "trial_id": "main_choice",
+      "trial_type": "critical",
+      "scenario": "asian_disease_problem",
+      "framing": "assigned_by_condition",
+      "expected_response_type": "categorical_choice"
+    }
+  ],
+  "key_measures": {
+    "primary": "choice (Program A vs Program B)",
+    "secondary": ["proportion choosing certain option", "proportion choosing risky option", "framing effect size"]
+  },
+  "manipulation_check": {
+    "description": "Verify participants understood the scenario and the equivalence of outcomes",
+    "questions": [
+      "What is the expected value of Program A?",
+      "What is the expected value of Program B?"
+    ],
+    "expected_answers": [
+      "200 people saved/400 people die",
+      "200 people saved/400 people die (expected value)"
+    ]
+  }
+}

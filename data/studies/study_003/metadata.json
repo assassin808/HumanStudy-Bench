@@ -1,0 +1,23 @@
+{
+  "id": "study_003",
+  "title": "The Framing of Decisions and the Psychology of Choice",
+  "authors": ["Amos Tversky", "Daniel Kahneman"],
+  "year": 1981,
+  "source": {
+    "type": "journal_article",
+    "journal": "Science",
+    "volume": 211,
+    "issue": 4481,
+    "pages": "453-458",
+    "doi": "10.1126/science.7455683",
+    "url": "https://doi.org/10.1126/science.7455683"
+  },
+  "domain": "behavioral_economics",
+  "subdomain": "choice_under_uncertainty",
+  "difficulty": "easy",
+  "estimated_time_minutes": 10,
+  "tags": ["framing_effect", "prospect_theory", "loss_aversion", "decision_making", "risk_preference", "cognitive_bias"],
+  "citation": "Tversky, A., & Kahneman, D. (1981). The framing of decisions and the psychology of choice. Science, 211(4481), 453-458.",
+  "license": "Copyright AAAS",
+  "notes": "Classic demonstration of the framing effect using the Asian Disease Problem. Shows that logically equivalent choice options elicit different preferences depending on whether outcomes are framed as gains (lives saved) or losses (lives lost). Demonstrates violation of rational choice theory's invariance principle."
+}

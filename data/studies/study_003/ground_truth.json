@@ -1,0 +1,153 @@
+{
+  "study_id": "study_003",
+  "title": "The Framing of Decisions and the Psychology of Choice",
+  "authors": ["Amos Tversky", "Daniel Kahneman"],
+  "year": 1981,
+  "original_results": {
+    "sample_size": 152,
+    "positive_frame_n": 76,
+    "negative_frame_n": 76,
+    "positive_frame_results": {
+      "option_A_count": 57,
+      "option_B_count": 19,
+      "option_A_percentage": 72,
+      "option_B_percentage": 25,
+      "note": "72% chose certain option (200 saved), 25% chose risky option. Percentages don't sum to 100 due to rounding or missing responses."
+    },
+    "negative_frame_results": {
+      "option_A_count": 28,
+      "option_B_count": 48,
+      "option_A_percentage": 22,
+      "option_B_percentage": 78,
+      "note": "22% chose certain option (400 die), 78% chose risky option. Demonstrates preference reversal."
+    },
+    "framing_effect": {
+      "description": "Preference reversal between frames despite identical expected values",
+      "certain_option_difference": 50,
+      "certain_option_difference_unit": "percentage_points",
+      "interpretation": "In positive frame, 72% risk-averse (choose certain gain). In negative frame, 78% risk-seeking (choose risky loss). 50 percentage point difference demonstrates strong framing effect."
+    }
+  },
+  "descriptive_statistics": {
+    "by_frame": {
+      "positive_frame": {
+        "n": 76,
+        "option_A_proportion": 0.75,
+        "option_B_proportion": 0.25,
+        "option_A_proportion_note": "Approximated from 72% reported",
+        "risk_averse_proportion": 0.75,
+        "risk_seeking_proportion": 0.25
+      },
+      "negative_frame": {
+        "n": 76,
+        "option_A_proportion": 0.22,
+        "option_B_proportion": 0.78,
+        "risk_averse_proportion": 0.78,
+        "risk_seeking_proportion": 0.22
+      }
+    },
+    "overall": {
+      "n": 152,
+      "mean_certain_choice_positive": 0.75,
+      "mean_certain_choice_negative": 0.22,
+      "framing_effect_size": 0.53,
+      "framing_effect_note": "53 percentage point difference in certain option choice"
+    }
+  },
+  "statistical_tests": {
+    "main_effect": {
+      "test_type": "chi_square",
+      "statistic": "χ²(1) = 41.7",
+      "p_value": 0.001,
+      "p_value_note": "p < 0.001",
+      "effect_interpretation": "Highly significant framing effect",
+      "conclusion": "Choice preferences significantly differ between positive and negative frames despite objectively identical options"
+    }
+  },
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "framing_effect_direction",
+        "test_name": "Framing Effect Direction Test",
+        "description": "Verify that risk aversion is higher in positive frame than negative frame",
+        "type": "direction_test",
+        "critical": true,
+        "weight": 0.30
+      },
+      {
+        "test_id": "positive_frame_risk_aversion",
+        "test_name": "Positive Frame Risk Aversion Test",
+        "description": "In positive frame, majority should prefer certain option (risk averse)",
+        "type": "range_test",
+        "statistic": "positive_frame_option_A_proportion",
+        "min": 0.65,
+        "max": 0.85,
+        "critical": true,
+        "weight": 0.25
+      },
+      {
+        "test_id": "negative_frame_risk_seeking",
+        "test_name": "Negative Frame Risk Seeking Test",
+        "description": "In negative frame, majority should prefer risky option (risk seeking)",
+        "type": "range_test",
+        "statistic": "negative_frame_option_B_proportion",
+        "min": 0.70,
+        "max": 0.90,
+        "critical": true,
+        "weight": 0.25
+      },
+      {
+        "test_id": "statistical_significance",
+        "test_name": "Statistical Significance Test",
+        "description": "Framing effect should be statistically significant",
+        "type": "statistical_significance",
+        "statistic": "p_value",
+        "threshold": 0.05,
+        "comparison": "less_than",
+        "critical": false,
+        "weight": 0.15
+      },
+      {
+        "test_id": "effect_size",
+        "test_name": "Effect Size Test",
+        "description": "Framing effect should be large (>40 percentage points)",
+        "type": "range_test",
+        "statistic": "framing_effect_size",
+        "min": 0.40,
+        "max": 0.65,
+        "critical": false,
+        "weight": 0.05
+      }
+    ],
+    "scoring": {
+      "total_points": 1.0,
+      "test_weights": {
+        "framing_effect_direction": 0.30,
+        "positive_frame_risk_aversion": 0.25,
+        "negative_frame_risk_seeking": 0.25,
+        "statistical_significance": 0.15,
+        "effect_size": 0.05
+      },
+      "passing_threshold": 0.70
+    },
+    "pass_threshold": 0.70,
+    "interpretation_guide": {
+      "score_ranges": {
+        "0.85-1.00": "Excellent replication of framing effect",
+        "0.70-0.84": "Good replication with minor deviations",
+        "0.50-0.69": "Partial replication, framing effect present but weaker",
+        "0.00-0.49": "Failed replication, no clear framing effect"
+      }
+    }
+  },
+  "key_findings": {
+    "main_finding": "Preference reversal induced by framing: 72% risk-averse in gain frame vs 78% risk-seeking in loss frame",
+    "theoretical_implication": "Demonstrates violation of invariance principle in rational choice theory",
+    "practical_implication": "How choices are framed significantly affects decisions, even when outcomes are objectively equivalent"
+  },
+  "notes": {
+    "replication_notes": "This is one of the most robust findings in behavioral economics. Effect typically replicates with similar magnitude across cultures and populations.",
+    "implementation_notes": "Ensure participants understand the scenario and that both options have identical expected values (200 lives saved/400 lives lost).",
+    "common_issues": "Some participants may calculate expected values and choose based on risk preference rather than frame. This reduces but does not eliminate the framing effect."
+  }
+}

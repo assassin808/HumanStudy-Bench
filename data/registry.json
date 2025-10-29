@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "last_updated": "2025-10-27",
-  "total_studies": 2,
+  "last_updated": "2025-10-28",
+  "total_studies": 3,
   "studies": [
     {
       "id": "study_001",
@@ -26,6 +26,18 @@
       "added_date": "2025-10-27",
       "version": "1.0",
       "estimated_time_minutes": 60
+    },
+    {
+      "id": "study_003",
+      "title": "The Framing of Decisions and the Psychology of Choice",
+      "domain": "behavioral_economics",
+      "subdomain": "choice_under_uncertainty",
+      "difficulty": "easy",
+      "tags": ["framing_effect", "prospect_theory", "loss_aversion", "decision_making", "risk_preference", "tversky_kahneman"],
+      "status": "active",
+      "added_date": "2025-10-28",
+      "version": "1.0",
+      "estimated_time_minutes": 10
     }
   ],
   "statistics": {
@@ -33,16 +45,16 @@
       "cognitive_psychology": 0,
       "social_psychology": 2,
       "developmental_psychology": 0,
-      "behavioral_economics": 0,
+      "behavioral_economics": 1,
       "neuroscience": 0
     },
     "by_difficulty": {
-      "easy": 1,
+      "easy": 2,
       "medium": 1,
       "hard": 0
     },
     "by_status": {
-      "active": 2,
+      "active": 3,
       "deprecated": 0,
       "in_review": 0
     }
