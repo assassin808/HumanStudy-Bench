@@ -371,7 +371,10 @@ def main():
                 "passed": r['passed'],
                 "tests_passed": r['tests_passed'],
                 "tests_total": r['tests_total'],
-                "elapsed_time": r['elapsed_time']
+                "elapsed_time": r['elapsed_time'],
+                "descriptive_statistics": r['results'].get('descriptive_statistics', {}),
+                "inferential_statistics": r['results'].get('inferential_statistics', {}),
+                "individual_data": r['results'].get('individual_data', [])
             }
             for r in all_results
         ]

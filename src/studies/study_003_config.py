@@ -181,7 +181,15 @@ class Study003Config(BaseStudyConfig):
             [neg_frame_choices["Program A"], neg_frame_choices["Program B"]]
         ])
         
-        chi2, p_value, dof, expected = stats.chi2_contingency(contingency_table)
+        # Try chi-square test, but handle case where expected frequencies are too low
+        try:
+            chi2, p_value, dof, expected = stats.chi2_contingency(contingency_table)
+        except ValueError as e:
+            # If chi-square fails (e.g., zero cells), report NaN
+            print(f"⚠️  Warning: Chi-square test failed - {e}")
+            print(f"   Contingency table: {contingency_table.tolist()}")
+            print(f"   This usually means insufficient variation in responses.")
+            chi2, p_value, dof = float('nan'), float('nan'), 1
         
         # Build enhanced results matching ground_truth structure
         enhanced_results = {
@@ -223,20 +231,20 @@ class Study003Config(BaseStudyConfig):
                 "main_effect": {
                     "test_type": "chi_square",
                     "statistic": f"χ²({dof}) = {chi2:.2f}",
-                    "chi_square": chi2,
-                    "degrees_of_freedom": dof,
-                    "p_value": p_value,
-                    "p": p_value,  # Add alias for compatibility
+                    "chi_square": float(chi2),
+                    "degrees_of_freedom": int(dof),
+                    "p_value": float(p_value),
+                    "p": float(p_value),  # Add alias for compatibility
                     "p_value_note": f"p = {p_value:.4f}" if p_value >= 0.001 else "p < 0.001",
-                    "significant": p_value < 0.05,
+                    "significant": bool(p_value < 0.05),
                     "effect_interpretation": self._interpret_effect(framing_effect_size, p_value)
                 }
             },
             "framing_analysis": {
-                "positive_frame_risk_aversion": pos_certain_prop > 0.5,
-                "negative_frame_risk_seeking": neg_risky_prop > 0.5,
-                "preference_reversal": (pos_certain_prop > 0.5) and (neg_risky_prop > 0.5),
-                "effect_direction_correct": framing_effect_size > 0.30
+                "positive_frame_risk_aversion": bool(pos_certain_prop > 0.5),
+                "negative_frame_risk_seeking": bool(neg_risky_prop > 0.5),
+                "preference_reversal": bool((pos_certain_prop > 0.5) and (neg_risky_prop > 0.5)),
+                "effect_direction_correct": bool(framing_effect_size > 0.30)
             }
         }
         
@@ -247,16 +255,20 @@ class Study003Config(BaseStudyConfig):
         counts = {"Program A": 0, "Program B": 0}
         
         for participant in participant_data:
-            # Get choice from last trial (only 1 trial in this study)
-            trials = participant.get("trial_results", [])
-            if trials:
-                last_trial = trials[-1]
-                response = last_trial.get("response", "").strip()
+            # Get choice from responses (key is "responses", not "trial_results")
+            responses = participant.get("responses", [])
+            if responses:
+                last_response = responses[-1]
+                response_text = last_response.get("response_text", "").strip()
+                response = last_response.get("response", "").strip()
                 
-                # Normalize response
-                if "A" in response.upper() or response == "1":
+                # Check both response and response_text
+                combined = (response + " " + response_text).upper()
+                
+                # Normalize response - look for A or B in the text
+                if "PROGRAM A" in combined or response.upper() == "A":
                     counts["Program A"] += 1
-                elif "B" in response.upper() or response == "2":
+                elif "PROGRAM B" in combined or response.upper() == "B":
                     counts["Program B"] += 1
         
         return counts
