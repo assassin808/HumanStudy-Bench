@@ -241,10 +241,53 @@ class Study003Config(BaseStudyConfig):
             print(f"   This usually means insufficient variation in responses.")
             chi2, p_value, dof = float('nan'), float('nan'), 1
         
+        # Calculate Cohen's h for data-level matching
+        # Cohen's h quantifies difference between two proportions
+        # Formula: h = 2 * (arcsin(√p1) - arcsin(√p2))
+        
+        # Human baseline from original paper (Tversky & Kahneman, 1981)
+        human_pos_certain = 0.72  # 72% chose certain option in positive frame
+        human_neg_certain = 0.22  # 22% chose certain option in negative frame
+        
+        # Cohen's h for positive frame (agent vs human)
+        cohens_h_positive = self._calculate_cohens_h(pos_certain_prop, human_pos_certain)
+        
+        # Cohen's h for negative frame (agent vs human)  
+        cohens_h_negative = self._calculate_cohens_h(neg_certain_prop, human_neg_certain)
+        
+        # Cohen's h for effect size (compare magnitude of framing effect)
+        # Human effect size: 0.72 - 0.22 = 0.50
+        human_effect_size = human_pos_certain - human_neg_certain
+        cohens_h_effect_size = abs(framing_effect_size - human_effect_size)
+        
+        # Calculate Cohen's h for framing effect (for D3 test)
+        # This is the effect size comparing positive and negative frames
+        agent_effect_h = self._calculate_cohens_h(pos_certain_prop, neg_certain_prop)
+        
         # Build enhanced results matching ground_truth structure
         enhanced_results = {
             **raw_results,
             "descriptive_statistics": {
+                "positive_frame": {
+                    "n": n_positive,
+                    "option_A_count": pos_frame_choices["Program A"],
+                    "option_B_count": pos_frame_choices["Program B"],
+                    "proportion_choose_safe": pos_certain_prop,  # Renamed for scorer
+                    "proportion_choose_risky": pos_risky_prop
+                },
+                "negative_frame": {
+                    "n": n_negative,
+                    "option_A_count": neg_frame_choices["Program A"],
+                    "option_B_count": neg_frame_choices["Program B"],
+                    "proportion_choose_safe": neg_risky_prop,  # In negative frame, B is safe option
+                    "proportion_choose_risky": neg_certain_prop
+                },
+                "framing_effect": {
+                    "n": n_positive + n_negative,
+                    "effect_size": agent_effect_h,  # Cohen's h for D3 test
+                    "se": np.sqrt(1/(2*n_positive) + 1/(2*n_negative)),  # SE for Freeman-Tukey
+                    "proportion_difference": framing_effect_size
+                },
                 "by_frame": {
                     "positive_frame": {
                         "n": n_positive,
@@ -278,6 +321,38 @@ class Study003Config(BaseStudyConfig):
                 "framing_effect_size": framing_effect_size
             },
             "inferential_statistics": {
+                "chi_square_test": {
+                    "test_type": "chi_square",
+                    "statistic": f"χ²({dof}) = {chi2:.2f}",
+                    "chi_square": float(chi2),
+                    "degrees_of_freedom": int(dof),
+                    "p_value": float(p_value),
+                    "p": float(p_value),  # Add alias for compatibility
+                    "p_value_note": f"p = {p_value:.4f}" if p_value >= 0.001 else "p < 0.001",
+                    "significant": bool(p_value < 0.05),
+                    "effect_interpretation": self._interpret_effect(framing_effect_size, p_value)
+                },
+                "data_level_match": {
+                    "cohens_h_positive_frame": {
+                        "value": float(cohens_h_positive),
+                        "agent_proportion": pos_certain_prop,
+                        "human_baseline": human_pos_certain,
+                        "interpretation": self._interpret_cohens_h(cohens_h_positive)
+                    },
+                    "cohens_h_negative_frame": {
+                        "value": float(cohens_h_negative),
+                        "agent_proportion": neg_certain_prop,
+                        "human_baseline": human_neg_certain,
+                        "interpretation": self._interpret_cohens_h(cohens_h_negative)
+                    },
+                    "effect_size_match": {
+                        "agent_effect_size": framing_effect_size,
+                        "human_effect_size": human_effect_size,
+                        "absolute_difference": float(cohens_h_effect_size),
+                        "interpretation": self._interpret_effect_size_match(cohens_h_effect_size)
+                    }
+                },
+                # Keep backwards compatibility
                 "main_effect": {
                     "test_type": "chi_square",
                     "statistic": f"χ²({dof}) = {chi2:.2f}",
@@ -338,6 +413,61 @@ class Study003Config(BaseStudyConfig):
             return "Small but significant framing effect"
         else:
             return "Minimal framing effect"
+    
+    def _calculate_cohens_h(self, p1: float, p2: float) -> float:
+        """
+        Calculate Cohen's h for two proportions.
+        
+        Formula: h = 2 * (arcsin(√p1) - arcsin(√p2))
+        
+        Args:
+            p1: First proportion (0-1)
+            p2: Second proportion (0-1)
+            
+        Returns:
+            Cohen's h value (absolute value)
+        """
+        phi1 = 2 * np.arcsin(np.sqrt(p1))
+        phi2 = 2 * np.arcsin(np.sqrt(p2))
+        return abs(phi1 - phi2)
+    
+    def _interpret_cohens_h(self, h: float) -> str:
+        """
+        Interpret Cohen's h effect size (Cohen, 1988).
+        
+        Args:
+            h: Cohen's h value
+            
+        Returns:
+            Interpretation string
+        """
+        if h < 0.20:
+            return "Excellent match (negligible difference)"
+        elif h < 0.50:
+            return "Good match (small difference)"
+        elif h < 0.80:
+            return "Acceptable match (medium difference)"
+        else:
+            return "Poor match (large difference)"
+    
+    def _interpret_effect_size_match(self, diff: float) -> str:
+        """
+        Interpret how well agent's effect size matches human baseline.
+        
+        Args:
+            diff: Absolute difference in effect sizes
+            
+        Returns:
+            Interpretation string
+        """
+        if diff < 0.10:
+            return "Excellent match (< 10 percentage points)"
+        elif diff < 0.20:
+            return "Good match (< 20 percentage points)"
+        elif diff < 0.30:
+            return "Acceptable match (< 30 percentage points)"
+        else:
+            return f"Poor match ({diff*100:.1f} percentage point difference)"
     
     def get_custom_prompt_context(self, trial: Dict[str, Any], 
                                   participant_profile: Dict[str, Any]) -> Dict[str, Any]:

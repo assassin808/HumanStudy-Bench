@@ -1,5 +1,7 @@
 """
 Scorer for evaluating agent performance against ground truth.
+
+Uses equivalence testing (TOST) framework for data-level tests.
 """
 
 from typing import Dict, Any, List, Optional
@@ -7,6 +9,8 @@ import numpy as np
 
 from src.core.study import Study
 from src.evaluation.metrics import MetricsCalculator
+from src.evaluation.standardizers import StandardizerRegistry
+from src.evaluation.tost import tost_test, GLOBAL_DELTA
 
 
 class Scorer:
@@ -30,7 +34,7 @@ class Scorer:
     
     def score_study(self, study: Study, agent_results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Score agent results for a single study.
+        Score agent results for a single study using two-tier evaluation.
         
         Args:
             study: Study object
@@ -42,59 +46,593 @@ class Scorer:
         ground_truth = study.ground_truth
         validation_criteria = ground_truth["validation_criteria"]
         required_tests = validation_criteria["required_tests"]
-        test_weights = validation_criteria["scoring"].get("test_weights", {})
         
         # Run each validation test
         test_results = {}
+        phenomenon_tests = {}  # Separate P tests
+        data_tests = {}        # Separate D tests
+        
         total_score = 0.0
         total_weight = 0.0
+        phenomenon_score = 0.0
+        phenomenon_weight = 0.0
+        data_score = 0.0
+        data_weight = 0.0
+        all_critical_passed = True
         
         for test_spec in required_tests:
             test_id = test_spec["test_id"]
-            test_type = test_spec["type"]
-            weight = test_weights.get(test_id, 1.0)
+            test_type = test_spec["test_type"]
+            weight = test_spec.get("weight", 1.0)
+            is_critical = test_spec.get("critical", False)
             
-            # Run appropriate test
-            if test_type == "statistical_significance":
-                score = self._test_statistical_significance(
-                    agent_results, ground_truth, test_spec
-                )
-            elif test_type == "direction_test":
-                score = self._test_direction(
-                    agent_results, ground_truth, test_spec
-                )
-            elif test_type == "range_test":
-                score = self._test_range(
-                    agent_results, ground_truth, test_spec
-                )
-            elif test_type == "similarity_test":
-                score = self._test_similarity(
-                    agent_results, ground_truth, test_spec
-                )
+            # Run appropriate test based on test_type
+            if test_type == "phenomenon_level":
+                result = self._run_phenomenon_test(agent_results, ground_truth, test_spec)
+            elif test_type == "data_level":
+                result = self._run_data_level_test(agent_results, ground_truth, test_spec)
             else:
-                score = 0.0  # Unknown test type
+                # Fallback for legacy test types
+                if test_type == "statistical_significance":
+                    score = self._test_statistical_significance(
+                        agent_results, ground_truth, test_spec
+                    )
+                elif test_type == "direction_test":
+                    score = self._test_direction(
+                        agent_results, ground_truth, test_spec
+                    )
+                elif test_type == "range_test":
+                    score = self._test_range(
+                        agent_results, ground_truth, test_spec
+                    )
+                elif test_type == "similarity_test":
+                    score = self._test_similarity(
+                        agent_results, ground_truth, test_spec
+                    )
+                else:
+                    score = 0.0
+                result = {"score": score, "passed": score >= 0.75}
             
-            test_results[test_id] = {
+            score = result["score"]
+            passed = result.get("passed", False)
+            
+            test_result = {
                 "score": score,
                 "weight": weight,
-                "status": "PASS" if score >= 0.75 else ("PARTIAL" if score > 0 else "FAIL"),
-                "description": test_spec.get("description", "")
+                "critical": is_critical,
+                "passed": passed,
+                "status": "PASS" if passed else "FAIL",
+                "description": test_spec.get("description", ""),
+                "details": result.get("details", {})
             }
+            
+            # Store in appropriate category
+            test_results[test_id] = test_result
+            if test_type == "phenomenon_level":
+                phenomenon_tests[test_id] = test_result
+                phenomenon_score += score * weight
+                phenomenon_weight += weight
+            elif test_type == "data_level":
+                data_tests[test_id] = test_result
+                data_score += score * weight
+                data_weight += weight
+            
+            # Track critical test failures
+            if is_critical and not passed:
+                all_critical_passed = False
             
             total_score += score * weight
             total_weight += weight
         
         # Calculate overall score
         overall_score = total_score / total_weight if total_weight > 0 else 0.0
-        passed = overall_score >= self.passing_threshold
+        phenomenon_avg = phenomenon_score / phenomenon_weight if phenomenon_weight > 0 else 0.0
+        data_avg = data_score / data_weight if data_weight > 0 else 0.0
+        
+        # Pass requires: (1) all critical tests pass AND (2) overall score >= threshold
+        passed = all_critical_passed and (overall_score >= self.passing_threshold)
         
         return {
             "study_id": study.id,
             "total_score": overall_score,
             "passed": passed,
+            "all_critical_passed": all_critical_passed,
             "total_tests": len(required_tests),
-            "tests": test_results
+            "tests": test_results,
+            # Separate phenomenon and data results
+            "phenomenon_tests": phenomenon_tests,
+            "data_tests": data_tests,
+            "phenomenon_score": phenomenon_avg,
+            "data_score": data_avg,
+            # Weight breakdown
+            "total_weight": total_weight,
+            "phenomenon_weight": phenomenon_weight,
+            "data_weight": data_weight
         }
+    
+    def _run_phenomenon_test(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Run phenomenon-level test (Type 1: tests if psychological phenomenon is present).
+        
+        Uses original paper's statistical methods (e.g., chi-square, t-test) to verify
+        that the agent exhibits the expected cognitive phenomenon.
+        
+        Args:
+            agent_results: Agent's aggregated results
+            ground_truth: Study ground truth
+            test_spec: Test specification
+            
+        Returns:
+            Dict with score, passed status, and details
+        """
+        method = test_spec.get("method", {})
+        test_name = method.get("test", "")
+        
+        try:
+            if test_name == "chi_square":
+                return self._test_chi_square(agent_results, ground_truth, test_spec)
+            elif test_name == "proportion_difference":
+                return self._test_proportion_difference(agent_results, ground_truth, test_spec)
+            else:
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": f"Unknown phenomenon test: {test_name}"}
+                }
+        except Exception as e:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": str(e)}
+            }
+    
+    def _run_data_level_test(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Run data-level test (Type 2: tests how closely agent data matches human baseline).
+        
+        Uses TOST (Two One-Sided Tests) equivalence testing framework:
+        - Standardizes metrics using study-specific transformations
+        - Tests H₁: |d| < δ (equivalence within tolerance)
+        - Returns raw p-value (lower = stronger equivalence)
+        
+        Args:
+            agent_results: Agent's aggregated results
+            ground_truth: Study ground truth
+            test_spec: Test specification with data_type and human_baseline
+            
+        Returns:
+            Dict with score (1 - p_tost), passed status, and TOST details
+        """
+        try:
+            return self._run_equivalence_test(agent_results, ground_truth, test_spec)
+        except Exception as e:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": str(e)}
+            }
+    
+    def _test_chi_square(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test if chi-square test shows significant effect (matches original paper)."""
+        try:
+            # Extract chi-square results from agent
+            agent_inf = agent_results.get("inferential_statistics", {})
+            chi_square_result = agent_inf.get("chi_square_test", {})
+            
+            if not chi_square_result:
+                return {"score": 0.0, "passed": False, "details": {"error": "No chi-square test found"}}
+            
+            agent_p = chi_square_result.get("p_value")
+            agent_chi2 = chi_square_result.get("chi_square")
+            
+            if agent_p is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "No p-value found"}}
+            
+            # Check if significant (p < 0.05)
+            threshold = test_spec.get("method", {}).get("threshold", 0.05)
+            is_significant = agent_p < threshold
+            
+            # For phenomenon tests, we want significant results (effect is present)
+            passed = is_significant
+            score = 1.0 if passed else 0.0
+            
+            details = {
+                "agent_chi2": agent_chi2,
+                "agent_p_value": agent_p,
+                "threshold": threshold,
+                "is_significant": is_significant
+            }
+            
+            return {"score": score, "passed": passed, "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _test_proportion_difference(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test if effect direction matches expected (e.g., positive > negative frame)."""
+        try:
+            agent_desc = agent_results.get("descriptive_statistics", {})
+            
+            # Get condition-specific data
+            conditions = test_spec.get("method", {}).get("conditions", [])
+            if len(conditions) != 2:
+                return {"score": 0.0, "passed": False, "details": {"error": "Need exactly 2 conditions"}}
+            
+            cond1, cond2 = conditions
+            
+            # Extract proportions for each condition
+            if cond1 not in agent_desc or cond2 not in agent_desc:
+                return {"score": 0.0, "passed": False, "details": {"error": "Missing condition data"}}
+            
+            prop1 = agent_desc[cond1].get("proportion_choose_safe")
+            prop2 = agent_desc[cond2].get("proportion_choose_safe")
+            
+            if prop1 is None or prop2 is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "Missing proportion data"}}
+            
+            # Check expected direction
+            expected_direction = test_spec.get("method", {}).get("expected_direction", "greater")
+            
+            if expected_direction == "greater":
+                passed = prop1 > prop2
+            elif expected_direction == "less":
+                passed = prop1 < prop2
+            else:
+                passed = False
+            
+            score = 1.0 if passed else 0.0
+            
+            details = {
+                f"{cond1}_proportion": prop1,
+                f"{cond2}_proportion": prop2,
+                "expected_direction": expected_direction,
+                "correct_direction": passed
+            }
+            
+            return {"score": score, "passed": passed, "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _run_equivalence_test(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Run TOST equivalence test for data-level validation.
+        
+        Workflow:
+        1. Determine data type (proportion, rating, effect_size)
+        2. Get appropriate standardizer from registry
+        3. Extract agent and human data
+        4. Compute standardized effect size d
+        5. Run TOST with global δ
+        6. Return raw p-value and interpretation
+        
+        Args:
+            agent_results: Agent's aggregated results
+            ground_truth: Study ground truth
+            test_spec: Test specification
+            
+        Returns:
+            Dict with score, passed, and TOST details
+        """
+        # Step 1: Get data type
+        data_type = test_spec.get("data_type", "proportion")
+        
+        # Step 2: Get standardizer
+        standardizer = StandardizerRegistry.get(data_type)
+        
+        # Step 3: Extract data
+        condition = test_spec.get("method", {}).get("condition")
+        metric = test_spec.get("method", {}).get("metric", "proportion_choose_safe")
+        
+        if not condition:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": "No condition specified"}
+            }
+        
+        # Get agent data
+        agent_desc = agent_results.get("descriptive_statistics", {})
+        if condition not in agent_desc:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": f"Missing condition: {condition}"}
+            }
+        
+        agent_condition_data = agent_desc[condition]
+        
+        # Extract based on data type
+        if data_type == "proportion":
+            agent_value = agent_condition_data.get(metric)
+            agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
+            
+            if agent_value is None:
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": f"Missing agent {metric}"}
+                }
+            
+            agent_data = {"proportion": agent_value, "n": agent_n}
+            
+        elif data_type == "rating":
+            agent_mean = agent_condition_data.get("mean")
+            agent_sd = agent_condition_data.get("sd", agent_condition_data.get("std", 1.0))
+            agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
+            
+            if agent_mean is None:
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": "Missing agent mean"}
+                }
+            
+            agent_data = {"mean": agent_mean, "sd": agent_sd, "n": agent_n}
+            
+        else:  # effect_size
+            agent_effect = agent_condition_data.get("effect_size")
+            agent_se = agent_condition_data.get("se", 0.1)
+            
+            if agent_effect is None:
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": "Missing agent effect size"}
+                }
+            
+            agent_data = {"effect_size": agent_effect, "se": agent_se}
+        
+        # Get human baseline
+        human_baseline = test_spec.get("human_baseline", {})
+        if not human_baseline:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": "No human baseline specified"}
+            }
+        
+        # Step 4: Compute standardized d
+        d = standardizer.compute(agent_data, human_baseline)
+        se_pooled = standardizer.get_se_pooled()
+        
+        # Get sample sizes for degrees of freedom
+        if data_type == "proportion":
+            n_agent = agent_data["n"]
+            n_human = human_baseline.get("n", 76)
+        elif data_type == "rating":
+            n_agent = agent_data["n"]
+            n_human = human_baseline.get("n", 76)
+        else:
+            n_agent = 100  # Default for effect sizes
+            n_human = 76
+        
+        # Step 5: Run TOST
+        delta = ground_truth.get("delta", GLOBAL_DELTA)
+        tost_result = tost_test(d, se_pooled, n_agent, n_human, delta)
+        
+        # Step 6: Convert p-value to score
+        # Lower p-value = stronger equivalence = higher score
+        # score = 1 - p_tost (so p=0 → score=1, p=1 → score=0)
+        p_tost = tost_result["p_tost"]
+        score = max(0.0, 1.0 - p_tost)
+        
+        # "Passed" if p < 0.05 (can claim equivalence) OR score >= 0.5
+        passed = (p_tost < 0.05) or (score >= 0.5)
+        
+        # Detailed results
+        details = {
+            "data_type": data_type,
+            "condition": condition,
+            "metric": metric,
+            "agent_data": agent_data,
+            "human_baseline": human_baseline,
+            "standardized_d": d,
+            "se_pooled": se_pooled,
+            "delta": delta,
+            "p_tost": p_tost,
+            "p_upper": tost_result["p_upper"],
+            "p_lower": tost_result["p_lower"],
+            "interpretation": tost_result["interpretation"],
+            "score_formula": f"1 - {p_tost:.4f}"
+        }
+        
+        return {
+            "score": score,
+            "passed": passed,
+            "details": details
+        }
+    
+    def _test_cohens_h(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Test how closely agent proportion matches human baseline using Cohen's h.
+        
+        Cohen's h quantifies the difference between two proportions:
+        h = 2 * (arcsin(√p1) - arcsin(√p2))
+        
+        Thresholds (Cohen 1988):
+        - h < 0.20: excellent match (negligible difference)
+        - h < 0.50: good match (small difference)
+        - h < 0.80: acceptable match (medium difference)
+        - h >= 0.80: poor match (large difference)
+        """
+        try:
+            agent_desc = agent_results.get("descriptive_statistics", {})
+            human_baseline = test_spec.get("human_baseline", {})
+            
+            # Get condition name
+            condition = test_spec.get("method", {}).get("condition")
+            if not condition:
+                return {"score": 0.0, "passed": False, "details": {"error": "No condition specified"}}
+            
+            # Get agent proportion
+            if condition not in agent_desc:
+                return {"score": 0.0, "passed": False, "details": {"error": f"Missing condition: {condition}"}}
+            
+            agent_prop = agent_desc[condition].get("proportion_choose_safe")
+            if agent_prop is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "Missing agent proportion"}}
+            
+            # Get human proportion
+            human_prop = human_baseline.get("proportion_choose_safe")
+            if human_prop is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "Missing human proportion"}}
+            
+            # Calculate Cohen's h
+            cohens_h = self._calculate_cohens_h(agent_prop, human_prop)
+            
+            # Continuous scoring: score decreases linearly with Cohen's h
+            # h = 0.0 → score = 1.0 (perfect match)
+            # h = 0.8 → score = 0.0 (large difference, fail)
+            # Formula: score = max(0, 1 - h/0.8)
+            thresholds = test_spec.get("thresholds", {})
+            max_h = thresholds.get("acceptable", 0.80)  # Beyond this h, score = 0
+            
+            score = max(0.0, 1.0 - cohens_h / max_h)
+            
+            # Interpret quality for reporting
+            if cohens_h < 0.20:
+                match_quality = "excellent"
+            elif cohens_h < 0.50:
+                match_quality = "good"
+            elif cohens_h < 0.80:
+                match_quality = "acceptable"
+            else:
+                match_quality = "poor"
+            
+            # Data-level tests: "passed" means score > 0 (some credit given)
+            # But practical threshold: score >= 0.5 (h < 0.40)
+            passed = score >= 0.5
+            
+            details = {
+                "condition": condition,
+                "agent_proportion": agent_prop,
+                "human_proportion": human_prop,
+                "cohens_h": cohens_h,
+                "score_formula": f"max(0, 1 - {cohens_h:.3f}/{max_h})",
+                "match_quality": match_quality,
+                "max_h_threshold": max_h
+            }
+            
+            return {"score": score, "passed": passed, "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _test_absolute_difference(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test if absolute difference in effect sizes matches within tolerance."""
+        try:
+            agent_inf = agent_results.get("inferential_statistics", {})
+            human_baseline = test_spec.get("human_baseline", {})
+            
+            # Get effect size name from test spec
+            effect_size_name = test_spec.get("method", {}).get("metric", "effect_size")
+            
+            # Extract agent effect size
+            agent_effect_size = None
+            for test_name, test_data in agent_inf.items():
+                if effect_size_name in test_data:
+                    agent_effect_size = test_data[effect_size_name]
+                    break
+            
+            if agent_effect_size is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "Agent effect size not found"}}
+            
+            # Get human effect size
+            human_effect_size = human_baseline.get(effect_size_name)
+            if human_effect_size is None:
+                return {"score": 0.0, "passed": False, "details": {"error": "Human effect size not found"}}
+            
+            # Calculate absolute difference
+            abs_diff = abs(agent_effect_size - human_effect_size)
+            
+            # Continuous scoring: score decreases linearly with absolute difference
+            # diff = 0.0 → score = 1.0 (perfect match)
+            # diff = 0.3 → score = 0.0 (large difference, fail)
+            # Formula: score = max(0, 1 - diff/0.3)
+            thresholds = test_spec.get("thresholds", {})
+            max_diff = thresholds.get("acceptable", 0.30)  # Beyond this, score = 0
+            
+            score = max(0.0, 1.0 - abs_diff / max_diff)
+            
+            # Interpret quality for reporting
+            if abs_diff < 0.10:
+                match_quality = "excellent"
+            elif abs_diff < 0.20:
+                match_quality = "good"
+            elif abs_diff < 0.30:
+                match_quality = "acceptable"
+            else:
+                match_quality = "poor"
+            
+            # "Passed" means score > 0 (some credit), practical threshold: score >= 0.5 (diff < 0.15)
+            passed = score >= 0.5
+            
+            details = {
+                "agent_effect_size": agent_effect_size,
+                "human_effect_size": human_effect_size,
+                "absolute_difference": abs_diff,
+                "score_formula": f"max(0, 1 - {abs_diff:.3f}/{max_diff})",
+                "match_quality": match_quality,
+                "max_diff_threshold": max_diff
+            }
+            
+            return {"score": score, "passed": passed, "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _calculate_cohens_h(self, p1: float, p2: float) -> float:
+        """
+        Calculate Cohen's h for two proportions.
+        
+        Formula: h = 2 * (arcsin(√p1) - arcsin(√p2))
+        
+        Args:
+            p1: First proportion (0-1)
+            p2: Second proportion (0-1)
+            
+        Returns:
+            Cohen's h value (absolute value)
+        """
+        phi1 = 2 * np.arcsin(np.sqrt(p1))
+        phi2 = 2 * np.arcsin(np.sqrt(p2))
+        return abs(phi1 - phi2)
     
     def _test_statistical_significance(
         self, 
