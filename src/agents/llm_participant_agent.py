@@ -352,21 +352,45 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         """
         Simulate participant response without LLM (for testing).
         
-        For framing studies:
-        - ~37% chance to conform on critical trials
-        - ~1% chance to err on neutral trials
-        - Individual differences based on profile
-        
-        For decision-making studies:
-        - Simulates whether participant continues to next shock level
-        - Based on authority_obedience trait
+        Handles different study types:
+        - Conformity studies (Asch): ~37% conformity on critical trials
+        - Obedience studies (Milgram): Decreasing compliance with shock level
+        - Framing studies (Tversky & Kahneman): Frame-dependent risk preferences
         """
         import random
         
         study_type = trial_info.get("study_type", "")
         
-            shock_level = trial_info.get("shock_level", trial_info.get("voltage", 0))
+        # Handle framing effect studies
+        if study_type == "framing_effect":
+            # Get framing condition from participant profile
+            frame = self.profile.get("framing_condition", "positive_frame")
             
+            # Simulate framing effect based on original Tversky & Kahneman findings:
+            # Positive frame: 72% choose certain option (Program A)
+            # Negative frame: 22% choose certain option (Program A), 78% choose risky (Program B)
+            if frame == "positive_frame":
+                # Positive frame: risk-averse (favor certain option)
+                if random.random() < 0.72:
+                    choice = "A"
+                    response_text = "Program A"
+                else:
+                    choice = "B"
+                    response_text = "Program B"
+            else:  # negative_frame
+                # Negative frame: risk-seeking (favor risky option)
+                if random.random() < 0.78:
+                    choice = "B"
+                    response_text = "Program B"
+                else:
+                    choice = "A"
+                    response_text = "Program A"
+            
+            return choice, response_text
+        
+        # Handle obedience studies (Milgram)
+        shock_level = trial_info.get("shock_level", trial_info.get("voltage", 0))
+        if shock_level > 0:
             # Get obedience tendency from profile
             obedience = self.profile.get("personality_traits", {}).get(
                 "authority_obedience", 0.65
@@ -431,16 +455,42 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
     def _parse_response(self, response_text: str, trial_info: Dict[str, Any]) -> str:
         """
         Parse LLM response to extract the actual choice (A, B, or C).
+        
+        Tries multiple extraction strategies in order of preference:
+        1. Look for "Program X" or "Option X" patterns (for framing studies)
+        2. Look for quoted responses like '"A"' or "'B'"
+        3. Look for single letter at start of line or after colon
+        4. Fall back to first occurrence of A/B/C
         """
         response_upper = response_text.upper()
         
-        # Look for single letter responses
+        # Strategy 1: Look for "PROGRAM A/B" or "OPTION A/B/C" patterns
+        import re
+        program_match = re.search(r'\b(PROGRAM|OPTION)\s+([ABC])\b', response_upper)
+        if program_match:
+            return program_match.group(2)
+        
+        # Strategy 2: Look for quoted single letters (e.g., "A", 'B', or "Program A")
+        quoted_match = re.search(r'["\'](?:PROGRAM\s+)?([ABC])["\']', response_upper)
+        if quoted_match:
+            return quoted_match.group(1)
+        
+        # Strategy 3: Look for A/B/C at start of response or after newline/colon
+        clean_start = response_upper.strip()
+        if clean_start and clean_start[0] in ['A', 'B', 'C']:
+            return clean_start[0]
+        
+        line_start_match = re.search(r'(?:^|\n|:\s*)([ABC])\b', response_upper)
+        if line_start_match:
+            return line_start_match.group(1)
+        
+        # Strategy 4: Last resort - find first A/B/C in text
         for letter in ['A', 'B', 'C']:
             if letter in response_upper:
                 return letter
         
-        # Default to first letter if can't parse
-        return response_upper[0] if response_upper else "?"
+        # Default to ? if completely unparseable
+        return "?"
     
     def get_summary(self) -> Dict[str, Any]:
         """
@@ -594,6 +644,7 @@ class ParticipantPool:
             # Sample personality traits based on study type
             study_type = self.specification.get("study_type", "")
             
+            if study_type == "authority_obedience":
                 authority_obedience = np.random.beta(2.5, 2)  # Skewed toward higher obedience (~65%)
                 authority_obedience = np.clip(authority_obedience, 0.0, 1.0)
                 empathy = np.random.beta(2, 2)  # Balanced distribution

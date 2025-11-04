@@ -6,50 +6,37 @@ A benchmark framework for evaluating LLM agents on classic human behavioral stud
 
 ## Overview
 
-> A realistic, sustainable, and systematic benchmark for evaluating AI agents' ability to reproduce published human studies.
+Evaluating whether LLM agents can faithfully reproduce human behavior requires answering two distinct questions: **Do agents exhibit the psychological phenomena?** and **How closely do agent behaviors match human data distributions?** HumanStudyBench addresses both through a dual-validation framework.
 
-HumanStudyBench curates classic and contemporary peer‑reviewed studies with full experimental specifications (designs, participant profiles, measurement protocols, and reported results). Agents run under realistic constraints and are scored against literature‑reported outcomes.
+### Two Classes of Validation
 
----
+**Phenomena Validation** tests whether agents exhibit the core psychological effects reported in original studies. These tests replicate the exact statistical analyses from published papers (e.g., chi-square tests, t-tests, ANOVA) with identical significance thresholds. An agent passes phenomena validation if it demonstrates the same cognitive or behavioral patterns that defined the original findings—proving the phenomenon exists in agent behavior.
 
-## Statistical Framework for Data Replication
+**Data Replication** quantifies the fidelity of agent behavior to human baselines. Unlike phenomena validation, which asks "Is the effect present?", data replication asks "How similar are the magnitudes?" This requires a unified statistical framework that can compare agents to humans across studies with vastly different data granularities—from complete response distributions to summary statistics alone.
 
-**Goal:** Assess whether LLM agents can reliably replicate human behavioral data across social science studies.
+### Statistical Framework for Data Replication
 
-**Challenge:** Studies provide varying data granularity—some report only summary statistics, others provide full distributions. We need a **unified evaluation standard** with **statistical rigor**.
+**Challenge:** Social science papers report varying levels of detail. Some provide full datasets, others only means and standard errors. Fair comparison across studies requires standardization.
 
-### Core Hypothesis
+**Solution:** Equivalence testing with a single global tolerance parameter.
 
-- **H₀ (Null):** LLM **cannot** effectively replicate human data (|standardized effect| ≥ δ)
-- **H₁ (Alternative):** LLM **can** effectively replicate human data (|standardized effect| < δ)
+**Core Hypothesis:**
+- H₀: |standardized effect| ≥ δ (agent behavior differs from human baseline)
+- H₁: |standardized effect| < δ (agent behavior equivalent to human baseline)
 
-### Unified Evaluation Approach
+**Unified Approach:**
+1. **Standardize all metrics** to a common scale (Freeman-Tukey for proportions, Cohen's d for means, direct comparison for effect sizes)
+2. **Apply single tolerance threshold** δ = 0.2 (Cohen's "negligible" effect size) uniformly across all studies
+3. **Test equivalence via TOST** (Two One-Sided Tests): reject H₀ if p < 0.05 → can claim behavioral equivalence
+4. **Score continuously**: Reliability Score = 1 - p_TOST (lower p-values indicate stronger evidence of human-like behavior)
 
-**Single Global Parameter:**
-- **δ = 0.2** (standardized units) — equivalence margin for all tests
-- All metrics (proportions, ratings, effect sizes) are **standardized** (Fisher Z, Cohen's d, Freeman-Tukey) before testing
-- Same δ applies across all studies, regardless of data granularity
-
-**Equivalence Testing (TOST):**
-```
-For each measurable statistic:
-  1. Standardize: Convert to common scale (Fisher Z, Cohen's d, etc.)
-  2. Test: H₀: |d| ≥ δ  vs  H₁: |d| < δ
-  3. Output: p-value (lower = stronger equivalence)
-```
-
-**Scoring:**
-- **Reliability Score** = 1 - p_value
-- p < 0.05 → Can claim equivalence (statistically significant replication)
-- Score ≥ 0.50 → Practical equivalence threshold
-
-This framework ensures **fair comparison** across studies with different data availability while maintaining **statistical rigor**.
+This framework ensures fair comparison across studies regardless of reported data granularity, while maintaining statistical rigor for claims of behavioral replication.
 
 ---
 
 ## Features
 
-- 🧪 Curated studies across domains (e.g., Asch conformity)
+- 🧪 Curated studies across domains 
 - 👤 LLM‑as‑Participant: agents act as human participants
 - 📊 Built‑in validation against ground truth results
 - 💾 Caching: run once, re‑evaluate for free
@@ -126,110 +113,99 @@ See `docs/openrouter_guide.md` for details.
 
 ```
 HS_bench/
-├── data/                      # Study registry, schemas, and studies
+├── data/
+│   ├── registry.json          # Study registry
+│   ├── schemas/               # JSON schemas for studies
 │   └── studies/
-│       └── study_001/         # Asch conformity (1952)
+│       └── study_003/         # Framing Effect (Tversky & Kahneman, 1981)
 ├── src/
 │   ├── agents/                # LLM participant agents & prompt builder
 │   ├── core/                  # Benchmark orchestration & study base
-│   ├── evaluation/            # Scoring and metrics
+│   ├── evaluation/            # Scoring, metrics, TOST framework
+│   │   ├── scorer.py          # Main evaluation logic
+│   │   ├── standardizers.py  # Data standardization (Freeman-Tukey, Cohen's d)
+│   │   ├── tost.py            # TOST equivalence testing
+│   │   └── metrics.py         # Statistical metrics
 │   └── studies/               # Study-specific configs
-├── results/
-│   └── cache/                 # Cached runs
+├── docs/                      # Documentation
+├── examples/                  # Example scripts
+├── tests/                     # Test suite
+├── results/cache/             # Cached experiment runs
 ├── run_full_benchmark.py      # Experiment runner
 ├── evaluate_results.py        # Standalone evaluator (no API calls)
-└── README.md
+└── test_tost_framework.py     # TOST framework validation
 ```
 
 ## Current studies
 
 ### Study 003 — Framing Effect (Tversky & Kahneman, 1981)
 
-- **Domain**: Behavioral Economics / Decision Making
-- **Design**: Between-subjects manipulation of decision frame (positive vs. negative)
-- **Key finding**: Choice preferences reverse based on framing (72% risk-averse in gain frame, 78% risk-seeking in loss frame)
-- **Original result**: χ²(1) = 41.7, p < 0.001; effect size h = 1.092
+**Domain:** Behavioral Economics | **Design:** Between-subjects (positive vs. negative frame) | **N:** 152 (76 per condition)
 
-**Validation criteria**: Two-tier evaluation system with TOST equivalence testing
+**Original Finding:** Choice preferences reverse based on framing—72% risk-averse in gain frame, 78% risk-seeking in loss frame (χ²(1) = 41.7, p < 0.001; Cohen's h = 1.092).
 
-**Type 1: Phenomenon-level Match** (Critical tests - must pass)
-- P1: Framing effect presence (chi-square test, p < 0.05)
-- P2: Framing effect direction (positive frame > negative frame for certain option)
+**Validation:**
 
-**Type 2: Data-level Match** (TOST equivalence testing with δ = 0.2)
-- D1: Positive frame data match (Freeman-Tukey TOST, p_tost < 0.05 for equivalence)
-- D2: Negative frame data match (Freeman-Tukey TOST, p_tost < 0.05 for equivalence)
-- D3: Effect size magnitude match (Direct comparison TOST, p_tost < 0.05 for equivalence)
+**Phenomena Tests (Critical):**
+- P1: Effect presence — χ² test, p < 0.05 required
+- P2: Effect direction — Positive frame > Negative frame for certain option
 
-**Equivalence margin**: δ = 0.2 (standardized units, Cohen's "negligible" threshold)
+**Data Replication Tests (TOST, δ = 0.2):**
+- D1: Positive frame proportion (Freeman-Tukey standardization)
+- D2: Negative frame proportion (Freeman-Tukey standardization)
+- D3: Effect size magnitude (Direct comparison)
 
-Full description: `data/studies/study_003/ground_truth.json`
+Full specification: `data/studies/study_003/ground_truth.json`
 
-## Evaluation & pass criteria
+## Evaluation Framework
 
-HumanStudyBench uses a **two-tier evaluation framework** to assess both psychological validity and behavioral fidelity. Each study contains **two types of independent tests**:
+### Phenomena Validation (Critical Tests)
 
-### Two Types of Tests
+**Purpose:** Verify psychological phenomena exist in agent behavior using original paper's statistical methods.
 
-#### Type 1: Phenomenon-Level Tests (Critical)
+- **Method:** Replicate exact tests from published studies (χ², t-test, ANOVA, etc.)
+- **Criterion:** Same significance thresholds (typically p < 0.05)
+- **Status:** CRITICAL — All phenomena tests must pass for study to pass
+- **Question:** "Does the agent exhibit the phenomenon?"
 
-**Purpose:** Verify the **psychological phenomenon** is present in agent behavior.
-
-These tests use the **exact same statistical methods** as the original paper to confirm the cognitive/behavioral effect exists.
-
-- **Method**: Original study's tests (chi-square, t-test, ANOVA, etc.)
-- **Criterion**: Same threshold as original paper (typically p < 0.05)
-- **Status**: **CRITICAL** — Must pass all Type 1 tests for study to pass
-- **Question asked**: "Does the agent show the phenomenon?"
-
-**Example (Study 003 - Framing Effect):**
+**Example (Study 003):**
 ```python
-# Test P1: Effect presence
-# Original paper: χ²(1) = 41.7, p < 0.001
-# Agent requirement: χ² test shows p < 0.05 ✓
+# P1: Effect presence
+# Original: χ²(1) = 41.7, p < 0.001
+# Agent must show: p < 0.05 ✓
 
 # Test P2: Effect direction  
-# Original paper: Positive frame (72%) > Negative frame (22%)
-# Agent requirement: Same direction (positive > negative) ✓
+# P2: Effect direction
+# Original: Positive (72%) > Negative (22%)
+# Agent must show: Same direction ✓
 ```
 
-If agent fails Type 1 tests → **Phenomenon not replicated** → Study fails
+**Outcome:** Phenomena test failure → Study fails (phenomenon not replicated)
 
 ---
 
-#### Type 2: Data-Level Tests (Equivalence Testing)
+### Data Replication (TOST Equivalence Testing)
 
-**Purpose:** Quantify how **closely agent data matches human baseline**.
+**Purpose:** Quantify behavioral fidelity to human baselines.
 
-These tests use **equivalence testing** to assess whether agent behavior is statistically indistinguishable from human behavior.
+- **Method:** TOST (Two One-Sided Tests) with standardized effect sizes
+- **Status:** NON-CRITICAL — Improves score, not required for study pass
+- **Question:** "How similar are agent data to human data?"
 
-- **Method**: TOST (Two One-Sided Tests) with standardized effect sizes
-- **Status**: **NON-CRITICAL** — Improves score but not required to pass
-- **Question asked**: "How similar is the agent to humans?"
-
-**Statistical Framework:**
-
+**Framework:**
 ```
-H₀ (null):        |standardized effect| ≥ δ  (NOT equivalent)
-H₁ (alternative): |standardized effect| < δ  (equivalent)
+H₀: |standardized effect| ≥ δ  (NOT equivalent)
+H₁: |standardized effect| < δ  (equivalent)
 
-Output: p-value (lower p → stronger evidence of equivalence)
-Scoring: Reliability Score = 1 - p_tost
+Test via TOST → p-value
+Scoring: Reliability Score = 1 - p_TOST
 ```
 
-**Why Equivalence Testing (not traditional hypothesis testing)?**
+**Why equivalence testing?** Traditional testing asks "Is there a difference?" (wrong question for replication). Equivalence testing asks "Is the difference negligible?" (correct question).
 
-| Approach | Question | Suitable for Replication? |
-|----------|----------|---------------------------|
-| Traditional testing | "Is there a difference?" (H₀: d = 0) | ❌ No — We want similarity, not difference |
-| **Equivalence testing** | **"Is the difference negligible?"** (H₁: \|d\| < δ) | ✅ Yes — Directly tests similarity |
-
-**Single Global Parameter:** δ = 0.2 (standardized units)
-- Applied uniformly across **all** data-level tests after standardization
-- Based on Cohen (1988): threshold for "negligible" effects
-- Ensures fair comparison across studies with varying data granularity
-
-**Standardization Methods** (converts different metrics to common scale):
+**Parameters:**
+- **δ = 0.2** (Cohen's "negligible" threshold) — applied uniformly after standardization
+- **Standardization:** Freeman-Tukey (proportions), Cohen's d (means), direct comparison (effect sizes)
 
 | Data Type | Study Provides | Standardization | Standardized Effect |
 |-----------|----------------|-----------------|---------------------|
@@ -237,88 +213,28 @@ Scoring: Reliability Score = 1 - p_tost
 | **Ratings** | Mean ratings + SD | Cohen's d | d = \|M_agent - M_human\| / SD_pooled |
 | **Effect sizes** | Reported effect + SE | Direct comparison | d = \|ES_agent - ES_human\| / SE_combined |
 
-**Example (Study 003 - Framing Effect):**
-```python
-# Test D1: Positive frame data match
-# Human baseline: 72% (n=76)
-# Agent: 70% (n=100)
-
-# Step 1: Standardize using Freeman-Tukey
-theta_human = arcsin(√0.72) = 1.054
-theta_agent = arcsin(√0.70) = 1.024
-d = |1.054 - 1.024| / SE_pooled = 0.505
-
-# Step 2: Equivalence test
-# Is 0.505 < 0.2? No → Cannot claim equivalence
-# p_tost = 0.9+ → Reliability Score ≈ 0.00
-
-# Test D2: Negative frame data match
-# Human: 22% (n=76), Agent: 25% (n=100)
-# d = 0.312 → p_tost ≈ 0.80 → Score ≈ 0.20
-
-# Test D3: Effect size match
-# Human effect: h = 1.092, Agent effect: h = 1.00
-# d = 0.434 → p_tost ≈ 0.50 → Score ≈ 0.50
-```
-
-**Interpretation:**
-- **p < 0.05**: Can claim statistical equivalence ✓
-- **Score ≥ 0.50**: Practical equivalence threshold ✓
-- **Pass if**: p < 0.05 OR score ≥ 0.50
-
 **Example (Study 003):**
 ```python
-# Test D1: Positive frame data match
-# Human baseline: 72% (n=76)
-# Agent: 70% (n=100)
+# D1: Positive frame — Human 72%, Agent 70%
+# Freeman-Tukey: θ_human = 1.054, θ_agent = 1.024
+# d = 0.505 → p_TOST = 1.00 → Score = 0.00 (difference too large)
 
-# Freeman-Tukey transformation
-theta_human = arcsin(√0.72) = 1.0539
-theta_agent = arcsin(√0.70) = 1.0239
-SE_pooled = 0.0594
+# D2: Negative frame — Human 22%, Agent 25%  
+# d = 0.312 → p_TOST = 0.80 → Score = 0.20 (moderate difference)
 
-# Standardized difference
-d = |1.0539 - 1.0239| / 0.0594 = 0.505
-
-# TOST with δ = 0.2
-t_upper = (0.505 - 0.2) / 0.0594 = 5.14
-t_lower = (-0.505 - 0.2) / 0.0594 = -11.87
-p_upper = 1.0000  # Above threshold
-p_lower = 0.0000  # Well below threshold
-p_tost = max(1.0000, 0.0000) = 1.0000
-
-# Result: Cannot claim equivalence (difference too large)
-score = 1 - 1.0000 = 0.00
-interpretation = "Insufficient evidence of equivalence"
+# D3: Effect size — Human h=1.092, Agent h=1.00
+# d = 0.434 → p_TOST = 0.50 → Score = 0.50 (borderline)
 ```
 
-### Statistical Methods Summary
+**Interpretation:** p < 0.05 (or Score ≥ 0.50) → Can claim equivalence
 
-#### For Type 1 Tests (Phenomenon-Level)
+---
 
-Uses **original paper's statistical methods** exactly as reported:
+### Statistical Methods
 
-| Test | Used For | Example |
-|------|----------|---------|
-| **Chi-Square (χ²)** | Categorical data | Testing if choice frequencies differ across conditions |
-| **t-test** | Continuous data | Comparing mean ratings between groups |
-| **ANOVA** | Multiple groups | Testing differences across 3+ conditions |
+**Phenomena Tests:** Use original paper's methods (χ², t-test, ANOVA, etc.) with same thresholds.
 
-**Example - Chi-Square Test:**
-```
-Study 003: Does framing affect choices?
-
-Contingency table:
-                Program A   Program B
-Positive frame     72          28
-Negative frame     22          78
-
-χ²(1) = 41.7, p < 0.001 → ✓ Significant framing effect (Type 1 test passes)
-```
-
-#### For Type 2 Tests (Data-Level)
-
-Uses **TOST equivalence testing** to test if differences are negligible:
+**Data Replication:** TOST equivalence testing
 
 **Formula**: 
 ```
@@ -359,113 +275,47 @@ print(f"Score: {1 - result['p_tost']:.3f}")
 # Score: 0.000
 ```
 
-### Study-Level Scoring
+### Scoring & Pass Criteria
 
-**Formula**: 
+**Study-Level:**
 ```
-Total Score = Σ(test_score × test_weight) / Σ(test_weight)
-```
-
-**Pass Requirements** (both must be satisfied):
-1. ✅ All critical tests pass (all phenomenon-level tests)
-2. ✅ Overall score ≥ 70%
-
-**Grading Scale**:
-
-| Overall Score | Grade | Status |
-|---|---|---|
-| ≥ 90% | Perfect/Excellent | ✅ Pass |
-| ≥ 80% | Good | ✅ Pass |
-| ≥ 70% | Pass | ✅ Pass |
-| < 70% | Fail | ❌ Fail |
-
-**Example Scoring** (Study 003 with TOST, total weight = 6.5):
-
-| Test | Type | Weight | p_tost | Score | Contribution | Interpretation |
-|---|---|---|---|---|---|---|
-| P1: Effect presence (χ²) | Phenomenon | 2.0 | 0.001 | 1.0 | 2.0 | Significant effect |
-| P2: Effect direction | Phenomenon | 2.0 | N/A | 1.0 | 2.0 | Correct direction |
-| D1: Positive frame (72%) | Data (TOST) | 1.0 | 0.018 | 0.982 | 0.982 | Strong equivalence |
-| D2: Negative frame (22%) | Data (TOST) | 1.0 | 0.035 | 0.965 | 0.965 | Moderate equivalence |
-| D3: Effect size (h=1.092) | Data (TOST) | 0.5 | 0.089 | 0.911 | 0.456 | Weak equivalence |
-| **Total** | | **6.5** | | | **6.40 / 6.5 = 98.5%** | |
-
-Result: ✅ Pass (all critical tests passed + 98.5% ≥ 70%)
-
-**TOST Details for Data-Level Tests**:
-
-```python
-# D1: Positive frame
-# Agent: 72.0% (n=100), Human: 72.0% (n=76)
-# Freeman-Tukey: d = 0.003, p_tost = 0.018
-# → Strong evidence of equivalence (score = 0.982)
-
-# D2: Negative frame
-# Agent: 23.0% (n=100), Human: 22.0% (n=76)
-# Freeman-Tukey: d = 0.015, p_tost = 0.035
-# → Moderate evidence of equivalence (score = 0.965)
-
-# D3: Effect size magnitude
-# Agent: h = 1.15, Human: h = 1.092 (SE = 0.15)
-# Direct comparison: d = 0.387, p_tost = 0.089
-# → Weak evidence of equivalence (score = 0.911)
+Score = Σ(test_score × weight) / Σ(weight)
+Pass if: (1) All phenomena tests pass AND (2) Score ≥ 70%
 ```
 
-**Key Insights**:
-1. Agent successfully replicates the phenomenon (P1 ✓, P2 ✓)
-2. Individual condition data closely matches human baseline (D1, D2)
-3. Overall effect size slightly larger than human study (D3)
-4. High total score (98.5%) indicates excellent behavioral fidelity
+**Example (Study 003, total weight = 6.5):**
 
-### Benchmark-Level Pass Criteria
+| Test | Type | Weight | Score | Weighted |
+|------|------|--------|-------|----------|
+| P1: Effect presence | Phenomena | 2.0 | 1.0 | 2.0 |
+| P2: Effect direction | Phenomena | 2.0 | 1.0 | 2.0 |
+| D1: Positive frame | Data | 1.0 | 0.98 | 0.98 |
+| D2: Negative frame | Data | 1.0 | 0.97 | 0.97 |
+| D3: Effect size | Data | 0.5 | 0.91 | 0.46 |
+| **Total** | | **6.5** | | **6.41 → 98.5%** |
 
-**Requirements** (both must be satisfied):
-1. Average score across all studies ≥ 60%
-2. Pass rate ≥ 50% (at least half of studies pass)
+**Outcome:** ✅ Pass (phenomena validated + high fidelity score)
 
-**Example**:
+**Benchmark-Level:**
 ```
-Study 003: 96.9% ✅ Pass
-Study 004: 45.2% ❌ Fail  
-Study 005: 78.3% ✅ Pass
-
-Average: (96.9 + 45.2 + 78.3) / 3 = 73.5% ✅
-Pass rate: 2/3 = 66.7% ✅
-
-Benchmark result: ✅ PASS
+Pass if: (1) Average score ≥ 60% AND (2) Pass rate ≥ 50%
 ```
 
-### Rationale: Why Two Tiers?
+**Key Insight:** Phenomena validation ensures scientific validity (effect exists). Data replication quantifies behavioral fidelity (how human-like). An agent can show the phenomenon but with different magnitudes—TOST quantifies this difference.
 
-**Phenomenon-level tests** (Type 1) ensure scientific validity:
-- Core question: "Does the agent show the psychological effect?"
-- Uses original statistical methods (chi-square, t-test, etc.)
-- Binary outcome: effect present or absent
-- Critical for replication validity
+---
 
-**Data-level tests** (Type 2) quantify behavioral fidelity:
-- Core question: "How similar is agent data to human data?"
-- Uses **TOST equivalence testing** with standardized effect sizes
-- Graded outcome: p-values directly measure strength of equivalence
-- Rewards high-fidelity simulation beyond phenomenon presence
+### Rationale
 
-**Why TOST for data-level tests?**
+**Why distinguish phenomena validation from data replication?**
 
-Traditional hypothesis testing is designed to detect differences, not similarities:
-- H₀: "no difference" → reject if p < 0.05 → "there IS a difference"
-- Problem: Cannot prove similarity (only absence of detected difference)
-- Inappropriate for replication: we want to show agent ≈ human, not agent ≠ human
+Traditional hypothesis testing asks "Is there a difference?" This is wrong for replication—we want to prove similarity, not difference. Equivalence testing (TOST) asks "Is the difference negligible?" and can formally claim behavioral equivalence when p < 0.05.
 
-TOST equivalence testing is designed to test similarity:
-- H₀: "large difference" → reject if p < 0.05 → "difference is negligible"
-- Solution: Directly tests if |difference| < tolerance threshold
-- Appropriate for replication: can formally claim behavioral equivalence
+**Why two validation tiers?** An agent may exhibit a phenomenon (e.g., framing effect exists) but with different magnitudes than humans (e.g., 60% vs 72% choosing safe option). Phenomena validation ensures scientific validity (binary: effect present or absent). Data replication quantifies fidelity (continuous: how human-like). Both matter for faithful replication.
 
-**Key insight**: An agent can show the phenomenon (pass Type 1) but with different magnitudes than humans. Type 2 with TOST quantifies this difference and tests if it's small enough to be considered equivalent.
-
-**References**:
+**References:**
 - Cohen, J. (1988). *Statistical Power Analysis for the Behavioral Sciences* (2nd ed.). Erlbaum.
-- Lakens, D., et al. (2018). Equivalence Testing for Psychological Research: A Tutorial. *Advances in Methods and Practices in Psychological Science*, 1(2), 259-269.
+- Lakens, D., et al. (2018). Equivalence Testing for Psychological Research. *Advances in Methods and Practices in Psychological Science*, 1(2), 259-269.
 
 ## Troubleshooting
 

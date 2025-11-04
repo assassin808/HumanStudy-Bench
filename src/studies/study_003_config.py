@@ -272,15 +272,15 @@ class Study003Config(BaseStudyConfig):
                     "n": n_positive,
                     "option_A_count": pos_frame_choices["Program A"],
                     "option_B_count": pos_frame_choices["Program B"],
-                    "proportion_choose_safe": pos_certain_prop,  # Renamed for scorer
+                        "proportion_choose_safe": pos_certain_prop,  # Certain option (Program A) in positive frame
                     "proportion_choose_risky": pos_risky_prop
                 },
                 "negative_frame": {
                     "n": n_negative,
                     "option_A_count": neg_frame_choices["Program A"],
                     "option_B_count": neg_frame_choices["Program B"],
-                    "proportion_choose_safe": neg_risky_prop,  # In negative frame, B is safe option
-                    "proportion_choose_risky": neg_certain_prop
+                        "proportion_choose_safe": neg_certain_prop,  # Certain option (Program A) in negative frame for comparison
+                        "proportion_choose_risky": neg_risky_prop
                 },
                 "framing_effect": {
                     "n": n_positive + n_negative,

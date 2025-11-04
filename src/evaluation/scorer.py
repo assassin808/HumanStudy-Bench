@@ -272,17 +272,31 @@ class Scorer:
         """Test if effect direction matches expected (e.g., positive > negative frame)."""
         try:
             agent_desc = agent_results.get("descriptive_statistics", {})
+            method = test_spec.get("method", {})
             
-            # Get condition-specific data
-            conditions = test_spec.get("method", {}).get("conditions", [])
-            if len(conditions) != 2:
-                return {"score": 0.0, "passed": False, "details": {"error": "Need exactly 2 conditions"}}
+            # Parse direction specification
+            direction = method.get("direction", "")
             
-            cond1, cond2 = conditions
+            # Handle different direction formats
+            if direction == "positive_greater_than_negative":
+                cond1, cond2 = "positive_frame", "negative_frame"
+                expected_direction = "greater"
+            elif direction == "negative_greater_than_positive":
+                cond1, cond2 = "negative_frame", "positive_frame"
+                expected_direction = "greater"
+            elif "conditions" in method:
+                # Legacy format with explicit conditions
+                conditions = method["conditions"]
+                if len(conditions) != 2:
+                    return {"score": 0.0, "passed": False, "details": {"error": "Need exactly 2 conditions"}}
+                cond1, cond2 = conditions
+                expected_direction = method.get("expected_direction", "greater")
+            else:
+                return {"score": 0.0, "passed": False, "details": {"error": f"Cannot parse direction: {direction}"}}
             
             # Extract proportions for each condition
             if cond1 not in agent_desc or cond2 not in agent_desc:
-                return {"score": 0.0, "passed": False, "details": {"error": "Missing condition data"}}
+                return {"score": 0.0, "passed": False, "details": {"error": f"Missing condition data: {cond1} or {cond2}"}}
             
             prop1 = agent_desc[cond1].get("proportion_choose_safe")
             prop2 = agent_desc[cond2].get("proportion_choose_safe")
@@ -291,8 +305,6 @@ class Scorer:
                 return {"score": 0.0, "passed": False, "details": {"error": "Missing proportion data"}}
             
             # Check expected direction
-            expected_direction = test_spec.get("method", {}).get("expected_direction", "greater")
-            
             if expected_direction == "greater":
                 passed = prop1 > prop2
             elif expected_direction == "less":
@@ -305,6 +317,7 @@ class Scorer:
             details = {
                 f"{cond1}_proportion": prop1,
                 f"{cond2}_proportion": prop2,
+                "direction": direction,
                 "expected_direction": expected_direction,
                 "correct_direction": passed
             }
@@ -418,17 +431,21 @@ class Scorer:
             }
         
         # Step 4: Compute standardized d
-        d = standardizer.compute(agent_data, human_baseline)
-        se_pooled = standardizer.get_se_pooled()
+        d, details = standardizer.compute(agent_data, human_baseline)
         
-        # Get sample sizes for degrees of freedom
+        # Extract SE from computation details
         if data_type == "proportion":
+            se_pooled = details.get("se_pooled")
             n_agent = agent_data["n"]
             n_human = human_baseline.get("n", 76)
         elif data_type == "rating":
+            # For rating data, SE is SD_pooled / sqrt(n)
+            sd_pooled = details.get("sd_pooled", 1.0)
             n_agent = agent_data["n"]
             n_human = human_baseline.get("n", 76)
-        else:
+            se_pooled = sd_pooled / np.sqrt((n_agent + n_human) / 2)
+        else:  # effect_size
+            se_pooled = details.get("se_combined")
             n_agent = 100  # Default for effect sizes
             n_human = 76
         
