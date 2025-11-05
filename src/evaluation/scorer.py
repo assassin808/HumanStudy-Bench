@@ -178,6 +178,8 @@ class Scorer:
                 return self._test_chi_square(agent_results, ground_truth, test_spec)
             elif test_name == "proportion_difference":
                 return self._test_proportion_difference(agent_results, ground_truth, test_spec)
+            elif test_name == "independent_t_test":
+                return self._test_independent_t(agent_results, ground_truth, test_spec)
             else:
                 return {
                     "score": 0.0,
@@ -330,6 +332,153 @@ class Scorer:
                 "direction": direction,
                 "expected_direction": expected_direction,
                 "correct_direction": passed
+            }
+            
+            return {"score": score, "passed": passed, "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _test_independent_t(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Run independent samples t-test for continuous data.
+        
+        Tests whether the mean of one condition is significantly different from another.
+        Used for studies with continuous dependent variables (e.g., numerical estimates).
+        
+        Args:
+            agent_results: Agent's aggregated results with descriptive_statistics
+            ground_truth: Study ground truth
+            test_spec: Test specification with method containing:
+                - comparison: e.g., "high_anchor_vs_low_anchor"
+                - threshold: significance level (default 0.05)
+                - direction: expected direction, e.g., "high > low"
+        
+        Returns:
+            Dict with score, passed status, and test details
+        """
+        from scipy import stats
+        
+        try:
+            agent_desc = agent_results.get("descriptive_statistics", {})
+            method = test_spec.get("method", {})
+            
+            # Parse comparison specification
+            comparison = method.get("comparison", "")
+            if "_vs_" in comparison:
+                cond1, cond2 = comparison.split("_vs_")
+            else:
+                return {"score": 0.0, "passed": False, 
+                       "details": {"error": f"Invalid comparison format: {comparison}"}}
+            
+            # Determine question from test_id (for Study 002 format)
+            # Test IDs like "P1", "P2", "P3" correspond to questions
+            test_id = test_spec.get("test_id", "")
+            question_map = {
+                "P1": "washington",
+                "P2": "chicago", 
+                "P3": "everest"
+            }
+            question = question_map.get(test_id)
+            
+            # Try two data formats:
+            # Format 1: nested by condition (standard)
+            # Format 2: nested by question with flattened conditions (Study 002)
+            
+            if question and question in agent_desc:
+                # Study 002 format: descriptive_statistics[question][mean_high/low, sd_high/low, n_high/low]
+                question_data = agent_desc[question]
+                
+                # Map condition names to field suffixes
+                # "high_anchor" or "high" -> "_high"
+                # "low_anchor" or "low" -> "_low"
+                suffix1 = "_" + cond1.replace("_anchor", "")
+                suffix2 = "_" + cond2.replace("_anchor", "")
+                
+                mean1 = question_data.get(f"mean{suffix1}")
+                mean2 = question_data.get(f"mean{suffix2}")
+                sd1 = question_data.get(f"sd{suffix1}")
+                sd2 = question_data.get(f"sd{suffix2}")
+                n1 = question_data.get(f"n{suffix1}")
+                n2 = question_data.get(f"n{suffix2}")
+                
+            elif cond1 in agent_desc and cond2 in agent_desc:
+                # Standard format: descriptive_statistics[condition][mean, sd, n]
+                data1 = agent_desc[cond1]
+                data2 = agent_desc[cond2]
+                
+                mean1 = data1.get("mean")
+                mean2 = data2.get("mean")
+                sd1 = data1.get("sd", data1.get("std"))
+                sd2 = data2.get("sd", data2.get("std"))
+                n1 = data1.get("n", data1.get("sample_size"))
+                n2 = data2.get("n", data2.get("sample_size"))
+            else:
+                return {"score": 0.0, "passed": False,
+                       "details": {"error": f"Missing condition data for {cond1} or {cond2}"}}
+            
+            
+            # Validate all required data present
+            if None in [mean1, mean2, sd1, sd2, n1, n2]:
+                return {"score": 0.0, "passed": False,
+                       "details": {"error": "Missing mean, sd, or n for one or both conditions"}}
+            
+            # Compute t-statistic and p-value
+            # Using Welch's t-test (does not assume equal variances)
+            se1 = sd1 / np.sqrt(n1)
+            se2 = sd2 / np.sqrt(n2)
+            se_diff = np.sqrt(se1**2 + se2**2)
+            t_stat = (mean1 - mean2) / se_diff
+            
+            # Degrees of freedom (Welch-Satterthwaite equation)
+            df = ((se1**2 + se2**2)**2) / ((se1**4 / (n1 - 1)) + (se2**4 / (n2 - 1)))
+            
+            # Two-tailed p-value
+            p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
+            
+            # Check significance
+            threshold = method.get("threshold", 0.05)
+            is_significant = p_value < threshold
+            
+            # Check direction if specified
+            direction = method.get("direction", "")
+            correct_direction = True
+            
+            if direction:
+                if ">" in direction:
+                    # e.g., "high > low" means mean1 should be > mean2
+                    correct_direction = mean1 > mean2
+                elif "<" in direction:
+                    correct_direction = mean1 < mean2
+            
+            # Test passes if significant AND direction is correct
+            passed = is_significant and correct_direction
+            score = 1.0 if passed else 0.0
+            
+            # Compute Cohen's d for effect size
+            pooled_sd = np.sqrt(((n1 - 1) * sd1**2 + (n2 - 1) * sd2**2) / (n1 + n2 - 2))
+            cohens_d = (mean1 - mean2) / pooled_sd
+            
+            details = {
+                f"{cond1}_mean": mean1,
+                f"{cond2}_mean": mean2,
+                f"{cond1}_sd": sd1,
+                f"{cond2}_sd": sd2,
+                f"{cond1}_n": n1,
+                f"{cond2}_n": n2,
+                "t_statistic": t_stat,
+                "df": df,
+                "p_value": p_value,
+                "cohens_d": cohens_d,
+                "significant": is_significant,
+                "threshold": threshold,
+                "direction": direction,
+                "correct_direction": correct_direction
             }
             
             return {"score": score, "passed": passed, "details": details}

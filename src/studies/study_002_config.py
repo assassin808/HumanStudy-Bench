@@ -294,16 +294,24 @@ class Study002Config(BaseStudyConfig):
         # Overall statistics
         if anchoring_indices:
             mean_anchoring_index = np.mean(anchoring_indices)
+            sd_anchoring_index = np.std(anchoring_indices, ddof=1) if len(anchoring_indices) > 1 else 0.0
             mean_cohens_d = np.mean(cohens_ds)
+            sd_cohens_d = np.std(cohens_ds, ddof=1) if len(cohens_ds) > 1 else 0.0
+            se_cohens_d = sd_cohens_d / np.sqrt(len(cohens_ds)) if len(cohens_ds) > 0 else 0.0
             all_significant = all(
                 question_results[q].get("significant", False) 
                 for q in self.questions 
                 if not question_results[q].get("insufficient_data", False)
             )
+            n_questions = len(anchoring_indices)
         else:
             mean_anchoring_index = 0
+            sd_anchoring_index = 0
             mean_cohens_d = 0
+            sd_cohens_d = 0
+            se_cohens_d = 0
             all_significant = False
+            n_questions = 0
         
         # Build enhanced results
         enhanced_results = {
@@ -313,8 +321,14 @@ class Study002Config(BaseStudyConfig):
                 "chicago": question_results.get("chicago", {}),
                 "everest": question_results.get("everest", {}),
                 "overall": {
+                    "mean": float(mean_anchoring_index),  # For D1 TOST test
+                    "sd": float(sd_anchoring_index),
+                    "n": n_questions,
+                    "anchoring_index": float(mean_anchoring_index),  # Keep for compatibility
                     "mean_anchoring_index": float(mean_anchoring_index),
                     "mean_cohens_d": float(mean_cohens_d),
+                    "effect_size": float(mean_cohens_d),  # For D2 TOST test
+                    "se": float(se_cohens_d),
                     "all_effects_significant": all_significant,
                     "interpretation": self._interpret_overall_anchoring(mean_anchoring_index)
                 }

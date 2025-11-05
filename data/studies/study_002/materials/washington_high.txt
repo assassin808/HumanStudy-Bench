@@ -4,4 +4,7 @@ Question: In what year did George Washington become the first President of the U
 
 Is your answer higher or lower than 1920?
 
-Please provide your best estimate (as a year).
+Please provide your answer in this exact format:
+[Higher/Lower], [Your numeric estimate]
+
+Your answer:

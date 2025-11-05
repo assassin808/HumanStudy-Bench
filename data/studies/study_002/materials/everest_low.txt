@@ -4,4 +4,7 @@ Question: At what temperature (in degrees Fahrenheit) does water boil at the top
 
 Is your answer higher or lower than 100 degrees?
 
-Please provide your best estimate (in degrees Fahrenheit).
+Please provide your answer in this exact format:
+[Higher/Lower], [Your numeric estimate]
+
+Your answer:

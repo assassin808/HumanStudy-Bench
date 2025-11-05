@@ -89,7 +89,7 @@
       "problem": "birth_sequence or program_choice",
       "expected_response_type": "varies_by_problem"
     }
-  },
+  ],
   "procedure": {
     "description": "Participants receive one problem from a questionnaire containing ~24 probability judgment questions. Each problem tests whether they judge based on representativeness (similarity to stereotype) rather than statistical principles. The birth sequence problem tests understanding of sample randomness. The program choice problem tests understanding of variance and regression to the mean.",
     "steps": [
