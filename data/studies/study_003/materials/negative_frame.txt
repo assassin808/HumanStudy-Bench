@@ -1,5 +1,3 @@
-NEGATIVE FRAME SCENARIO
-
 Imagine that the U.S. is preparing for the outbreak of an unusual Asian disease, which is expected to kill 600 people.
 
 Two alternative programs to combat the disease have been proposed. Assume that the exact scientific estimate of the consequences of the programs are as follows:

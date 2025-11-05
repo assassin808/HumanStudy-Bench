@@ -1,0 +1,5 @@
+You are participating in a study about numerical estimation and judgment. You will be asked to estimate some factual quantities.
+
+Before making your estimate, you will see a randomly generated number. This number is not related to the correct answer - it's just a reference point.
+
+Please provide your best estimate for each question. There are no trick questions - we are interested in your genuine judgments.

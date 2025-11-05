@@ -1,8 +1,20 @@
 {
   "version": "0.1.0",
   "last_updated": "2025-11-04",
-  "total_studies": 2,
+  "total_studies": 3,
   "studies": [
+    {
+      "id": "study_002",
+      "title": "Measures of Anchoring in Estimation Tasks",
+      "domain": "cognitive_psychology",
+      "subdomain": "judgment_and_decision_making",
+      "difficulty": "medium",
+      "tags": ["anchoring", "heuristics_and_biases", "numerical_estimation", "cognitive_bias", "jacowitz_kahneman"],
+      "status": "active",
+      "added_date": "2025-11-04",
+      "version": "1.0",
+      "estimated_time_minutes": 5
+    },
     {
       "id": "study_003",
       "title": "The Framing of Decisions and the Psychology of Choice",
@@ -30,7 +42,7 @@
   ],
   "statistics": {
     "by_domain": {
-      "cognitive_psychology": 1,
+      "cognitive_psychology": 2,
       "social_psychology": 0,
       "developmental_psychology": 0,
       "behavioral_economics": 1,
@@ -38,11 +50,11 @@
     },
     "by_difficulty": {
       "easy": 1,
-      "medium": 1,
+      "medium": 2,
       "hard": 0
     },
     "by_status": {
-      "active": 2,
+      "active": 3,
       "deprecated": 0,
       "in_review": 0
     }

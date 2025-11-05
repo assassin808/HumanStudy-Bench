@@ -28,7 +28,6 @@ class PromptBuilder:
         """
         self.study_path = Path(study_path)
         self.materials_path = self.study_path / "materials"
-        self.prompts_path = self.materials_path / "prompts"
         
         # Load specification
         with open(self.study_path / "specification.json", "r") as f:
@@ -41,18 +40,6 @@ class PromptBuilder:
                 self.instructions = f.read()
         else:
             self.instructions = None
-        
-        # Load prompt templates if they exist
-        self.system_template = self._load_template("system_prompt_template.txt")
-        self.trial_template = self._load_template("trial_prompt_template.txt")
-    
-    def _load_template(self, filename: str) -> Optional[str]:
-        """Load a prompt template file."""
-        template_path = self.prompts_path / filename
-        if template_path.exists():
-            with open(template_path, "r") as f:
-                return f.read()
-        return None
     
     def build_system_prompt(self, participant_profile: Dict[str, Any]) -> str:
         """
@@ -64,11 +51,7 @@ class PromptBuilder:
         Returns:
             Complete system prompt string
         """
-        if self.system_template:
-            return self._fill_template(self.system_template, participant_profile)
-        else:
-            # Fallback to generic system prompt
-            return self._build_generic_system_prompt(participant_profile)
+        return self._build_generic_system_prompt(participant_profile)
     
     def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
         """
@@ -81,11 +64,7 @@ class PromptBuilder:
         Returns:
             Complete trial prompt string
         """
-        if self.trial_template:
-            return self._fill_template(self.trial_template, trial_data)
-        else:
-            # Fallback to generic trial prompt
-            return self._build_generic_trial_prompt(trial_data)
+        return self._build_generic_trial_prompt(trial_data)
     
     def get_instructions(self) -> str:
         """

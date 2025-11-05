@@ -1,0 +1,7 @@
+A number has been randomly generated: 1920
+
+Question: In what year did George Washington become the first President of the United States?
+
+Is your answer higher or lower than 1920?
+
+Please provide your best estimate (as a year).

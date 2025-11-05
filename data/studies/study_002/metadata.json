@@ -1,0 +1,75 @@
+{
+  "study_id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": ["Karen E. Jacowitz", "Daniel Kahneman"],
+  "year": 1995,
+  "journal": "Personality and Social Psychology Bulletin",
+  "volume": 21,
+  "issue": 11,
+  "pages": "1161-1166",
+  "doi": "10.1177/01461672952111004",
+  "citation": "Jacowitz, K. E., & Kahneman, D. (1995). Measures of anchoring in estimation tasks. Personality and Social Psychology Bulletin, 21(11), 1161-1166.",
+  
+  "domain": "cognitive_psychology",
+  "subdomain": "judgment_and_decision_making",
+  "phenomenon": "anchoring_effect",
+  
+  "tags": [
+    "anchoring",
+    "heuristics_and_biases",
+    "numerical_estimation",
+    "judgment",
+    "kahneman",
+    "adjustment_and_anchoring"
+  ],
+  
+  "difficulty": "easy",
+  "estimated_time_minutes": 15,
+  
+  "design": {
+    "type": "between_subjects",
+    "factors": [
+      {
+        "name": "anchor_condition",
+        "type": "between",
+        "levels": ["high_anchor", "low_anchor"]
+      }
+    ],
+    "dependent_variables": [
+      "numerical_estimate",
+      "comparative_judgment"
+    ]
+  },
+  
+  "sample": {
+    "original_n": 145,
+    "population": "undergraduate_students",
+    "institution": "Stanford University",
+    "recruitment": "course_credit"
+  },
+  
+  "key_findings": {
+    "main_effect": "Anchoring effect demonstrated across multiple estimation tasks",
+    "typical_anchoring_index": 0.40,
+    "effect_size_range": "0.3 to 0.5",
+    "robustness": "Effect persists even with obviously random anchors"
+  },
+  
+  "replication_notes": {
+    "critical_elements": [
+      "Random anchor presentation",
+      "Two-step judgment (comparative then absolute)",
+      "Between-subjects design",
+      "Multiple diverse questions"
+    ],
+    "common_pitfalls": [
+      "Making anchor seem informative",
+      "Using only one question type",
+      "Within-subjects design contamination"
+    ]
+  },
+  
+  "status": "active",
+  "added_date": "2025-11-04",
+  "version": "1.0"
+}

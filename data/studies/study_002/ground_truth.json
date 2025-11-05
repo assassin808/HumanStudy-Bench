@@ -1,0 +1,193 @@
+{
+  "study_id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": ["Karen E. Jacowitz", "Daniel Kahneman"],
+  "year": 1995,
+  "delta": 0.2,
+  "delta_note": "Global equivalence margin (standardized units). Cohen (1988) defines d < 0.2 as 'negligible' effect.",
+  
+  "evaluation_framework": {
+    "description": "Two-tier evaluation: phenomenon-level and data-level matching",
+    "type_1": {
+      "name": "phenomenon_level_match",
+      "description": "Tests whether agent exhibits anchoring effect",
+      "approach": "Independent t-tests comparing high vs low anchor conditions",
+      "critical": true
+    },
+    "type_2": {
+      "name": "data_level_match",
+      "description": "Tests how closely agent data matches human baseline data using equivalence testing",
+      "approach": "TOST (Two One-Sided Tests) for anchoring index and effect sizes",
+      "critical": false
+    }
+  },
+  
+  "original_results": {
+    "sample_size": 145,
+    "washington_presidency": {
+      "high_anchor": 1920,
+      "low_anchor": 1700,
+      "correct_answer": 1789,
+      "high_anchor_mean": 1854,
+      "low_anchor_mean": 1745,
+      "anchoring_index": 0.495,
+      "t_statistic": 4.87,
+      "p_value": 0.001,
+      "cohens_d": 0.81
+    },
+    "chicago_population": {
+      "high_anchor": 5.0,
+      "low_anchor": 0.2,
+      "correct_answer": 2.7,
+      "high_anchor_mean": 3.8,
+      "low_anchor_mean": 2.1,
+      "anchoring_index": 0.354,
+      "t_statistic": 3.64,
+      "p_value": 0.001,
+      "cohens_d": 0.60
+    },
+    "everest_boiling_point": {
+      "high_anchor": 180,
+      "low_anchor": 100,
+      "correct_answer": 160,
+      "high_anchor_mean": 171,
+      "low_anchor_mean": 131,
+      "anchoring_index": 0.50,
+      "t_statistic": 5.23,
+      "p_value": 0.001,
+      "cohens_d": 0.87
+    },
+    "overall": {
+      "mean_anchoring_index": 0.45,
+      "sd_anchoring_index": 0.08,
+      "mean_cohens_d": 0.76,
+      "all_effects_significant": true
+    }
+  },
+  
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "Washington Presidency Anchoring Effect",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent shows anchoring for Washington presidency question",
+        "method": {
+          "test": "independent_t_test",
+          "comparison": "high_anchor_vs_low_anchor",
+          "threshold": 0.05,
+          "direction": "high > low"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "P2",
+        "test_name": "Chicago Population Anchoring Effect",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent shows anchoring for Chicago population question",
+        "method": {
+          "test": "independent_t_test",
+          "comparison": "high_anchor_vs_low_anchor",
+          "threshold": 0.05,
+          "direction": "high > low"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "P3",
+        "test_name": "Everest Boiling Point Anchoring Effect",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent shows anchoring for Mt. Everest boiling point question",
+        "method": {
+          "test": "independent_t_test",
+          "comparison": "high_anchor_vs_low_anchor",
+          "threshold": 0.05,
+          "direction": "high > low"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "Overall Anchoring Index Match",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent anchoring index vs human baseline",
+        "data_type": "continuous",
+        "human_baseline": {
+          "mean": 0.45,
+          "sd": 0.08,
+          "n": 145,
+          "source": "Jacowitz & Kahneman (1995), averaged across questions"
+        },
+        "method": {
+          "metric": "anchoring_index",
+          "standardization": "cohens_d",
+          "rationale": "Tests if overall anchoring strength matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 1.0
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Effect Size Match",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent effect sizes vs human baseline",
+        "data_type": "effect_size",
+        "human_baseline": {
+          "mean_cohens_d": 0.76,
+          "sd_cohens_d": 0.14,
+          "n": 145,
+          "source": "Jacowitz & Kahneman (1995), averaged across questions"
+        },
+        "method": {
+          "metric": "cohens_d",
+          "standardization": "effect_size",
+          "rationale": "Tests if effect size magnitude matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 1.0
+      }
+    ],
+    "scoring": {
+      "total_weight": 8.0,
+      "critical_requirement": "All phenomenon-level tests (P1, P2, P3) must pass",
+      "passing_threshold": 0.75,
+      "grading_scale": {
+        "perfect": 1.00,
+        "excellent": 0.90,
+        "good": 0.80,
+        "pass": 0.75,
+        "fail": 0.00
+      }
+    },
+    "pass_threshold": 0.75
+  },
+  
+  "key_findings": {
+    "main_finding": "People's numerical estimates are systematically biased toward arbitrary anchor values, even when they know the anchors are random and uninformative",
+    "theoretical_implication": "Demonstrates insufficient adjustment from anchors in numerical estimation tasks",
+    "practical_implication": "Anchoring effects can influence judgments in many domains including negotiations, pricing, and forecasting"
+  },
+  
+  "notes": {
+    "replication_notes": "This is a foundational study on anchoring. The effect is very robust and replicates across cultures and contexts.",
+    "implementation_notes": "Present anchors as 'randomly generated' to maintain the uninformative nature. Use diverse questions to test generalizability.",
+    "common_issues": "Some sophisticated reasoners may deliberately counter-anchor. This is normal and expected in small numbers."
+  }
+}

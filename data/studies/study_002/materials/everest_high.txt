@@ -1,0 +1,7 @@
+A number has been randomly generated: 180 degrees Fahrenheit
+
+Question: At what temperature (in degrees Fahrenheit) does water boil at the top of Mount Everest?
+
+Is your answer higher or lower than 180 degrees?
+
+Please provide your best estimate (in degrees Fahrenheit).

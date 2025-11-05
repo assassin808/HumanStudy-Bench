@@ -43,14 +43,11 @@ class Study003PromptBuilder(PromptBuilder):
             if frame_file.exists():
                 with open(frame_file, 'r') as f:
                     frame_text = f.read().strip()
-                # Add frame text to trial data for template
-                trial_data = {**trial_data, 'scenario': frame_text, 'frame': framing_condition}
+                # Return frame text directly
+                return frame_text
         
-        # Use parent class method to handle template filling
-        if self.trial_template:
-            return self._fill_template(self.trial_template, trial_data)
-        else:
-            return self._build_generic_trial_prompt(trial_data)
+        # Fallback to generic prompt if no frame condition
+        return self._build_generic_trial_prompt(trial_data)
 
 
 

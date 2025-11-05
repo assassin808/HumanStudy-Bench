@@ -1,0 +1,117 @@
+{
+  "study_id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "phenomenon": "anchoring_effect",
+  
+  "design": {
+    "type": "between_subjects",
+    "description": "Participants randomly assigned to high or low anchor conditions",
+    "conditions": {
+      "high_anchor": {
+        "description": "Participants receive high anchor values before estimating",
+        "n_original": 73
+      },
+      "low_anchor": {
+        "description": "Participants receive low anchor values before estimating",
+        "n_original": 72
+      }
+    }
+  },
+  
+  "materials": {
+    "estimation_questions": [
+      {
+        "id": "washington_presidency",
+        "question": "In what year did George Washington become president?",
+        "high_anchor": 1920,
+        "low_anchor": 1700,
+        "correct_answer": 1789,
+        "units": "year"
+      },
+      {
+        "id": "chicago_population",
+        "question": "What is the population of Chicago (in millions)?",
+        "high_anchor": 5.0,
+        "low_anchor": 0.2,
+        "correct_answer": 2.7,
+        "units": "millions"
+      },
+      {
+        "id": "everest_boiling_point",
+        "question": "At what temperature (in Fahrenheit) does water boil on Mt. Everest?",
+        "high_anchor": 180,
+        "low_anchor": 100,
+        "correct_answer": 160,
+        "units": "degrees_fahrenheit"
+      }
+    ]
+  },
+  
+  "procedure": {
+    "steps": [
+      {
+        "step": 1,
+        "description": "Present anchor value",
+        "instruction": "A random number has been generated: [ANCHOR]"
+      },
+      {
+        "step": 2,
+        "description": "Comparative judgment",
+        "instruction": "Is the true value higher or lower than [ANCHOR]?"
+      },
+      {
+        "step": 3,
+        "description": "Absolute estimation",
+        "instruction": "[QUESTION]. Please provide your numerical estimate."
+      }
+    ]
+  },
+  
+  "dependent_measures": [
+    {
+      "name": "numerical_estimate",
+      "type": "continuous",
+      "description": "Participant's numerical estimate for each question",
+      "analysis": "mean_by_condition"
+    },
+    {
+      "name": "anchoring_index",
+      "type": "continuous",
+      "description": "(Mean_high - Mean_low) / (Anchor_high - Anchor_low)",
+      "range": [0, 1],
+      "interpretation": {
+        "0": "No anchoring effect",
+        "0.5": "Moderate anchoring (typical)",
+        "1": "Complete anchoring"
+      }
+    }
+  ],
+  
+  "hypotheses": {
+    "H1": {
+      "description": "High anchor group will provide higher estimates than low anchor group",
+      "test": "independent_t_test",
+      "prediction": "Mean_high > Mean_low",
+      "typical_p": "< 0.001"
+    },
+    "H2": {
+      "description": "Anchoring index will be significantly greater than zero",
+      "test": "one_sample_t_test_vs_zero",
+      "prediction": "Anchoring_index > 0",
+      "typical_range": [0.3, 0.5]
+    }
+  },
+  
+  "implementation_details": {
+    "participant_profile": {
+      "education": "undergraduate_student",
+      "age_range": [18, 25],
+      "background": "general_population"
+    },
+    "trial_structure": {
+      "trials_per_participant": 3,
+      "question_order": "randomized",
+      "anchor_assignment": "between_subjects"
+    }
+  }
+}

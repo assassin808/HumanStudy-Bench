@@ -1,5 +1,0 @@
-{{scenario}}
-
-Which of the two programs would you favor?
-
-Please respond with either "Program A" or "Program B", and briefly explain your reasoning.

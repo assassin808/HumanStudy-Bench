@@ -33,6 +33,9 @@ from src.agents.prompt_builder import get_prompt_builder
 from src.evaluation.scorer import Scorer
 from src.core.study_config import get_study_config
 
+# Import all study configurations to register them
+import src.studies
+
 
 def _slugify(text: str) -> str:
     return ''.join(c if c.isalnum() else '_' for c in text)
