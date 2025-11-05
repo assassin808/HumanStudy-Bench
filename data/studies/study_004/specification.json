@@ -1,0 +1,65 @@
+{
+  "study_id": "study_004",
+  "title": "Subjective Probability: A Judgment of Representativeness",
+  "short_title": "Representativeness Heuristic",
+  "authors": ["Daniel Kahneman", "Amos Tversky"],
+  "year": 1972,
+  "publication": "Cognitive Psychology",
+  "doi": "10.1016/0010-0285(72)90016-3",
+  "domain": "Judgment and Decision Making",
+  "subdomain": "Heuristics and Biases",
+  "design": {
+    "type": "between_subjects",
+    "n_original": {
+      "birth_sequence": 92,
+      "program_choice": 89,
+      "total_across_studies": "~1500"
+    },
+    "n_recommended": 100,
+    "trials_per_participant": 1,
+    "conditions": ["birth_sequence_problem", "program_choice_problem"],
+    "note": "Each participant answered one problem from a questionnaire of ~24 questions. Different participants in each problem."
+  },
+  "phenomenon": {
+    "name": "Representativeness Heuristic",
+    "description": "People judge probability based on how representative (similar) an event is to its parent population, ignoring statistical principles like sample size and variance",
+    "key_prediction": "Participants will judge less representative events as less probable even when they are objectively equally or more probable"
+  },
+  "materials": {
+    "instructions": "materials/instructions.txt",
+    "birth_sequence_problem": "materials/birth_sequence.txt",
+    "program_choice_problem": "materials/program_choice.txt",
+    "trial_template": "materials/trial_template.txt"
+  },
+  "response_format": {
+    "birth_sequence": "numerical_estimate or comparative_judgment",
+    "program_choice": "categorical_choice (Program A or Program B)"
+  },
+  "scoring": {
+    "birth_sequence": {
+      "bias_indicator": "judging BGBBBB as less likely than GBGBBG",
+      "expected_human_rate": 0.815
+    },
+    "program_choice": {
+      "bias_indicator": "choosing Program A (representative) over Program B (correct)",
+      "expected_human_rate": 0.753
+    }
+  },
+  "validation": {
+    "ground_truth_file": "ground_truth.json",
+    "required_phenomenon_tests": ["P1", "P2"],
+    "data_replication_tests": ["D1", "D2"]
+  },
+  "notes": {
+    "replication_difficulty": "medium",
+    "key_considerations": [
+      "Ensure agents understand probability concepts to test whether they override them",
+      "Clear presentation of scenarios is critical",
+      "Within-subjects design allows testing consistency of bias"
+    ],
+    "common_pitfalls": [
+      "Agents may correctly apply statistical reasoning",
+      "Response parsing must handle both numerical and categorical responses"
+    ]
+  }
+}

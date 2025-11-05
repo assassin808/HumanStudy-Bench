@@ -1,0 +1,19 @@
+{{instructions}}
+
+---
+
+**Problem {{trial_number}} of 2:**
+
+{% if trial_data.trial_type == "birth_sequence" %}
+{{ birth_sequence_scenario }}
+
+Please provide your estimate as a number.
+
+{% elif trial_data.trial_type == "program_choice" %}
+{{ program_choice_scenario }}
+
+Please answer: Program A or Program B
+
+{% endif %}
+
+Your answer:

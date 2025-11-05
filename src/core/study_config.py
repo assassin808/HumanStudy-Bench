@@ -209,8 +209,8 @@ def get_study_config(
     # 新增 study 时在这里添加 import
     if study_id == "study_003":
         from src.studies.study_003_config import Study003Config
-    elif study_id == "study_003":
-        from src.studies.study_003_config import Study003Config
+    elif study_id == "study_004":
+        from src.studies.study_004_config import Study004Config
     
     config = StudyConfigRegistry.create_config(study_id, study_path, specification)
     

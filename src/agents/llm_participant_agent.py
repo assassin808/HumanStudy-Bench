@@ -356,10 +356,49 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         - Conformity studies (Asch): ~37% conformity on critical trials
         - Obedience studies (Milgram): Decreasing compliance with shock level
         - Framing studies (Tversky & Kahneman): Frame-dependent risk preferences
+        - Representativeness studies (Kahneman & Tversky 1972): Representativeness bias
         """
         import random
         
         study_type = trial_info.get("study_type", "")
+        
+        # Handle representativeness heuristic studies
+        if study_type == "representativeness_heuristic":
+            # Get assigned problem from participant profile
+            assigned_problem = self.profile.get("assigned_problem", "birth_sequence")
+            
+            if assigned_problem == "birth_sequence":
+                # Birth sequence problem: 81.5% show representativeness bias
+                # (judge BGBBBB as less likely than GBGBBG, though they're equally likely)
+                if random.random() < 0.815:
+                    # Show bias: think BGBBBB is less likely
+                    choice = "less_likely"
+                    # Simulate various ways of expressing this
+                    responses = [
+                        "BGBBBB seems less likely",
+                        "I think GBGBBG is more representative and thus more likely",
+                        "BGBBBB appears less probable",
+                        "The first sequence (GBGBBG) seems more likely"
+                    ]
+                    response_text = random.choice(responses)
+                else:
+                    # Correct answer: they're equally likely
+                    choice = "equal"
+                    response_text = "They are equally likely"
+            
+            else:  # program_choice
+                # Program choice problem: 75.3% choose representative answer (Program A)
+                # Correct answer is Program B (higher variance at p=0.45)
+                if random.random() < 0.753:
+                    # Show bias: choose based on representativeness (55% closer to 65%)
+                    choice = "A"
+                    response_text = "Program A"
+                else:
+                    # Correct answer: Program B (considers variance)
+                    choice = "B"
+                    response_text = "Program B"
+            
+            return choice, response_text
         
         # Handle framing effect studies
         if study_type == "framing_effect":
@@ -454,18 +493,34 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
     
     def _parse_response(self, response_text: str, trial_info: Dict[str, Any]) -> str:
         """
-        Parse LLM response to extract the actual choice (A, B, or C).
+        Parse LLM response to extract the actual choice or numerical answer.
         
         Tries multiple extraction strategies in order of preference:
-        1. Look for "Program X" or "Option X" patterns (for framing studies)
-        2. Look for quoted responses like '"A"' or "'B'"
-        3. Look for single letter at start of line or after colon
-        4. Fall back to first occurrence of A/B/C
+        1. For numeric responses: extract the first number
+        2. Look for "Program X" or "Option X" patterns (for framing studies)
+        3. Look for quoted responses like '"A"' or "'B'"
+        4. Look for single letter at start of line or after colon
+        5. Fall back to first occurrence of A/B/C
         """
         response_upper = response_text.upper()
+        response_stripped = response_text.strip()
+        
+        import re
+        
+        # Strategy 0: Check if this is a pure numeric response (e.g., "36", "72")
+        # This is common for estimation tasks like Study 004 birth sequence
+        if response_stripped.isdigit():
+            return response_stripped
+        
+        # Strategy 0.5: Extract first number from response
+        # Useful when response is like "I estimate 36 families"
+        number_match = re.search(r'\b(\d+)\b', response_text)
+        if number_match:
+            # Only use numeric parsing if response doesn't contain A/B/C choice indicators
+            if not re.search(r'\b(PROGRAM|OPTION)\s+[ABC]\b', response_upper):
+                return number_match.group(1)
         
         # Strategy 1: Look for "PROGRAM A/B" or "OPTION A/B/C" patterns
-        import re
         program_match = re.search(r'\b(PROGRAM|OPTION)\s+([ABC])\b', response_upper)
         if program_match:
             return program_match.group(2)
@@ -760,7 +815,8 @@ class ParticipantPool:
                         trial_prompt = prompt_builder.build_trial_prompt(trial_with_profile)
                     else:
                         trial_prompt = trial.get("prompt", f"Trial {trial.get('trial_number', '?')}: Please respond.")
-                    participant.complete_trial(trial_prompt, trial)
+                    # Pass trial_with_profile (may be modified by prompt_builder) instead of original trial
+                    participant.complete_trial(trial_prompt, trial_with_profile)
                     pbar.update(1)
 
             pbar.close()

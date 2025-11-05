@@ -230,21 +230,30 @@ class Scorer:
     ) -> Dict[str, Any]:
         """Test if chi-square test shows significant effect (matches original paper)."""
         try:
-            # Extract chi-square results from agent
+            method = test_spec.get("method", {})
             agent_inf = agent_results.get("inferential_statistics", {})
-            chi_square_result = agent_inf.get("chi_square_test", {})
             
-            if not chi_square_result:
-                return {"score": 0.0, "passed": False, "details": {"error": "No chi-square test found"}}
+            # Support source_field parameter for custom test locations
+            source_field = method.get("source_field")
+            if source_field:
+                # Read from specified field (e.g., "birth_sequence_effect")
+                test_result = agent_inf.get(source_field, {})
+                if not test_result:
+                    return {"score": 0.0, "passed": False, "details": {"error": f"No test found at field '{source_field}'"}}
+            else:
+                # Default: read from chi_square_test field
+                test_result = agent_inf.get("chi_square_test", {})
+                if not test_result:
+                    return {"score": 0.0, "passed": False, "details": {"error": "No chi-square test found"}}
             
-            agent_p = chi_square_result.get("p_value")
-            agent_chi2 = chi_square_result.get("chi_square")
+            agent_p = test_result.get("p_value")
+            agent_chi2 = test_result.get("chi_square")
             
             if agent_p is None:
                 return {"score": 0.0, "passed": False, "details": {"error": "No p-value found"}}
             
             # Check if significant (p < 0.05)
-            threshold = test_spec.get("method", {}).get("threshold", 0.05)
+            threshold = method.get("threshold", 0.05)
             is_significant = agent_p < threshold
             
             # For phenomenon tests, we want significant results (effect is present)
@@ -255,7 +264,8 @@ class Scorer:
                 "agent_chi2": agent_chi2,
                 "agent_p_value": agent_p,
                 "threshold": threshold,
-                "is_significant": is_significant
+                "is_significant": is_significant,
+                "source_field": source_field if source_field else "chi_square_test"
             }
             
             return {"score": score, "passed": passed, "details": details}

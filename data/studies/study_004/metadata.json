@@ -1,0 +1,23 @@
+{
+  "id": "study_004",
+  "title": "Subjective Probability: A Judgment of Representativeness",
+  "authors": ["Daniel Kahneman", "Amos Tversky"],
+  "year": 1972,
+  "source": {
+    "type": "journal_article",
+    "journal": "Cognitive Psychology",
+    "volume": 3,
+    "issue": 3,
+    "pages": "430-454",
+    "doi": "10.1016/0010-0285(72)90016-3",
+    "url": "https://doi.org/10.1016/0010-0285(72)90016-3"
+  },
+  "domain": "cognitive_psychology",
+  "subdomain": "judgment_and_decision_making",
+  "difficulty": "medium",
+  "estimated_time_minutes": 10,
+  "tags": ["representativeness_heuristic", "heuristics_and_biases", "probability_judgment", "cognitive_bias", "sample_size_neglect", "kahneman_tversky"],
+  "citation": "Kahneman, D., & Tversky, A. (1972). Subjective probability: A judgment of representativeness. Cognitive Psychology, 3(3), 430-454.",
+  "license": "Copyright Elsevier",
+  "notes": "Foundational paper introducing the representativeness heuristic. Demonstrates systematic deviations from normative probability judgment, including insensitivity to sample size, misconceptions of chance, and neglect of base rates. Participants judge probability based on how representative an event appears rather than statistical principles."
+}

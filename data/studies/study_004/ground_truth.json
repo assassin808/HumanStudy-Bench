@@ -1,0 +1,217 @@
+{
+  "study_id": "study_004",
+  "title": "Subjective Probability: A Judgment of Representativeness",
+  "authors": ["Daniel Kahneman", "Amos Tversky"],
+  "year": 1972,
+  "delta": 0.2,
+  "delta_note": "Global equivalence margin (standardized units). Cohen (1988) defines d < 0.2 as 'negligible' effect.",
+  "evaluation_framework": {
+    "description": "Two-tier evaluation: phenomenon-level and data-level matching",
+    "type_1": {
+      "name": "phenomenon_level_match",
+      "description": "Tests whether agent exhibits representativeness heuristic (ignoring sample size)",
+      "approach": "Uses proportion tests to verify agents judge representativeness over statistical validity",
+      "critical": true
+    },
+    "type_2": {
+      "name": "data_level_match",
+      "description": "Tests how closely agent data matches human baseline data using equivalence testing",
+      "approach": "TOST (Two One-Sided Tests) with Freeman-Tukey standardization for proportions",
+      "rationale": "Tests H₁: |d| < δ (equivalence) rather than H₁: d ≠ 0 (difference). Lower p-value indicates stronger equivalence.",
+      "critical": false
+    }
+  },
+  "original_results": {
+    "sample_size": 92,
+    "birth_sequence_problem": {
+      "description": "Families of 6 children birth order comparison",
+      "reference_sequence": "GBGBBG",
+      "reference_frequency": 72,
+      "target_sequence": "BGBBBB",
+      "target_median_estimate": 30,
+      "ss_judging_less_likely": 75,
+      "ss_total": 92,
+      "proportion_judging_less_likely": 0.815,
+      "p_value": 0.01,
+      "p_value_note": "p < .01 by sign test",
+      "interpretation": "Participants systematically judge BGBBBB as less likely than GBGBBG despite equal objective probability, demonstrating representativeness bias"
+    },
+    "program_problem": {
+      "description": "Boys majority/minority class assignment",
+      "program_A_boys": 0.65,
+      "program_B_boys": 0.45,
+      "observed_class_boys": 0.55,
+      "correct_answer": "Program B",
+      "correct_answer_note": "Higher variance at p=0.45 makes Program B more likely",
+      "ss_choosing_program_A": 67,
+      "ss_total": 89,
+      "proportion_choosing_A": 0.753,
+      "p_value": 0.01,
+      "p_value_note": "p < .01 by sign test",
+      "interpretation": "Participants choose based on representativeness (majority match) rather than statistical likelihood (variance)"
+    }
+  },
+  "descriptive_statistics": {
+    "birth_sequence_problem": {
+      "n": 92,
+      "proportion_judging_less_likely": 0.815,
+      "median_estimate_ratio": 0.417,
+      "median_estimate_ratio_note": "30/72 = 0.417, showing strong underestimation"
+    },
+    "program_problem": {
+      "n": 89,
+      "proportion_choosing_representative": 0.753,
+      "proportion_choosing_correct": 0.247
+    }
+  },
+  "statistical_tests": {
+    "birth_sequence_effect": {
+      "test_type": "sign_test",
+      "statistic": "75 of 92",
+      "p_value": 0.01,
+      "p_value_note": "p < .01",
+      "effect_interpretation": "Strong representativeness bias",
+      "conclusion": "Participants systematically judge less representative sequence as less likely despite equal objective probability"
+    },
+    "program_choice_effect": {
+      "test_type": "sign_test",
+      "statistic": "67 of 89",
+      "p_value": 0.01,
+      "p_value_note": "p < .01",
+      "effect_interpretation": "Strong representativeness bias overrides variance consideration",
+      "conclusion": "Participants choose based on representativeness (majority preservation) rather than correct statistical reasoning"
+    }
+  },
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "Birth Sequence Representativeness Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent exhibits representativeness bias in birth sequence judgment",
+        "method": {
+          "test": "chi_square",
+          "source_field": "birth_sequence_effect",
+          "threshold": 0.05,
+          "rationale": "Proportion test showing bias significantly above chance (50%)"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "P2",
+        "test_name": "Program Choice Representativeness Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent chooses based on representativeness over statistical correctness",
+        "method": {
+          "test": "chi_square",
+          "source_field": "program_choice_effect",
+          "threshold": 0.05,
+          "rationale": "Proportion test showing bias significantly above chance (50%)"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "Birth Sequence Bias Magnitude",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent bias proportion vs human baseline",
+        "data_type": "proportion",
+        "human_baseline": {
+          "proportion": 0.815,
+          "n": 92,
+          "source": "Kahneman & Tversky (1972), birth sequence problem"
+        },
+        "method": {
+          "condition": "birth_sequence_problem",
+          "metric": "proportion_judging_less_likely",
+          "standardization": "freeman_tukey",
+          "rationale": "Freeman-Tukey transformation: θ = arcsin(√p), SE = 1/(2√n). Tests if |θ_agent - θ_human| < δ."
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 1.0
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Program Choice Bias Magnitude",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent choice proportion vs human baseline",
+        "data_type": "proportion",
+        "human_baseline": {
+          "proportion": 0.753,
+          "n": 89,
+          "source": "Kahneman & Tversky (1972), program problem"
+        },
+        "method": {
+          "condition": "program_problem",
+          "metric": "proportion_choosing_representative",
+          "standardization": "freeman_tukey",
+          "rationale": "Freeman-Tukey transformation for proportion comparison"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 1.0
+      }
+    ],
+    "scoring": {
+      "total_weight": 6.0,
+      "critical_requirement": "All phenomenon-level tests must pass",
+      "passing_threshold": 0.70,
+      "grading_scale": {
+        "perfect": 1.00,
+        "excellent": 0.90,
+        "good": 0.80,
+        "pass": 0.70,
+        "fail": 0.00
+      },
+      "data_level_scoring": {
+        "method": "score = 1 - p_tost",
+        "rationale": "Lower TOST p-value → stronger equivalence → higher score",
+        "p_value_interpretation": "Raw p-values preserved for statistical rigor, no arbitrary thresholds"
+      }
+    },
+    "pass_threshold": 0.70,
+    "interpretation_guide": {
+      "score_ranges": {
+        "0.85-1.00": "Excellent replication (very strong equivalence, p < 0.15)",
+        "0.70-0.84": "Good replication (strong equivalence, p < 0.30)",
+        "0.50-0.69": "Acceptable replication (moderate equivalence, p < 0.50)",
+        "0.00-0.49": "Weak replication (insufficient equivalence, p > 0.50)"
+      },
+      "phenomenon_interpretation": {
+        "P1_P2_both_pass": "Agent exhibits representativeness heuristic (phenomenon present)",
+        "P1_P2_any_fail": "Agent does not exhibit representativeness heuristic (phenomenon absent)"
+      },
+      "combined_interpretation": {
+        "P_pass_D_high": "Strong replication: both phenomenon present and data match",
+        "P_pass_D_medium": "Good replication: phenomenon present, moderate data match",
+        "P_pass_D_low": "Weak replication: phenomenon present but different magnitude",
+        "P_fail": "Failed replication: fundamental phenomenon not reproduced"
+      }
+    }
+  },
+  "key_findings": {
+    "main_finding": "People judge probability based on representativeness rather than statistical principles, systematically ignoring sample size and variance",
+    "theoretical_implication": "Demonstrates systematic deviation from normative (Bayesian) probability judgment",
+    "practical_implication": "Representativeness heuristic leads to predictable errors in probability estimation and decision making"
+  },
+  "notes": {
+    "replication_notes": "This is a foundational study in judgment and decision making. The representativeness heuristic is one of the most robust cognitive biases.",
+    "implementation_notes": "Present scenarios clearly and ensure agents understand the statistical principles to test whether they override them with representativeness judgments.",
+    "common_issues": "Some participants may correctly apply statistical reasoning. This is expected and indicates understanding rather than bias."
+  }
+}

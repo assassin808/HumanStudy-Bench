@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "last_updated": "2025-10-28",
-  "total_studies": 1,
+  "last_updated": "2025-11-04",
+  "total_studies": 2,
   "studies": [
     {
       "id": "study_003",
@@ -14,11 +14,23 @@
       "added_date": "2025-10-28",
       "version": "1.0",
       "estimated_time_minutes": 10
+    },
+    {
+      "id": "study_004",
+      "title": "Subjective Probability: A Judgment of Representativeness",
+      "domain": "cognitive_psychology",
+      "subdomain": "judgment_and_decision_making",
+      "difficulty": "medium",
+      "tags": ["representativeness_heuristic", "heuristics_and_biases", "probability_judgment", "cognitive_bias", "kahneman_tversky"],
+      "status": "active",
+      "added_date": "2025-11-04",
+      "version": "1.0",
+      "estimated_time_minutes": 10
     }
   ],
   "statistics": {
     "by_domain": {
-      "cognitive_psychology": 0,
+      "cognitive_psychology": 1,
       "social_psychology": 0,
       "developmental_psychology": 0,
       "behavioral_economics": 1,
@@ -26,11 +38,11 @@
     },
     "by_difficulty": {
       "easy": 1,
-      "medium": 0,
+      "medium": 1,
       "hard": 0
     },
     "by_status": {
-      "active": 1,
+      "active": 2,
       "deprecated": 0,
       "in_review": 0
     }

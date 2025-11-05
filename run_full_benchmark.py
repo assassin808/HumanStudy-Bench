@@ -69,10 +69,6 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
     print(f"Domain: {study.metadata['domain']}")
     print(f"Difficulty: {study.metadata['difficulty']}")
 
-    # Create prompt builder
-    builder = get_prompt_builder(study_id)
-    instructions = builder.get_instructions()
-
     # Determine participant count
     if n_participants is None:
         n_participants = study.specification['participants']['n']
@@ -85,6 +81,14 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
     study_path = study.materials_path.parent  # materials_path = study_path / "materials"
     study_config = get_study_config(study_id, study_path, study.specification)
     print(f"Config: {study_config}")
+
+    # Create prompt builder - use study config's custom builder if available
+    if hasattr(study_config, 'get_prompt_builder'):
+        builder = study_config.get_prompt_builder()
+        print(f"Using study-specific prompt builder: {type(builder).__name__}")
+    else:
+        builder = get_prompt_builder(study_id)
+    instructions = builder.get_instructions()
 
     # Create trials using study config
     trials = study_config.create_trials()
