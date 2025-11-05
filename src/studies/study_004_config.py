@@ -398,37 +398,3 @@ class Study004Config(BaseStudyConfig):
             return "Moderate representativeness bias"
         else:
             return "Weak but significant representativeness bias"
-    
-    def get_custom_prompt_context(self, trial: Dict[str, Any], 
-                                  participant_profile: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Provide problem-specific prompt context.
-        
-        Args:
-            trial: Trial data
-            participant_profile: Participant profile
-        
-        Returns:
-            Context dict with appropriate problem details
-        """
-        trial_type = trial.get("trial_type")
-        
-        if trial_type == "birth_sequence":
-            return {
-                "problem_type": "birth_sequence",
-                "reference_sequence": trial.get("reference_sequence"),
-                "reference_frequency": trial.get("reference_frequency"),
-                "target_sequence": trial.get("target_sequence"),
-                "response_format": "Please provide your numerical estimate or indicate whether it's more likely, less likely, or equally likely."
-            }
-        
-        elif trial_type == "program_choice":
-            return {
-                "problem_type": "program_choice",
-                "program_A_boys": trial.get("program_A_boys_proportion"),
-                "program_B_boys": trial.get("program_B_boys_proportion"),
-                "observed_boys": trial.get("observed_class_boys_proportion"),
-                "response_format": "Please respond with either 'Program A' or 'Program B'."
-            }
-        
-        return {}

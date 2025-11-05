@@ -465,34 +465,3 @@ class Study003Config(BaseStudyConfig):
             return "Acceptable match (< 30 percentage points)"
         else:
             return f"Poor match ({diff*100:.1f} percentage point difference)"
-    
-    def get_custom_prompt_context(self, trial: Dict[str, Any], 
-                                  participant_profile: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Provide frame-specific prompt context.
-        
-        Args:
-            trial: Trial data
-            participant_profile: Participant profile with framing_condition
-        
-        Returns:
-            Context dict with appropriate frame
-        """
-        frame = participant_profile.get("framing_condition", "positive_frame")
-        
-        # Load appropriate frame materials
-        materials_path = self.study_path / "materials"
-        
-        if frame == "positive_frame":
-            scenario_file = materials_path / "positive_frame.txt"
-        else:
-            scenario_file = materials_path / "negative_frame.txt"
-        
-        with open(scenario_file, "r") as f:
-            scenario_text = f.read().strip()
-        
-        return {
-            "frame": frame,
-            "scenario": scenario_text,
-            "response_format": "Please respond with either 'Program A' or 'Program B'."
-        }

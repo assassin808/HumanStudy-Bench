@@ -420,28 +420,3 @@ class Study002Config(BaseStudyConfig):
             "significant": question_result.get("significant", False),
             "conclusion": question_result.get("interpretation", "Unknown")
         }
-    
-    def get_custom_prompt_context(self, trial: Dict[str, Any], 
-                                  participant_profile: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Provide question-specific prompt context.
-        
-        Args:
-            trial: Trial data
-            participant_profile: Participant profile
-        
-        Returns:
-            Context dict with appropriate question and anchor details
-        """
-        question = participant_profile.get("question", "washington")
-        anchor_condition = participant_profile.get("anchor_condition", "high")
-        
-        question_info = self.question_info.get(question, {})
-        anchor_value = question_info.get(f"{anchor_condition}_anchor")
-        
-        return {
-            "question": question,
-            "anchor_condition": anchor_condition,
-            "anchor_value": anchor_value,
-            "response_format": "Please provide your numerical estimate."
-        }
