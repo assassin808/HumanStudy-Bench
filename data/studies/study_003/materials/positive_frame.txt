@@ -9,3 +9,5 @@ If Program A is adopted, 200 people will be saved.
 If Program B is adopted, there is 1/3 probability that 600 people will be saved, and 2/3 probability that no people will be saved.
 
 Which of the two programs would you favor?
+
+Please respond with only "Program A" or "Program B".
