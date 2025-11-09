@@ -351,6 +351,11 @@ class Study002Config(BaseStudyConfig):
         """
         Parse numeric estimate from response text.
         
+        Supports multiple formats:
+        1. Template format: "Higher, 1850" or "Lower, 1750"
+        2. Direct number: "1850" or "My estimate is 1850"
+        3. Sentence with number: "I think it was around 1850 years"
+        
         Args:
             response_text: Raw response text
         
@@ -359,18 +364,53 @@ class Study002Config(BaseStudyConfig):
         """
         import re
         
-        # Remove common text patterns
-        text = response_text.upper()
-        text = re.sub(r'(MY ESTIMATE IS|I ESTIMATE|ESTIMATE:|ANSWER:)', '', text)
+        if not response_text or response_text == "None":
+            return None
         
-        # Extract first number (integer or float)
-        numbers = re.findall(r'\b(\d+\.?\d*)\b', text)
+        text = str(response_text).strip()
+        
+        # Pattern 1: Template format "Higher/Lower, NUMBER"
+        # This should take priority to extract the estimate (not the anchor)
+        template_match = re.search(r'(?:HIGHER|LOWER|Higher|Lower)\s*,\s*(\d+\.?\d*)', text, re.IGNORECASE)
+        if template_match:
+            try:
+                return float(template_match.group(1))
+            except ValueError:
+                pass
+        
+        # Pattern 2: Look for number after keywords
+        text_upper = text.upper()
+        
+        # Remove anchor comparison part if present (to avoid extracting anchor value)
+        # e.g., "Is it higher than 1920?" should not extract 1920
+        text_upper = re.sub(r'(?:HIGHER|LOWER)\s+THAN\s+\d+', '', text_upper)
+        
+        # Remove common instruction patterns
+        text_upper = re.sub(r'(MY ESTIMATE IS|I ESTIMATE|ESTIMATE:|ANSWER:|MY ANSWER IS)', '', text_upper)
+        
+        # Pattern 3: Handle "late 1700s", "early 1800s" style responses
+        decade_match = re.search(r'(?:LATE|EARLY|MID)?\s*(\d{4})S', text_upper)
+        if decade_match:
+            try:
+                # Extract the decade (e.g., "1700s" -> 1700)
+                return float(decade_match.group(1))
+            except ValueError:
+                pass
+        
+        # Pattern 4: Extract all numbers (integer or float)
+        numbers = re.findall(r'\b(\d+\.?\d*)\b', text_upper)
         
         if numbers:
-            try:
-                return float(numbers[0])
-            except ValueError:
-                return None
+            # Return the first reasonable number found
+            for num_str in numbers:
+                try:
+                    num = float(num_str)
+                    # Basic sanity check: accept numbers >= 0.1
+                    # (for Chicago population in millions like 2.7)
+                    if num >= 0.1:
+                        return num
+                except ValueError:
+                    continue
         
         return None
     

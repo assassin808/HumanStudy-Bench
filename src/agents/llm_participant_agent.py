@@ -513,8 +513,9 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
             return response_stripped
         
         # Strategy 0.5: Extract first number from response
-        # Useful when response is like "I estimate 36 families"
-        number_match = re.search(r'\b(\d+)\b', response_text)
+        # Useful when response is like "I estimate 36 families" or "3.5 million"
+        # Support both integers and decimals (e.g., "3.5", "2.7", "0.15")
+        number_match = re.search(r'\b(\d+(?:\.\d+)?)\b', response_text)
         if number_match:
             # Only use numeric parsing if response doesn't contain A/B/C choice indicators
             if not re.search(r'\b(PROGRAM|OPTION)\s+[ABC]\b', response_upper):

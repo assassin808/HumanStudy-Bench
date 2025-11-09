@@ -263,14 +263,14 @@ class Scorer:
             score = 1.0 if passed else 0.0
             
             details = {
-                "agent_chi2": agent_chi2,
-                "agent_p_value": agent_p,
-                "threshold": threshold,
-                "is_significant": is_significant,
+                "agent_chi2": float(agent_chi2) if agent_chi2 is not None else None,
+                "agent_p_value": float(agent_p),
+                "threshold": float(threshold),
+                "is_significant": bool(is_significant),
                 "source_field": source_field if source_field else "chi_square_test"
             }
             
-            return {"score": score, "passed": passed, "details": details}
+            return {"score": float(score), "passed": bool(passed), "details": details}
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
@@ -327,14 +327,14 @@ class Scorer:
             score = 1.0 if passed else 0.0
             
             details = {
-                f"{cond1}_proportion": prop1,
-                f"{cond2}_proportion": prop2,
+                f"{cond1}_proportion": float(prop1),
+                f"{cond2}_proportion": float(prop2),
                 "direction": direction,
                 "expected_direction": expected_direction,
-                "correct_direction": passed
+                "correct_direction": bool(passed)
             }
             
-            return {"score": score, "passed": passed, "details": details}
+            return {"score": float(score), "passed": bool(passed), "details": details}
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
@@ -465,23 +465,23 @@ class Scorer:
             cohens_d = (mean1 - mean2) / pooled_sd
             
             details = {
-                f"{cond1}_mean": mean1,
-                f"{cond2}_mean": mean2,
-                f"{cond1}_sd": sd1,
-                f"{cond2}_sd": sd2,
-                f"{cond1}_n": n1,
-                f"{cond2}_n": n2,
-                "t_statistic": t_stat,
-                "df": df,
-                "p_value": p_value,
-                "cohens_d": cohens_d,
-                "significant": is_significant,
-                "threshold": threshold,
+                f"{cond1}_mean": float(mean1),
+                f"{cond2}_mean": float(mean2),
+                f"{cond1}_sd": float(sd1),
+                f"{cond2}_sd": float(sd2),
+                f"{cond1}_n": int(n1),
+                f"{cond2}_n": int(n2),
+                "t_statistic": float(t_stat),
+                "df": float(df),
+                "p_value": float(p_value),
+                "cohens_d": float(cohens_d),
+                "significant": bool(is_significant),
+                "threshold": float(threshold),
                 "direction": direction,
-                "correct_direction": correct_direction
+                "correct_direction": bool(correct_direction)
             }
             
-            return {"score": score, "passed": passed, "details": details}
+            return {"score": float(score), "passed": bool(passed), "details": details}
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
@@ -621,26 +621,28 @@ class Scorer:
         # "Passed" if p < 0.05 (can claim equivalence) OR score >= 0.5
         passed = (p_tost < 0.05) or (score >= 0.5)
         
-        # Detailed results
+        # Detailed results - ensure all numeric types are JSON serializable
         details = {
             "data_type": data_type,
             "condition": condition,
             "metric": metric,
-            "agent_data": agent_data,
-            "human_baseline": human_baseline,
-            "standardized_d": d,
-            "se_pooled": se_pooled,
-            "delta": delta,
-            "p_tost": p_tost,
-            "p_upper": tost_result["p_upper"],
-            "p_lower": tost_result["p_lower"],
+            "agent_data": {k: float(v) if isinstance(v, (int, float, np.number)) else v 
+                          for k, v in agent_data.items()},
+            "human_baseline": {k: float(v) if isinstance(v, (int, float, np.number)) else v 
+                              for k, v in human_baseline.items()},
+            "standardized_d": float(d),
+            "se_pooled": float(se_pooled),
+            "delta": float(delta),
+            "p_tost": float(p_tost),
+            "p_upper": float(tost_result["p_upper"]),
+            "p_lower": float(tost_result["p_lower"]),
             "interpretation": tost_result["interpretation"],
             "score_formula": f"1 - {p_tost:.4f}"
         }
         
         return {
-            "score": score,
-            "passed": passed,
+            "score": float(score),
+            "passed": bool(passed),
             "details": details
         }
     
