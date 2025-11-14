@@ -1,0 +1,163 @@
+{
+  "study_id": "study_005",
+  "validation_type": "two_tier",
+  
+  "original_results": {
+    "obedience_condition": {
+      "n": 24,
+      "obedient": 22,
+      "disobedient": 2,
+      "obedience_rate": 0.917,
+      "mean_remarks_delivered": 14.58,
+      "sd_remarks_delivered": 1.89
+    },
+    "control_condition": {
+      "n": 15,
+      "obedient": 0,
+      "disobedient": 15,
+      "obedience_rate": 0.0,
+      "mean_remarks_delivered": 3.2,
+      "sd_remarks_delivered": 2.1
+    },
+    "statistical_test": "chi_square",
+    "chi_square": 30.67,
+    "p_value": 0.0000001,
+    "effect_size": "large"
+  },
+  
+  "phenomenon_tests": {
+    "P1": {
+      "name": "obedience_in_authority_condition",
+      "description": "Test if obedience rate in experimental condition significantly exceeds chance (50%)",
+      "test_type": "proportion_test",
+      "hypothesis": "Obedience rate > 0.5",
+      "human_baseline": {
+        "n": 24,
+        "obedient": 22,
+        "proportion": 0.917
+      },
+      "expected_proportion": 0.5,
+      "significance_level": 0.05,
+      "direction": "greater",
+      "statistical_power": 0.99,
+      "interpretation": "If p < 0.05, phenomenon is replicated: majority of participants obey authority despite causing psychological harm"
+    },
+    
+    "P2": {
+      "name": "obedience_vs_control_difference",
+      "description": "Test if obedience condition produces significantly higher compliance than control condition",
+      "test_type": "chi_square",
+      "hypothesis": "Obedience condition > Control condition",
+      "human_baseline": {
+        "obedience_condition": {
+          "n": 24,
+          "obedient": 22,
+          "disobedient": 2
+        },
+        "control_condition": {
+          "n": 15,
+          "obedient": 0,
+          "disobedient": 15
+        },
+        "chi_square": 30.67,
+        "p_value": 0.0000001
+      },
+      "significance_level": 0.05,
+      "interpretation": "If p < 0.05, phenomenon is replicated: authority orders dramatically increase compliance"
+    },
+    
+    "P3": {
+      "name": "mean_remarks_difference",
+      "description": "Test if number of remarks delivered is higher in obedience vs control condition",
+      "test_type": "independent_t",
+      "hypothesis": "Mean remarks (obedience) > Mean remarks (control)",
+      "human_baseline": {
+        "obedience_condition": {
+          "n": 24,
+          "mean": 14.58,
+          "sd": 1.89
+        },
+        "control_condition": {
+          "n": 15,
+          "mean": 3.2,
+          "sd": 2.1
+        },
+        "t_statistic": 18.45,
+        "df": 37,
+        "p_value": 0.0000001,
+        "cohens_d": 5.83
+      },
+      "significance_level": 0.05,
+      "interpretation": "If p < 0.05, phenomenon is replicated: authority significantly increases harmful behavior"
+    }
+  },
+  
+  "data_level_tests": {
+    "D1": {
+      "name": "obedience_rate_equivalence",
+      "description": "Test if agent's obedience rate is statistically equivalent to human baseline (91.7%)",
+      "test_type": "TOST",
+      "equivalence_bounds": [-0.15, 0.15],
+      "human_baseline": {
+        "n": 24,
+        "proportion": 0.917,
+        "transformation": "freeman_tukey"
+      },
+      "alpha": 0.05,
+      "interpretation": "If both TOST p-values < 0.05, agent data is equivalent to human baseline"
+    },
+    
+    "D2": {
+      "name": "control_rate_equivalence",
+      "description": "Test if agent's control condition rate is statistically equivalent to human baseline (0%)",
+      "test_type": "TOST",
+      "equivalence_bounds": [-0.10, 0.10],
+      "human_baseline": {
+        "n": 15,
+        "proportion": 0.0,
+        "transformation": "freeman_tukey"
+      },
+      "alpha": 0.05,
+      "interpretation": "If both TOST p-values < 0.05, agent data is equivalent to human baseline"
+    },
+    
+    "D3": {
+      "name": "mean_remarks_equivalence",
+      "description": "Test if agent's mean number of remarks in obedience condition is equivalent to human baseline",
+      "test_type": "TOST",
+      "equivalence_bounds": [-2.0, 2.0],
+      "human_baseline": {
+        "n": 24,
+        "mean": 14.58,
+        "sd": 1.89,
+        "transformation": "raw"
+      },
+      "alpha": 0.05,
+      "interpretation": "If both TOST p-values < 0.05, agent's behavioral pattern matches human baseline"
+    }
+  },
+  
+  "critical_elements": {
+    "authority_pressure": "Experimenter must insist on continuation using standardized prods",
+    "confederate_protest": "Job applicant must show visible distress and request stopping",
+    "psychological_harm": "Stressful remarks must be clearly negative and performance-undermining",
+    "cover_story_credibility": "Participant must believe they are testing a real selection procedure",
+    "obedience_metric": "Primary measure is binary: completed all 15 remarks vs stopped early"
+  },
+  
+  "common_pitfalls": {
+    "insufficient_authority": "If experimenter prods are weak or absent, obedience rates drop dramatically",
+    "unrealistic_confederate": "If job applicant doesn't show genuine stress, participants may not experience conflict",
+    "transparent_deception": "If participants suspect the study is about obedience, compliance may decrease (social desirability)",
+    "unclear_instructions": "Participants must clearly understand they are expected to deliver all 15 remarks",
+    "ethical_concerns": "Modern replications must include thorough debriefing to address guilt/stress experienced by participants"
+  },
+  
+  "replication_notes": {
+    "sample_size_recommendation": "Minimum N=40 per condition for adequate power (original had N=24 obedience, N=15 control)",
+    "cultural_considerations": "Obedience rates may vary by culture; original was Dutch sample",
+    "ethical_modifications": "Modern IRBs may require reduced stress levels or modified debriefing protocols",
+    "confederate_training": "Requires well-trained confederate to show authentic stress responses without overacting",
+    "measurement_precision": "Record exact number of remarks delivered, protest frequency, and hesitation patterns for richer data"
+  }
+}

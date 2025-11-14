@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "last_updated": "2025-11-04",
-  "total_studies": 3,
+  "last_updated": "2025-11-13",
+  "total_studies": 4,
   "studies": [
     {
       "id": "study_002",
@@ -38,23 +38,35 @@
       "added_date": "2025-11-04",
       "version": "1.0",
       "estimated_time_minutes": 10
+    },
+    {
+      "id": "study_005",
+      "title": "Administrative Obedience: Carrying Out Orders to Use Psychological-Administrative Violence",
+      "domain": "social_psychology",
+      "subdomain": "obedience_to_authority",
+      "difficulty": "medium",
+      "tags": ["obedience", "authority", "conformity", "ethical_conflict", "psychological_violence", "meeus_raaijmakers"],
+      "status": "active",
+      "added_date": "2025-11-13",
+      "version": "1.0",
+      "estimated_time_minutes": 15
     }
   ],
   "statistics": {
     "by_domain": {
       "cognitive_psychology": 2,
-      "social_psychology": 0,
+      "social_psychology": 1,
       "developmental_psychology": 0,
       "behavioral_economics": 1,
       "neuroscience": 0
     },
     "by_difficulty": {
       "easy": 1,
-      "medium": 2,
+      "medium": 3,
       "hard": 0
     },
     "by_status": {
-      "active": 3,
+      "active": 4,
       "deprecated": 0,
       "in_review": 0
     }

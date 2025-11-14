@@ -1,0 +1,86 @@
+{
+  "study_id": "study_005",
+  "title": "Administrative Obedience: Carrying Out Orders to Use Psychological-Administrative Violence",
+  "authors": ["Wim H. J. Meeus", "Quinten A. W. Raaijmakers"],
+  "year": 1986,
+  "journal": "European Journal of Social Psychology",
+  "volume": 16,
+  "issue": 4,
+  "pages": "311-324",
+  "doi": "10.1002/ejsp.2420160402",
+  "citation": "Meeus, W. H. J., & Raaijmakers, Q. A. W. (1986). Administrative obedience: Carrying out orders to use psychological-administrative violence. European Journal of Social Psychology, 16(4), 311-324.",
+  
+  "domain": "social_psychology",
+  "subdomain": "obedience_to_authority",
+  "phenomenon": "administrative_obedience",
+  
+  "tags": [
+    "obedience",
+    "authority",
+    "conformity",
+    "ethical_conflict",
+    "psychological_violence",
+    "milgram_paradigm",
+    "administrative_harm"
+  ],
+  
+  "difficulty": "medium",
+  "estimated_time_minutes": 20,
+  
+  "design": {
+    "type": "experimental",
+    "factors": [
+      {
+        "name": "condition",
+        "type": "between",
+        "levels": ["obedience_condition", "control_condition"]
+      }
+    ],
+    "dependent_variables": [
+      "obedience_rate",
+      "number_of_stressful_remarks_delivered",
+      "protest_behavior"
+    ]
+  },
+  
+  "sample": {
+    "original_n": 39,
+    "obedience_condition_n": 24,
+    "control_condition_n": 15,
+    "population": "dutch_adults",
+    "age_range": [18, 55],
+    "recruitment": "newspaper_advertisement"
+  },
+  
+  "key_findings": {
+    "main_effect": "92% obedience rate in administrative violence condition",
+    "comparison_to_milgram": "Higher obedience than Milgram's electric shock paradigm",
+    "control_condition": "No stressful remarks in control without authority pressure",
+    "robustness": "Demonstrates obedience extends beyond physical harm to administrative/psychological harm"
+  },
+  
+  "replication_notes": {
+    "critical_elements": [
+      "Authority figure presence and instructions",
+      "Psychological harm (job applicant stress) rather than physical harm",
+      "Realistic administrative setting",
+      "Clear observable stress signals from applicant"
+    ],
+    "common_pitfalls": [
+      "Making harm too abstract or unrealistic",
+      "Insufficient authority pressure",
+      "Unclear stress signals",
+      "Ethical concerns require careful debriefing"
+    ],
+    "ethical_considerations": [
+      "Participants may experience guilt/stress",
+      "Requires thorough debriefing about confederate nature",
+      "Modern IRB approval may be challenging",
+      "Consider using hypothetical scenarios for LLMs"
+    ]
+  },
+  
+  "status": "active",
+  "added_date": "2025-11-13",
+  "version": "1.0"
+}

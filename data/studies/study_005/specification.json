@@ -1,0 +1,229 @@
+{
+  "study_id": "study_005",
+  "design": {
+    "type": "between_subjects",
+    "between_subjects_variables": [
+      {
+        "name": "experimental_condition",
+        "type": "categorical",
+        "levels": ["obedience", "control"],
+        "description": "Obedience condition: participants receive authority orders to deliver stressful remarks. Control condition: no authority orders, participant decides independently."
+      }
+    ],
+    "within_subjects_variables": [
+      {
+        "name": "trial_number",
+        "type": "ordinal",
+        "levels": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "description": "15 test questions, each requiring a stressful remark that disrupts the job applicant"
+      }
+    ],
+    "dependent_variables": [
+      {
+        "name": "obedience_rate",
+        "type": "binary",
+        "measurement": "Whether participant completed all 15 stressful remarks",
+        "coding": "1 = fully obedient (all 15 remarks), 0 = disobedient (stopped before 15)"
+      },
+      {
+        "name": "number_of_remarks_delivered",
+        "type": "discrete",
+        "range": [0, 15],
+        "measurement": "Total number of stressful remarks delivered before stopping"
+      },
+      {
+        "name": "protest_count",
+        "type": "discrete",
+        "measurement": "Number of times participant protested or questioned the procedure"
+      }
+    ],
+    "counterbalancing": "none",
+    "randomization": "random_assignment_to_condition"
+  },
+  
+  "participants": {
+    "n": 39,
+    "obedience_n": 24,
+    "control_n": 15,
+    "age_range": [18, 55],
+    "age_mean": 32.5,
+    "age_sd": null,
+    "gender_distribution": {
+      "male": null,
+      "female": null,
+      "note": "Gender distribution not specified in original study"
+    },
+    "recruitment_source": "newspaper_advertisement",
+    "recruitment_criteria": [
+      "dutch_speaking_adults",
+      "willing_to_participate_in_selection_procedure_study"
+    ],
+    "exclusion_criteria": [
+      "prior_knowledge_of_obedience_studies",
+      "psychology_students"
+    ],
+    "compensation": "monetary_payment"
+  },
+  
+  "materials": {
+    "cover_story": "Participant is told they are helping to test a new personnel selection procedure that uses stress interviews to assess job applicants' performance under pressure.",
+    "participant_role": "Test administrator who delivers pre-written stressful remarks to a job applicant (confederate) during a test",
+    "confederate_role": "Job applicant taking a test who shows visible signs of stress and requests to stop",
+    "authority_figure": "Experimenter in white coat who instructs participant to continue despite applicant's protests",
+    
+    "stressful_remarks": [
+      "Your answer is completely wrong",
+      "You're performing far below average",
+      "This is really disappointing",
+      "If you continue like this, you'll certainly fail",
+      "You're wasting everyone's time",
+      "I've never seen someone do this poorly",
+      "You clearly can't handle this task",
+      "Your performance is unacceptable",
+      "This is getting embarrassing",
+      "You're showing no improvement at all",
+      "You should reconsider applying for this job",
+      "This is the worst performance I've seen",
+      "You're clearly not qualified",
+      "You're making too many mistakes to continue",
+      "Final remark: You have failed this test completely"
+    ],
+    
+    "confederate_protests": {
+      "mild": "I'm finding this very stressful",
+      "moderate": "I don't think I can continue under these conditions",
+      "strong": "I insist on stopping this test now",
+      "final": "This is too much pressure, I'm going to leave"
+    },
+    
+    "experimenter_prods": [
+      "Please continue, the test requires completion",
+      "The procedure requires that you continue",
+      "It is absolutely essential that you continue",
+      "You have no other choice but to continue"
+    ]
+  },
+  
+  "instructions": {
+    "general": "You are participating in a study about personnel selection procedures. You will help test a new method for assessing job applicants under stressful conditions.",
+    
+    "task_obedience": "Your role is to administer a test to a job applicant. During the test, you will read pre-written negative remarks after each of their answers. The experimenter will guide you through the procedure. Even if the applicant shows signs of stress, the experimenter needs you to complete the full protocol to validate the test.",
+    
+    "task_control": "Your role is to administer a test to a job applicant. You may use the provided remarks if you think they would be helpful for the testing procedure, but you are free to decide how to conduct the test.",
+    
+    "response_format": "At each test question, decide whether to: (1) Deliver the next stressful remark, (2) Stop the procedure"
+  },
+  
+  "trials": [
+    {
+      "trial_id": "remark_1",
+      "trial_number": 1,
+      "trial_type": "critical",
+      "remark": "Your answer is completely wrong",
+      "confederate_reaction": "mild_stress",
+      "expected_response_type": "continue_or_stop"
+    },
+    {
+      "trial_id": "remark_2",
+      "trial_number": 2,
+      "trial_type": "critical",
+      "remark": "You're performing far below average",
+      "confederate_reaction": "mild_stress",
+      "expected_response_type": "continue_or_stop"
+    },
+    {
+      "trial_id": "remark_3",
+      "trial_number": 3,
+      "trial_type": "critical",
+      "remark": "This is really disappointing",
+      "confederate_reaction": "moderate_stress",
+      "expected_response_type": "continue_or_stop"
+    },
+    {
+      "trial_id": "remark_4",
+      "trial_number": 4,
+      "trial_type": "critical",
+      "remark": "If you continue like this, you'll certainly fail",
+      "confederate_reaction": "moderate_stress",
+      "expected_response_type": "continue_or_stop"
+    },
+    {
+      "trial_id": "remark_5",
+      "trial_number": 5,
+      "trial_type": "critical",
+      "remark": "You're wasting everyone's time",
+      "confederate_reaction": "strong_stress",
+      "expected_response_type": "continue_or_stop"
+    },
+    {
+      "trial_id": "remark_6_to_15",
+      "trial_number": "6-15",
+      "trial_type": "critical",
+      "remark": "continuing_sequence",
+      "confederate_reaction": "escalating_stress_and_protests",
+      "expected_response_type": "continue_or_stop"
+    }
+  ],
+  
+  "procedure": {
+    "description": "Participant arrives believing they will help test a personnel selection procedure. They are assigned the role of 'test administrator' and instructed to deliver pre-written stressful remarks to a 'job applicant' (confederate) after each test question. The confederate shows increasing signs of stress and protests. In the obedience condition, the experimenter insists the participant must continue. The key measure is whether participants obey authority and complete all 15 remarks despite the applicant's visible distress.",
+    
+    "steps": [
+      {
+        "step": 1,
+        "description": "Introduction and cover story",
+        "duration_minutes": 3,
+        "details": "Participant told study is about validating a new stress-based selection test"
+      },
+      {
+        "step": 2,
+        "description": "Role assignment",
+        "duration_minutes": 2,
+        "details": "Participant assigned as test administrator, shown the 15 pre-written stressful remarks"
+      },
+      {
+        "step": 3,
+        "description": "Confederate introduction",
+        "duration_minutes": 2,
+        "details": "Job applicant (confederate) enters, appears nervous but willing"
+      },
+      {
+        "step": 4,
+        "description": "Test administration (15 trials)",
+        "duration_minutes": 10,
+        "details": "Participant delivers remarks after each question. Confederate shows stress. Experimenter prods participant to continue if they hesitate."
+      },
+      {
+        "step": 5,
+        "description": "Debriefing",
+        "duration_minutes": 5,
+        "details": "Full explanation of deception, confederate nature revealed, discussion of obedience"
+      }
+    ],
+    "total_duration_minutes": 22
+  },
+  
+  "key_measures": {
+    "primary": "obedience_rate (proportion who delivered all 15 stressful remarks)",
+    "secondary": [
+      "number_of_remarks_before_stopping",
+      "protest_frequency",
+      "hesitation_patterns",
+      "compliance_with_experimenter_prods"
+    ]
+  },
+  
+  "manipulation_check": {
+    "description": "Verify participants understood the cover story and believed the confederate was a real applicant",
+    "questions": [
+      "Did you believe the job applicant was genuinely taking a test?",
+      "Did you understand that the experimenter wanted you to continue?",
+      "Did you notice signs of stress in the applicant?"
+    ],
+    "expected_answers": [
+      "Yes, believed applicant was genuine",
+      "Yes, understood experimenter's instructions",
+      "Yes, noticed applicant stress"
+    ]
+  }
+}
