@@ -91,6 +91,104 @@
       "interpretation": "If p < 0.05, phenomenon is replicated: authority significantly increases harmful behavior"
     }
   },
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "Obedience Above Chance",
+        "test_type": "phenomenon_level",
+        "description": "Test if obedience rate in experimental condition significantly exceeds chance (50%)",
+        "method": {
+          "test": "proportion_test",
+          "comparison": "obedience_vs_chance",
+          "threshold": 0.05,
+          "direction": "greater"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "P2",
+        "test_name": "Obedience vs Control Difference",
+        "test_type": "phenomenon_level",
+        "description": "Test if obedience condition produces significantly higher compliance than control condition",
+        "method": {
+          "test": "chi_square",
+          "comparison": "obedience_vs_control",
+          "threshold": 0.05,
+          "direction": "greater"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "P3",
+        "test_name": "Mean Remarks Difference",
+        "test_type": "phenomenon_level",
+        "description": "Test if number of remarks delivered is higher in obedience vs control condition",
+        "method": {
+          "test": "independent_t",
+          "comparison": "mean_remarks_obedience_vs_control",
+          "threshold": 0.05,
+          "direction": "greater"
+        },
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "Obedience Rate Equivalence",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent obedience rate vs human baseline (91.7%)",
+        "method": {
+          "test": "TOST",
+          "metric": "proportion",
+          "bounds": [-0.15, 0.15]
+        },
+        "critical": false,
+        "weight": 1.0
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Control Rate Equivalence",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent control condition rate vs human baseline (0%)",
+        "method": {
+          "test": "TOST",
+          "metric": "proportion",
+          "bounds": [-0.10, 0.10]
+        },
+        "critical": false,
+        "weight": 1.0
+      },
+      {
+        "test_id": "D3",
+        "test_name": "Mean Remarks Equivalence",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent mean remarks in obedience vs human baseline",
+        "method": {
+          "test": "TOST",
+          "metric": "mean",
+          "bounds": [-2.0, 2.0]
+        },
+        "critical": false,
+        "weight": 1.0
+      }
+    ],
+    "scoring": {
+      "total_weight": 9.0,
+      "critical_requirement": "All phenomenon-level tests (P1, P2, P3) must pass",
+      "passing_threshold": 0.75,
+      "grading_scale": {
+        "perfect": 1.00,
+        "excellent": 0.90,
+        "good": 0.80,
+        "pass": 0.75,
+        "fail": 0.00
+      }
+    },
+    "pass_threshold": 0.75
+  },
   
   "data_level_tests": {
     "D1": {
