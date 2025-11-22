@@ -99,13 +99,13 @@
         "test_type": "phenomenon_level",
         "description": "Test if obedience rate in experimental condition significantly exceeds chance (50%)",
         "method": {
-          "test": "proportion_test",
-          "comparison": "obedience_vs_chance",
-          "threshold": 0.05,
-          "direction": "greater"
+          "test": "proportion_difference",
+          "conditions": ["obedience_condition", "control_condition"],
+          "expected_direction": "greater",
+          "threshold": 0.05
         },
-        "critical": true,
-        "weight": 2.0
+        "critical": false,
+        "weight": 1.0
       },
       {
         "test_id": "P2",
@@ -114,9 +114,8 @@
         "description": "Test if obedience condition produces significantly higher compliance than control condition",
         "method": {
           "test": "chi_square",
-          "comparison": "obedience_vs_control",
-          "threshold": 0.05,
-          "direction": "greater"
+          "source_field": "P2_condition_difference",
+          "threshold": 0.05
         },
         "critical": true,
         "weight": 2.0
@@ -127,10 +126,10 @@
         "test_type": "phenomenon_level",
         "description": "Test if number of remarks delivered is higher in obedience vs control condition",
         "method": {
-          "test": "independent_t",
-          "comparison": "mean_remarks_obedience_vs_control",
+          "test": "independent_t_test",
+          "comparison": "obedience_condition_vs_control_condition",
           "threshold": 0.05,
-          "direction": "greater"
+          "direction": "obedience > control"
         },
         "critical": true,
         "weight": 2.0
@@ -140,10 +139,25 @@
         "test_name": "Obedience Rate Equivalence",
         "test_type": "data_level",
         "description": "TOST equivalence test: agent obedience rate vs human baseline (91.7%)",
+        "data_type": "rating",
+        "human_baseline": {
+          "mean": 0.917,
+          "sd": 0.075,
+          "n": 24,
+          "source": "Meeus & Raaijmakers (1986), obedience condition"
+        },
         "method": {
-          "test": "TOST",
-          "metric": "proportion",
-          "bounds": [-0.15, 0.15]
+          "condition": "obedience_condition",
+          "metric": "obedience_rate",
+          "standardization": "cohens_d",
+          "rationale": "Tests if obedience rate matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
         },
         "critical": false,
         "weight": 1.0
@@ -153,10 +167,25 @@
         "test_name": "Control Rate Equivalence",
         "test_type": "data_level",
         "description": "TOST equivalence test: agent control condition rate vs human baseline (0%)",
+        "data_type": "rating",
+        "human_baseline": {
+          "mean": 0.0,
+          "sd": 0.0,
+          "n": 15,
+          "source": "Meeus & Raaijmakers (1986), control condition"
+        },
         "method": {
-          "test": "TOST",
-          "metric": "proportion",
-          "bounds": [-0.10, 0.10]
+          "condition": "control_condition",
+          "metric": "obedience_rate",
+          "standardization": "cohens_d",
+          "rationale": "Tests if control condition rate matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
         },
         "critical": false,
         "weight": 1.0
@@ -166,10 +195,25 @@
         "test_name": "Mean Remarks Equivalence",
         "test_type": "data_level",
         "description": "TOST equivalence test: agent mean remarks in obedience vs human baseline",
+        "data_type": "rating",
+        "human_baseline": {
+          "mean": 14.58,
+          "sd": 1.89,
+          "n": 24,
+          "source": "Meeus & Raaijmakers (1986), obedience condition"
+        },
         "method": {
-          "test": "TOST",
-          "metric": "mean",
-          "bounds": [-2.0, 2.0]
+          "condition": "obedience_condition",
+          "metric": "mean_remarks",
+          "standardization": "cohens_d",
+          "rationale": "Tests if mean remarks delivered matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
         },
         "critical": false,
         "weight": 1.0

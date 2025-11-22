@@ -257,10 +257,6 @@ class Study003Config(BaseStudyConfig):
         human_effect_size = human_pos_certain - human_neg_certain
         cohens_h_effect_size = abs(framing_effect_size - human_effect_size)
         
-        # Calculate Cohen's h for framing effect (for D3 test)
-        # This is the effect size comparing positive and negative frames
-        agent_effect_h = self._calculate_cohens_h(pos_certain_prop, neg_certain_prop)
-        
         # Build enhanced results matching ground_truth structure
         enhanced_results = {
             **raw_results,
@@ -280,9 +276,6 @@ class Study003Config(BaseStudyConfig):
                         "proportion_choose_risky": neg_risky_prop
                 },
                 "framing_effect": {
-                    "n": n_positive + n_negative,
-                    "effect_size": agent_effect_h,  # Cohen's h for D3 test
-                    "se": np.sqrt(1/(2*n_positive) + 1/(2*n_negative)),  # SE for Freeman-Tukey
                     "proportion_difference": framing_effect_size
                 },
                 "by_frame": {

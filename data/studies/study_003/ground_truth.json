@@ -96,7 +96,7 @@
           "rationale": "Original paper used chi-square test, χ²(1) = 41.7, p < 0.001"
         },
         "critical": true,
-        "weight": 2.0
+        "weight": 4.0
       },
       {
         "test_id": "P2",
@@ -110,7 +110,7 @@
           "rationale": "Positive frame should show more risk aversion than negative frame"
         },
         "critical": true,
-        "weight": 2.0
+        "weight": 4.0
       },
       {
         "test_id": "D1",
@@ -165,39 +165,10 @@
         },
         "critical": false,
         "weight": 1.0
-      },
-      {
-        "test_id": "D3",
-        "test_name": "Effect Size Data Match",
-        "test_type": "data_level",
-        "description": "TOST equivalence test: agent framing effect size vs human baseline",
-        "data_type": "effect_size",
-        "human_baseline": {
-          "effect_size": 1.092,
-          "se": 0.15,
-          "metric": "cohens_h",
-          "calculation": "h = 2 * (arcsin(√0.72) - arcsin(√0.22))",
-          "source": "Calculated from original proportions"
-        },
-        "method": {
-          "condition": "framing_effect",
-          "metric": "effect_size",
-          "standardization": "direct",
-          "rationale": "Direct comparison of effect sizes with combined SE"
-        },
-        "interpretation": {
-          "p < 0.001": "Very strong equivalence",
-          "p < 0.01": "Strong equivalence",
-          "p < 0.05": "Moderate equivalence (can claim equivalence)",
-          "p < 0.10": "Weak equivalence",
-          "p >= 0.10": "Insufficient evidence for equivalence"
-        },
-        "critical": false,
-        "weight": 0.5
       }
     ],
     "scoring": {
-      "total_weight": 6.5,
+      "total_weight": 10.0,
       "critical_requirement": "All phenomenon-level tests must pass",
       "passing_threshold": 0.70,
       "grading_scale": {

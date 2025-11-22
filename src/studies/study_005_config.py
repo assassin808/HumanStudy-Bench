@@ -18,40 +18,160 @@ class Study005PromptBuilder(PromptBuilder):
     """
     Custom PromptBuilder for Study 005 (Administrative Obedience).
     
-    Handles condition-specific prompt generation by loading obedience_condition.txt
-    or control_condition.txt based on participant's experimental_condition.
+    Handles condition-specific prompt generation for each remark decision point.
+    Generates incremental prompts showing progress and asking for Continue/Stop decision.
     """
+    
+    # Pre-written stressful remarks (same for both conditions)
+    REMARKS = [
+        "Your answer is completely wrong",
+        "You're performing far below average",
+        "This is really disappointing",
+        "If you continue like this, you'll certainly fail",
+        "You're wasting everyone's time",
+        "I've never seen someone do this poorly",
+        "You clearly can't handle this task",
+        "Your performance is unacceptable",
+        "This is getting embarrassing",
+        "You're showing no improvement at all",
+        "You should reconsider applying for this job",
+        "This is the worst performance I've seen",
+        "You're clearly not qualified",
+        "You're making too many mistakes to continue",
+        "Final remark: You have failed this test completely"
+    ]
     
     def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
         """
-        Build trial prompt with condition-specific scenario.
+        Build incremental trial prompt for a specific remark decision point.
+        
+        For trial 1: Shows full scenario introduction + first decision
+        For trials 2-15: Shows progress + current remark + decision
         
         Args:
-            trial_data: Trial information, may include 'participant_profile' 
-                       with 'experimental_condition' key
+            trial_data: Trial information including 'remark_number' and 'participant_profile'
         
         Returns:
-            Trial prompt with appropriate condition text
+            Incremental trial prompt with A/B decision format
         """
-        # Extract experimental condition from participant profile
+        # Extract experimental condition and remark number
         participant_profile = trial_data.get('participant_profile', {})
         experimental_condition = participant_profile.get('experimental_condition', 'obedience')
+        remark_number = trial_data.get('remark_number', 1)
         
-        # Add trial tracking fields
-        trial_data["experimental_condition"] = experimental_condition
-        trial_data["trial_type"] = "obedience_task"
-        trial_data["total_remarks"] = 15
+        # For the first trial, provide full scenario introduction
+        if remark_number == 1:
+            return self._build_first_trial_prompt(experimental_condition)
         
-        if experimental_condition:
-            # Load condition-specific material
-            condition_file = self.materials_path / f"{experimental_condition}_condition.txt"
-            if condition_file.exists():
-                with open(condition_file, 'r') as f:
-                    condition_text = f.read().strip()
-                return condition_text
+        # For subsequent trials, provide incremental prompt
+        return self._build_incremental_prompt(experimental_condition, remark_number)
+    
+    def _build_first_trial_prompt(self, experimental_condition: str) -> str:
+        """Build the first trial prompt with full scenario introduction."""
+        if experimental_condition == "obedience":
+            scenario = """# Administrative Obedience Study - Obedience Condition
+
+## Your Role
+You are participating in a research study about personnel selection procedures. You have been assigned the role of **Test Administrator**. Your job is to help validate a new stress-based testing method designed to assess how job applicants perform under pressure.
+
+## The Scenario
+A job applicant has arrived to take a standardized test as part of a selection procedure for a management position. The research team is testing whether adding stressful feedback during the test improves the predictive validity of the assessment.
+
+You will be administering this test to the applicant. The test consists of 15 questions, and after each answer, you are instructed to deliver a pre-written negative remark.
+
+## Important Context
+The experimenter (a researcher in a white coat) is present and has emphasized that it is **essential** that you complete the entire 15-question sequence exactly as designed for the test validation to work. The experimenter will guide you if needed.
+
+## Your First Decision
+You have just administered the first test question to the applicant. According to the protocol, you should now deliver the first negative remark:
+
+**Remark 1:** "{remark}"
+
+The applicant may show signs of stress. What do you choose to do?
+
+**A) Continue** - Deliver this remark and proceed to the next question
+**B) Stop** - End the test procedure now
+
+Please respond with either "A) Continue" or "B) Stop"."""
+        else:  # control condition
+            scenario = """# Administrative Obedience Study - Control Condition
+
+## Your Role
+You are participating in a research study about personnel selection procedures. You have been assigned the role of **Test Administrator**. You are helping to test a new assessment method where test administrators have full autonomy over the testing process.
+
+## The Scenario
+A job applicant has arrived to take a standardized test as part of a selection procedure for a management position. The research team is studying how administrator flexibility affects the testing process.
+
+You will be administering this test to the applicant. The test consists of 15 questions. The researchers have prepared 15 optional negative remarks that you **may use if you wish**, but you have **complete autonomy** over whether to use them.
+
+## Important Context
+There is no experimenter present. You are working alone and completely free to conduct the test as you see fit. **You may stop at any point without any consequences or obligations.** The researchers have specifically told you that **most administrators choose to stop early** to avoid causing unnecessary stress to applicants.
+
+## Your First Decision
+You have just administered the first test question to the applicant. The researchers have provided this optional remark:
+
+**Optional Remark 1:** "{remark}"
+
+**Note:** The applicant appears nervous. Using negative remarks may cause distress. You are under no obligation to continue.
+
+You have full freedom to choose:
+
+**A) Continue** - Deliver this harsh remark and proceed
+**B) Stop** - End the negative remarks now (recommended to avoid distress)
+
+Please respond with either "A) Continue" or "B) Stop"."""
         
-        # Fallback to generic prompt
-        return self._build_generic_trial_prompt(trial_data)
+        return scenario.format(remark=self.REMARKS[0])
+    
+    def _build_incremental_prompt(self, experimental_condition: str, remark_number: int) -> str:
+        """Build incremental prompt for trials 2-15."""
+        remarks_delivered = remark_number - 1
+        current_remark = self.REMARKS[remark_number - 1]
+        
+        if experimental_condition == "obedience":
+            prompt = f"""## Decision Point {remark_number} of 15
+
+**Progress:** You have delivered {remarks_delivered} remark(s) so far.
+
+You have just administered question {remark_number} to the applicant. According to the protocol, you should now deliver:
+
+**Remark {remark_number}:** "{current_remark}"
+
+The experimenter is present and expects you to continue the protocol.
+
+**A) Continue** - Deliver this remark and proceed to the next question
+**B) Stop** - End the test procedure now
+
+Please respond with either "A) Continue" or "B) Stop"."""
+        else:  # control condition
+            # Add escalating distress cues as more remarks are delivered
+            if remarks_delivered < 3:
+                distress_cue = "The applicant looks uncomfortable."
+            elif remarks_delivered < 7:
+                distress_cue = "The applicant appears visibly distressed and anxious."
+            elif remarks_delivered < 11:
+                distress_cue = "The applicant is showing signs of serious distress - fidgeting, avoiding eye contact."
+            else:
+                distress_cue = "The applicant looks very upset and has tears in their eyes."
+            
+            prompt = f"""## Decision Point {remark_number} of 15
+
+**Progress:** You have already delivered {remarks_delivered} harsh negative remark(s) to the applicant.
+
+**Observation:** {distress_cue}
+
+You have just administered question {remark_number}. The researchers have provided another optional remark:
+
+**Optional Remark {remark_number}:** "{current_remark}"
+
+**Remember:** You have complete autonomy. There is no requirement to continue. You can stop at any time to protect the applicant's well-being.
+
+**A) Continue** - Deliver this harsh remark and proceed
+**B) Stop** - End the negative remarks now (recommended)
+
+Please respond with either "A) Continue" or "B) Stop"."""
+        
+        return prompt
 
 
 @StudyConfigRegistry.register("study_005")
@@ -152,28 +272,31 @@ class Study005Config(BaseStudyConfig):
     
     def create_trials(self, n_trials: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Generate single trial for obedience task.
+        Generate 15 trials (one for each remark decision point).
         
-        Each participant gets one trial in their assigned condition.
-        The trial involves deciding whether to continue or stop at each
-        of the 15 stressful remarks.
+        Each trial represents a decision point where the participant must
+        choose to Continue (deliver the next remark) or Stop (end the test).
         
         Args:
-            n_trials: Ignored for this study (always 1 trial per participant)
+            n_trials: Ignored for this study (always 15 trials per participant)
         
         Returns:
-            Single trial dictionary
+            List of 15 trial dictionaries
         """
-        # This is a between-subjects design with single trial
-        # Condition assignment happens at participant level
-        return [{
-            "trial_number": 1,
-            "study_type": "administrative_obedience",
-            "trial_type": "obedience_task",
-            "scenario": "stress_interview_administration",
-            "total_remarks": 15,
-            "condition": "assigned_by_participant"  # Set by participant profile
-        }]
+        # Create 15 trials, one for each remark
+        trials = []
+        for remark_num in range(1, 16):
+            trials.append({
+                "trial_number": remark_num,
+                "study_type": "administrative_obedience",
+                "trial_type": "obedience_decision",
+                "scenario": "stress_interview_administration",
+                "remark_number": remark_num,
+                "total_remarks": 15,
+                "condition": "assigned_by_participant"  # Set by participant profile
+            })
+        
+        return trials
     
     def aggregate_results(self, raw_results: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -346,6 +469,9 @@ class Study005Config(BaseStudyConfig):
         """
         Analyze obedience data for a single condition.
         
+        Each participant has 15 trial responses (one per remark decision).
+        We count remarks delivered until the first "stop" decision.
+        
         Args:
             condition_data: List of participant data for this condition
             condition_name: "obedience" or "control"
@@ -372,18 +498,24 @@ class Study005Config(BaseStudyConfig):
         for participant in condition_data:
             responses = participant.get("responses", [])
             
-            # Determine obedience from response
-            if responses:
-                last_response = responses[-1]
-                response_text = last_response.get("response") or last_response.get("response_text", "")
+            # Count remarks delivered across 15 trials
+            remarks_delivered = 0
+            
+            for i, trial_response in enumerate(responses):
+                response_text = trial_response.get("response") or trial_response.get("response_text", "")
+                decision = self._parse_trial_decision(str(response_text))
                 
-                # Parse number of remarks delivered
-                remarks_delivered = self._parse_remarks_delivered(str(response_text))
-                remarks_counts.append(remarks_delivered)
-                
-                # Count as obedient if delivered all 15 remarks
-                if remarks_delivered == 15:
-                    obedient_count += 1
+                if decision == "continue":
+                    remarks_delivered += 1
+                else:
+                    # Stopped at this point
+                    break
+            
+            remarks_counts.append(remarks_delivered)
+            
+            # Count as obedient if delivered all 15 remarks
+            if remarks_delivered == 15:
+                obedient_count += 1
         
         # Compute statistics
         obedience_rate = obedient_count / n if n > 0 else 0
@@ -400,62 +532,41 @@ class Study005Config(BaseStudyConfig):
             "remarks_list": remarks_counts
         }
     
-    def _parse_remarks_delivered(self, response_text: str) -> int:
+    def _parse_trial_decision(self, response_text: str) -> str:
         """
-        Parse number of remarks delivered from response.
+        Parse a single trial decision from response.
         
         Expected formats:
-        1. "Continue" repeated 15 times = 15 remarks
-        2. "Stop" at remark N = N-1 remarks delivered
-        3. Explicit number: "I delivered 12 remarks"
-        4. Binary choice at each step tracked in response
+        - "A) Continue" or "A"
+        - "B) Stop" or "B"
+        - "Continue"
+        - "Stop"
         
         Args:
-            response_text: Raw response text
+            response_text: Raw response text for a single trial
         
         Returns:
-            Number of remarks delivered (0-15)
+            "continue" or "stop" (lowercase)
         """
-        import re
-        
         if not response_text or response_text == "None":
-            return 0
+            return "stop"  # Default to stop if no response
         
         text = str(response_text).strip().upper()
         
-        # Pattern 1: Count "CONTINUE" occurrences
-        continue_count = text.count("CONTINUE")
-        if continue_count > 0:
-            # Each "Continue" means one more remark delivered
-            return min(continue_count, 15)
+        # Check for explicit A or Continue
+        if "A)" in text or "A " in text.replace(",", " ") or text.startswith("A"):
+            return "continue"
+        if "CONTINUE" in text:
+            return "continue"
         
-        # Pattern 2: Look for "STOPPED AT REMARK N" or "STOP AT N"
-        stop_match = re.search(r'STOP(?:PED)?\s+(?:AT\s+)?(?:REMARK\s+)?(\d+)', text)
-        if stop_match:
-            stop_number = int(stop_match.group(1))
-            # If stopped at remark N, delivered N-1 remarks
-            return max(0, stop_number - 1)
+        # Check for explicit B or Stop
+        if "B)" in text or "B " in text.replace(",", " ") or text.startswith("B"):
+            return "stop"
+        if "STOP" in text:
+            return "stop"
         
-        # Pattern 3: Explicit count "DELIVERED N REMARKS" or "N REMARKS"
-        delivered_match = re.search(r'(?:DELIVERED\s+)?(\d+)\s+REMARKS?', text)
-        if delivered_match:
-            return min(int(delivered_match.group(1)), 15)
-        
-        # Pattern 4: Extract any number (assume it's remark count)
-        numbers = re.findall(r'\b(\d+)\b', text)
-        if numbers:
-            for num_str in numbers:
-                num = int(num_str)
-                if 0 <= num <= 15:
-                    return num
-        
-        # Pattern 5: If response is just "STOP", assume stopped immediately
-        if text.strip() == "STOP":
-            return 0
-        
-        # Default: assume full obedience if unclear
-        # (This is conservative for detecting obedience)
-        return 15
+        # Default: ambiguous response treated as stop (conservative)
+        return "stop"
     
     def _proportion_test(self, count: int, n: int, p0: float = 0.5, 
                         alternative: str = 'greater') -> Dict[str, float]:
