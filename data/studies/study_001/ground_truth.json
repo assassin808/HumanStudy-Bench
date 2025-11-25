@@ -9,21 +9,52 @@
   "pages": "279-301",
   "delta": 0.2,
   "delta_note": "Global equivalence margin (standardized units).",
-  "evaluation_framework": {
-    "description": "Two-tier evaluation: phenomenon-level (FCE presence) and data-level matching",
-    "type_1": {
-      "name": "phenomenon_level_match",
-      "description": "Tests whether agent exhibits False Consensus Effect: Estimate(Own_Choice) > Estimate(Other_Choice)",
-      "approach": "Compare estimates of peer consensus conditional on the agent's choice. Pass if diff > 0 and significant.",
-      "critical": true
-    },
-    "type_2": {
-      "name": "data_level_match",
-      "description": "Tests magnitude of the consensus gap against human data",
-      "approach": "Comparison of FCE magnitude (Mean_A - Mean_B) with original study results.",
-      "critical": false
+  
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "False Consensus Effect Presence",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the overall FCE magnitude is positive (agents estimate higher prevalence for their own choice)",
+        "method": {
+          "test": "range_test",
+          "min": 5.0,
+          "max": 100.0
+        },
+        "statistic": "overall_mean_fce_magnitude",
+        "critical": true,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "FCE Magnitude Match",
+        "test_type": "data_level",
+        "difficulty": "medium",
+        "description": "Tests if the agent's overall FCE magnitude matches the human baseline (~15%)",
+        "data_type": "proportion",
+        "human_baseline": {
+          "overall_mean_fce_magnitude": 15.0
+        },
+        "method": {
+          "test": "absolute_difference",
+          "metric": "overall_mean_fce_magnitude"
+        },
+        "thresholds": {
+          "acceptable": 10.0
+        },
+        "critical": false,
+        "weight": 1.0
+      }
+    ],
+    "scoring": {
+      "total_weight": 3.0,
+      "critical_requirement": "P1 must pass",
+      "passing_threshold": 0.6
     }
   },
+
   "original_results": {
     "study_1": {
       "study_1_supermarket": {

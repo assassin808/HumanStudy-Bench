@@ -25,7 +25,10 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+try:
+    load_dotenv()
+except Exception as e:
+    print(f"Warning: Could not load .env file: {e}")
 
 from src.core.benchmark import HumanStudyBench
 from src.agents.llm_participant_agent import ParticipantPool
@@ -234,7 +237,8 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         "data_result": score_result['data_result'],
         "passed": score_result['phenomenon_result']['passed'],  # Pass based on phenomenon
         "results": results,
-        "score_result": score_result
+        "score_result": score_result,
+        "raw_results": raw_results  # Include raw results for detailed output inspection
     }
 
 
@@ -394,7 +398,7 @@ def main():
                 "elapsed_time": r['elapsed_time'],
                 "descriptive_statistics": r['results'].get('descriptive_statistics', {}),
                 "inferential_statistics": r['results'].get('inferential_statistics', {}),
-                "individual_data": r['results'].get('individual_data', [])
+                "individual_data": r.get('raw_results', {}).get('individual_data', [])
             }
             for r in all_results
         ]
@@ -423,7 +427,10 @@ def main():
                 "passed": r['passed'],
                 "elapsed_time": r['elapsed_time'],
                 "phenomenon_tests": r['score_result'].get('phenomenon_tests', {}),
-                "data_tests": r['score_result'].get('data_tests', {})
+                "data_tests": r['score_result'].get('data_tests', {}),
+                "descriptive_statistics": r['results'].get('descriptive_statistics', {}),
+                "inferential_statistics": r['results'].get('inferential_statistics', {}),
+                "individual_data": r.get('raw_results', {}).get('individual_data', [])
             }
             for r in all_results
         ]
