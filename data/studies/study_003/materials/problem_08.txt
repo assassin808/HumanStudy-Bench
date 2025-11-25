@@ -1,0 +1,7 @@
+Imagine that you have decided to see a play where admission is $10 per ticket. As you enter the theater you discover that you have lost a $10 bill.
+
+Would you still pay $10 for a ticket for the play?
+- Yes
+- No
+
+Please answer with exactly "Yes" or "No".

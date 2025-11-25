@@ -1,0 +1,6 @@
+A number has been randomly generated: 550
+
+Question: Height of tallest redwood (in feet)
+
+First, is the true answer higher or lower than 550?
+Second, what is your best estimate of the answer?

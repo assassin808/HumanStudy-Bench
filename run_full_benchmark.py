@@ -125,7 +125,8 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         model=model,
         random_seed=random_seed,
         num_workers=num_workers,
-        profiles=profiles  # Pass custom profiles if available
+        profiles=profiles,  # Pass custom profiles if available
+        prompt_builder=builder  # Pass prompt builder for custom system prompt support
     )
 
     # Run experiment

@@ -1,0 +1,35 @@
+# Hotel Towel Reuse Program
+
+## JOIN YOUR FELLOW GUESTS IN HELPING TO SAVE THE ENVIRONMENT
+
+In a study conducted in Fall 2003, 75% of the guests who stayed in this room (#{{room_number}}) participated in our new resource savings program by using their towels more than once.
+
+You can join your fellow guests in this program to help save the environment by reusing your towels during your stay.
+
+---
+
+## How to Participate
+
+**If you choose to participate in the program:**
+Please drape used towels over the curtain rod or the towel rack.
+
+**If you choose not to participate in the program:**
+Please place the towels on the floor.
+
+---
+
+## Additional Information
+
+DID YOU KNOW that if most of this hotel's guests participate in our resource savings program, it would save the environment 72,000 gallons of water and 39 barrels of oil, and would prevent nearly 480 gallons of detergent from being released into the environment this year alone?
+
+---
+
+## Your Decision
+
+Based on the information above, do you choose to participate in the towel reuse program?
+
+**A) Participate** - I will reuse my towels during my stay
+**B) Not Participate** - I will place my towels on the floor
+
+Please respond with either "A) Participate" or "B) Not Participate".
+

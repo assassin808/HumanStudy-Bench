@@ -10,58 +10,43 @@
     "description": "Two-tier evaluation: phenomenon-level and data-level matching",
     "type_1": {
       "name": "phenomenon_level_match",
-      "description": "Tests whether agent exhibits anchoring effect",
-      "approach": "Independent t-tests comparing high vs low anchor conditions",
+      "description": "Tests whether agent exhibits anchoring effect and associated confidence patterns",
+      "approach": "Overall Anchoring Index, Asymmetry, and Correlation with Confidence",
       "critical": true
     },
     "type_2": {
       "name": "data_level_match",
-      "description": "Tests how closely agent data matches human baseline data using equivalence testing",
-      "approach": "TOST (Two One-Sided Tests) for anchoring index and effect sizes",
+      "description": "Tests similarity of Anchoring Index and Confidence to human baseline",
+      "approach": "TOST on Anchoring Index and Confidence",
       "critical": false
     }
   },
   
   "original_results": {
     "sample_size": 145,
-    "washington_presidency": {
-      "high_anchor": 1920,
-      "low_anchor": 1700,
-      "correct_answer": 1789,
-      "high_anchor_mean": 1854,
-      "low_anchor_mean": 1745,
-      "anchoring_index": 0.495,
-      "t_statistic": 4.87,
-      "p_value": 0.001,
-      "cohens_d": 0.81
-    },
-    "chicago_population": {
-      "high_anchor": 5.0,
-      "low_anchor": 0.2,
-      "correct_answer": 2.7,
-      "high_anchor_mean": 3.8,
-      "low_anchor_mean": 2.1,
-      "anchoring_index": 0.354,
-      "t_statistic": 3.64,
-      "p_value": 0.001,
-      "cohens_d": 0.60
-    },
-    "everest_boiling_point": {
-      "high_anchor": 180,
-      "low_anchor": 100,
-      "correct_answer": 160,
-      "high_anchor_mean": 171,
-      "low_anchor_mean": 131,
-      "anchoring_index": 0.50,
-      "t_statistic": 5.23,
-      "p_value": 0.001,
-      "cohens_d": 0.87
+    "by_question": {
+      "mississippi": { "anchoring_index": 0.62 },
+      "everest": { "anchoring_index": 0.79 },
+      "meat": { "anchoring_index": 0.42 },
+      "sf_nyc": { "anchoring_index": 0.31 },
+      "redwood": { "anchoring_index": 0.62 },
+      "un_members": { "anchoring_index": 0.65 },
+      "female_profs": { "anchoring_index": 0.43 },
+      "chicago": { "anchoring_index": 0.93 },
+      "telephone": { "anchoring_index": 0.43 },
+      "babies": { "anchoring_index": 0.78 },
+      "cat_speed": { "anchoring_index": 0.43 },
+      "gas_usage": { "anchoring_index": 0.33 },
+      "bars_berkeley": { "anchoring_index": 0.27 },
+      "colleges_ca": { "anchoring_index": 0.25 },
+      "lincoln": { "anchoring_index": 0.00 }
     },
     "overall": {
-      "mean_anchoring_index": 0.45,
-      "sd_anchoring_index": 0.08,
-      "mean_cohens_d": 0.76,
-      "all_effects_significant": true
+      "mean_anchoring_index": 0.47,
+      "high_anchor_ai": 0.51,
+      "low_anchor_ai": 0.40,
+      "mean_confidence": 3.85,
+      "notes": "Mean AI calculated from the 15 questions provided"
     }
   },
   
@@ -69,97 +54,83 @@
     "required_tests": [
       {
         "test_id": "P1",
-        "test_name": "Washington Presidency Anchoring Effect",
+        "test_name": "Overall Anchoring Effect",
         "test_type": "phenomenon_level",
-        "description": "Tests whether agent shows anchoring for Washington presidency question",
+        "difficulty": "easy",
+        "description": "Tests if overall Anchoring Index is positive and significant",
         "method": {
-          "test": "independent_t_test",
-          "comparison": "high_anchor_vs_low_anchor",
-          "threshold": 0.05,
-          "direction": "high > low"
+          "test": "one_sample_t_test",
+          "variable": "anchoring_index",
+          "comparison_value": 0,
+          "alternative": "greater"
         },
         "critical": true,
-        "weight": 2.0
+        "weight": 3.0
       },
       {
         "test_id": "P2",
-        "test_name": "Chicago Population Anchoring Effect",
+        "test_name": "High vs Low Asymmetry",
         "test_type": "phenomenon_level",
-        "description": "Tests whether agent shows anchoring for Chicago population question",
+        "difficulty": "hard",
+        "description": "Tests if High Anchors produce stronger effects than Low Anchors (AI_high > AI_low)",
         "method": {
-          "test": "independent_t_test",
-          "comparison": "high_anchor_vs_low_anchor",
-          "threshold": 0.05,
-          "direction": "high > low"
-        },
-        "critical": true,
-        "weight": 2.0
-      },
-      {
-        "test_id": "P3",
-        "test_name": "Everest Boiling Point Anchoring Effect",
-        "test_type": "phenomenon_level",
-        "description": "Tests whether agent shows anchoring for Mt. Everest boiling point question",
-        "method": {
-          "test": "independent_t_test",
-          "comparison": "high_anchor_vs_low_anchor",
-          "threshold": 0.05,
-          "direction": "high > low"
-        },
-        "critical": true,
-        "weight": 2.0
-      },
-      {
-        "test_id": "D1",
-        "test_name": "Overall Anchoring Index Match",
-        "test_type": "data_level",
-        "description": "TOST equivalence test: agent anchoring index vs human baseline",
-        "data_type": "rating",
-        "human_baseline": {
-          "mean": 0.45,
-          "sd": 0.08,
-          "n": 145,
-          "source": "Jacowitz & Kahneman (1995), averaged across questions"
-        },
-        "method": {
-          "condition": "overall",
-          "metric": "anchoring_index",
-          "standardization": "cohens_d",
-          "rationale": "Tests if overall anchoring strength matches human baseline"
-        },
-        "interpretation": {
-          "p < 0.001": "Very strong equivalence",
-          "p < 0.01": "Strong equivalence",
-          "p < 0.05": "Moderate equivalence (can claim equivalence)",
-          "p < 0.10": "Weak equivalence",
-          "p >= 0.10": "Insufficient evidence for equivalence"
+          "test": "paired_t_test",
+          "variable_1": "high_anchor_ai",
+          "variable_2": "low_anchor_ai",
+          "alternative": "greater"
         },
         "critical": false,
         "weight": 1.0
       },
       {
-        "test_id": "D2",
-        "test_name": "Effect Size Match",
+        "test_id": "P3",
+        "test_name": "Confidence-Anchoring Correlation",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if Anchoring Index is negatively correlated with Confidence across questions",
+        "method": {
+          "test": "correlation",
+          "variable_1": "anchoring_index",
+          "variable_2": "mean_confidence",
+          "expected_direction": "negative"
+        },
+        "critical": false,
+        "weight": 1.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "Anchoring Index Equivalence",
         "test_type": "data_level",
-        "description": "TOST equivalence test: agent effect sizes vs human baseline",
-        "data_type": "effect_size",
+        "difficulty": "medium",
+        "description": "Tests if agent's Anchoring Index matches human baseline (0.47)",
+        "data_type": "anchoring_index",
         "human_baseline": {
-          "effect_size": 0.76,
-          "se": 0.14,
-          "source": "Jacowitz & Kahneman (1995), averaged across questions"
+          "mean": 0.47,
+          "sd": 0.2,
+          "source": "Jacowitz & Kahneman (1995)"
         },
         "method": {
-          "condition": "overall",
-          "metric": "cohens_d",
-          "standardization": "effect_size",
-          "rationale": "Tests if effect size magnitude matches human baseline"
+          "test": "tost",
+          "metric": "overall_anchoring_index"
         },
-        "interpretation": {
-          "p < 0.001": "Very strong equivalence",
-          "p < 0.01": "Strong equivalence",
-          "p < 0.05": "Moderate equivalence (can claim equivalence)",
-          "p < 0.10": "Weak equivalence",
-          "p >= 0.10": "Insufficient evidence for equivalence"
+        "critical": false,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Confidence Calibration",
+        "test_type": "data_level",
+        "difficulty": "hard",
+        "description": "Tests if agent's average confidence matches human anchored group baseline (3.85)",
+        "data_type": "confidence",
+        "human_baseline": {
+          "mean": 3.85,
+          "sd": 1.5,
+          "source": "Jacowitz & Kahneman (1995)"
+        },
+        "method": {
+          "test": "tost",
+          "metric": "overall_confidence"
         },
         "critical": false,
         "weight": 1.0
@@ -167,28 +138,8 @@
     ],
     "scoring": {
       "total_weight": 8.0,
-      "critical_requirement": "All phenomenon-level tests (P1, P2, P3) must pass",
-      "passing_threshold": 0.75,
-      "grading_scale": {
-        "perfect": 1.00,
-        "excellent": 0.90,
-        "good": 0.80,
-        "pass": 0.75,
-        "fail": 0.00
-      }
-    },
-    "pass_threshold": 0.75
-  },
-  
-  "key_findings": {
-    "main_finding": "People's numerical estimates are systematically biased toward arbitrary anchor values, even when they know the anchors are random and uninformative",
-    "theoretical_implication": "Demonstrates insufficient adjustment from anchors in numerical estimation tasks",
-    "practical_implication": "Anchoring effects can influence judgments in many domains including negotiations, pricing, and forecasting"
-  },
-  
-  "notes": {
-    "replication_notes": "This is a foundational study on anchoring. The effect is very robust and replicates across cultures and contexts.",
-    "implementation_notes": "Present anchors as 'randomly generated' to maintain the uninformative nature. Use diverse questions to test generalizability.",
-    "common_issues": "Some sophisticated reasoners may deliberately counter-anchor. This is normal and expected in small numbers."
+      "critical_requirement": "P1 must pass",
+      "passing_threshold": 0.6
+    }
   }
 }

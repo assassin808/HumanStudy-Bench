@@ -1,10 +1,6 @@
-A number has been randomly generated: 0.2 million
+A number has been randomly generated: 0.2
 
-Question: What is the population of Chicago (in millions)?
+Question: Population of Chicago (in millions)
 
-Is your answer higher or lower than 0.2 million?
-
-Please provide your answer in this exact format:
-[Higher/Lower], [Your numeric estimate]
-
-Your answer:
+First, is the true answer higher or lower than 0.2?
+Second, what is your best estimate of the answer?

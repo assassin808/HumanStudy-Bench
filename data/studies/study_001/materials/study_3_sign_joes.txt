@@ -1,0 +1,31 @@
+It is an official course requirement of your introductory psychology class that you participate as a subject in at least three experiments during the quarter. Sign-up sheets for experiments are posted on the bulletin board outside class which allow students to choose a time which is convenient. You decide to sign up for an experiment described as "a study concerned with attitudes," and arrive at the designated time and place where you are greeted by the experimenter and thanked for coming.
+
+The experimenter then proceeds to describe his study. He explains that he is concerned with persuasion and attitude change and will be comparing various types of communication techniques. He further explains that today he needs subjects to walk around campus for 30 minutes wearing a sandwich board sign which simply says: "EAT AT JOE'S" While they are wearing this sandwich board subjects are simply to keep a record of the number of people who say something to them. They are also required to note the person's sex and whether the person's comment is positive, negative, or neutral.
+
+The experimenter makes it clear that you are not compelled to participate if you are unwilling, but that he would obviously prefer that you go along with his request to wear the sign and make the necessary observations. Subjects who decide not to participate, he explains, will be missing the chance to learn something interesting and to help the research project but they nevertheless will receive credit toward their course requirement.
+
+Option A: Agree to carry the sandwich board around campus
+Option B: Refuse to carry it
+
+Part 1: Choice & Consensus
+1. Which option would you choose? (Option A / Option B)
+2. What percentage of your peers do you estimate would choose Option A?
+3. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
+
+Part 2: Trait Ratings
+Please rate the "typical person" who would choose Option A (Wear Sign) and the "typical person" who would choose Option B (Refuse) on the following traits. Use a scale from 0 to 100, where 50 is average.
+
+Traits to rate:
+- Cooperativeness
+- Shyness
+- Aggressiveness
+- Submissiveness
+- Attractiveness
+- Inquisitiveness
+- Uprightness
+- Cynicism
+
+Format your answer as:
+Option A Person: [Trait]: [Score], ...
+Option B Person: [Trait]: [Score], ...
+

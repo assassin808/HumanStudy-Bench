@@ -1,0 +1,5 @@
+Which of the following options do you prefer?
+E. 25% chance to win $30
+F. 20% chance to win $45
+
+Please answer with exactly "Option E" or "Option F".

@@ -1,0 +1,6 @@
+A number has been randomly generated: 14
+
+Question: Number of United Nations members
+
+First, is the true answer higher or lower than 14?
+Second, what is your best estimate of the answer?

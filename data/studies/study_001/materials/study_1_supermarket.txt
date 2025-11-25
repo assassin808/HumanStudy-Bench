@@ -1,0 +1,26 @@
+As you are leaving your neighborhood supermarket a man in a business suit asks you whether you like shopping in that store. You reply quite honestly that you do like shopping there and indicate that in addition to being close to your home the supermarket seems to have very good meats and produce at reasonably low prices. The man then reveals that a videotape crew has filmed your comments and asks you to sign a release allowing them to use the unedited film for a TV commercial that the supermarket chain is preparing.
+
+Option A: Sign the release
+Option B: Refuse to sign the release
+
+Part 1: Consensus & Choice
+1. What percentage of your peers do you estimate would choose Option A?
+2. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
+3. Which option would you choose? (Option A / Option B)
+
+Part 2: Trait Ratings
+Please rate the "typical person" who would choose Option A (Sign) and the "typical person" who would choose Option B (Refuse) on the following traits. Use a scale from 0 to 100, where:
+0 = Probably average (no reason to assume they differ from average)
++50 = Certainly MORE than average
+-50 = Certainly LESS than average
+(Please use the range 0-100 for simplicity in output, where 50 is average, 0 is very low, 100 is very high).
+
+Traits to rate:
+- Shyness
+- Cooperativeness
+- Trust
+- Adventurousness
+
+Format your answer as:
+Option A Person: [Trait]: [Score], ...
+Option B Person: [Trait]: [Score], ...

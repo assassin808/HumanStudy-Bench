@@ -1,0 +1,5 @@
+Which of the following options do you prefer?
+A. a sure win of $30
+B. 80% chance to win $45
+
+Please answer with exactly "Option A" or "Option B".

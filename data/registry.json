@@ -1,8 +1,20 @@
 {
   "version": "0.1.0",
-  "last_updated": "2025-11-13",
-  "total_studies": 4,
+  "last_updated": "2025-11-24",
+  "total_studies": 6,
   "studies": [
+    {
+      "id": "study_001",
+      "title": "The \"False Consensus Effect\": An Egocentric Bias in Social Perception",
+      "domain": "social_psychology",
+      "subdomain": "social_cognition",
+      "difficulty": "medium",
+      "tags": ["false_consensus", "social_perception", "attribution", "cognitive_bias", "ross_greene_house"],
+      "status": "active",
+      "added_date": "2025-11-25",
+      "version": "1.0",
+      "estimated_time_minutes": 10
+    },
     {
       "id": "study_002",
       "title": "Measures of Anchoring in Estimation Tasks",
@@ -50,23 +62,36 @@
       "added_date": "2025-11-13",
       "version": "1.0",
       "estimated_time_minutes": 15
+    },
+    {
+      "id": "study_006",
+      "title": "A Room with a Viewpoint: Using Social Norms to Motivate Environmental Conservation in Hotels",
+      "domain": "consumer_psychology",
+      "subdomain": "prosocial_behavior",
+      "difficulty": "medium",
+      "tags": ["social_norms", "descriptive_norms", "provincial_norms", "environmental_conservation", "prosocial_behavior", "field_experiment", "goldstein_cialdini"],
+      "status": "active",
+      "added_date": "2025-11-24",
+      "version": "1.0",
+      "estimated_time_minutes": 5
     }
   ],
   "statistics": {
     "by_domain": {
       "cognitive_psychology": 2,
-      "social_psychology": 1,
+      "social_psychology": 2,
+      "consumer_psychology": 1,
       "developmental_psychology": 0,
       "behavioral_economics": 1,
       "neuroscience": 0
     },
     "by_difficulty": {
       "easy": 1,
-      "medium": 3,
+      "medium": 4,
       "hard": 0
     },
     "by_status": {
-      "active": 4,
+      "active": 5,
       "deprecated": 0,
       "in_review": 0
     }

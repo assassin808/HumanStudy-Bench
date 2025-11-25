@@ -1,0 +1,6 @@
+A number has been randomly generated: 50
+
+Question: Amount of meat eaten per year by average American (in pounds)
+
+First, is the true answer higher or lower than 50?
+Second, what is your best estimate of the answer?

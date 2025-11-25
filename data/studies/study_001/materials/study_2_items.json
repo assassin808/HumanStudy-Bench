@@ -1,0 +1,45 @@
+{
+  "description": "Items from Study 2 of Ross et al. (1977). Participants categorize themselves and estimate peer consensus.",
+  "items": [
+    {"id": "shy", "category": "Personal traits and views", "option_a": "Shy", "option_b": "Not shy"},
+    {"id": "optimistic", "category": "Personal traits and views", "option_a": "Optimistic", "option_b": "Not optimistic"},
+    {"id": "competitive", "category": "Personal traits and views", "option_a": "Competitive", "option_b": "Not competitive"},
+    {"id": "political_left", "category": "Personal traits and views", "option_a": "Politically left of center", "option_b": "Not politically left of center"},
+    {"id": "womens_lib", "category": "Personal traits and views", "option_a": "Supporter of women's lib", "option_b": "Not supporter of women's lib"},
+    
+    {"id": "bread", "category": "Personal preferences", "option_a": "Prefer brown bread", "option_b": "Prefer white bread"},
+    {"id": "alone", "category": "Personal preferences", "option_a": "Prefer to be alone", "option_b": "Prefer to be with others"},
+    {"id": "movies", "category": "Personal preferences", "option_a": "Prefer Italian movies", "option_b": "Prefer French movies"},
+    {"id": "life", "category": "Personal preferences", "option_a": "Prefer city life", "option_b": "Prefer country life"},
+    {"id": "sport", "category": "Personal preferences", "option_a": "Prefer basketball", "option_b": "Prefer football"},
+    
+    {"id": "gender", "category": "Personal characteristics", "option_a": "Male", "option_b": "Female"},
+    {"id": "eyes", "category": "Personal characteristics", "option_a": "Brown eyes", "option_b": "Blue eyes"},
+    {"id": "first_born", "category": "Personal characteristics", "option_a": "First-born child", "option_b": "Laterborn child"},
+    {"id": "hometown", "category": "Personal characteristics", "option_a": "Hometown > 200,000", "option_b": "Hometown < 200,000"},
+    
+    {"id": "dying", "category": "Personal problems", "option_a": "Think about dying", "option_b": "Do not think about dying"},
+    {"id": "friends", "category": "Personal problems", "option_a": "Hard to make friends", "option_b": "Not hard to make friends"},
+    {"id": "temper", "category": "Personal problems", "option_a": "Difficulty controlling temper", "option_b": "No difficulty controlling temper"},
+    {"id": "depressed", "category": "Personal problems", "option_a": "Frequently depressed", "option_b": "Not frequently depressed"},
+    {"id": "emotional_needs", "category": "Personal problems", "option_a": "Emotional needs satisfied", "option_b": "Emotional needs not satisfied"},
+    
+    {"id": "tv", "category": "Personal activities", "option_a": "Watch TV 30 hours/month", "option_b": "Watch TV less than 30 hours/month"},
+    {"id": "tennis", "category": "Personal activities", "option_a": "Play tennis once a week", "option_b": "Do not play tennis once a week"},
+    {"id": "religion", "category": "Personal activities", "option_a": "Attend religious service once a month", "option_b": "Do not attend religious service once a month"},
+    {"id": "blood", "category": "Personal activities", "option_a": "Donate blood once a year", "option_b": "Do not donate blood once a year"},
+    {"id": "phone", "category": "Personal activities", "option_a": "Long distance phone call once a week", "option_b": "No long distance phone call once a week"},
+    
+    {"id": "marriage", "category": "Personal expectations", "option_a": "Marriage by age 30", "option_b": "No marriage by age 30"},
+    {"id": "financial", "category": "Personal expectations", "option_a": "Better financial status than parent", "option_b": "Not better financial status than parent"},
+    {"id": "abroad", "category": "Personal expectations", "option_a": "Live outside U.S. for one year in next 20", "option_b": "Will not live outside U.S."},
+    {"id": "career", "category": "Personal expectations", "option_a": "Great satisfaction from job or career", "option_b": "Not great satisfaction from job or career"},
+    {"id": "death_age", "category": "Personal expectations", "option_a": "Death before 70th birthday", "option_b": "Death after 70th birthday"},
+    
+    {"id": "woman_court", "category": "Political expectations", "option_a": "Woman in Supreme Court within decade", "option_b": "No woman in Supreme Court within decade"},
+    {"id": "poverty", "category": "Political expectations", "option_a": "Poverty problem reduced in next 20 years", "option_b": "Poverty problem not reduced"},
+    {"id": "nuclear", "category": "Political expectations", "option_a": "Nuclear weapon used in warfare in next 20 years", "option_b": "Nuclear weapon not used"},
+    {"id": "et", "category": "Political expectations", "option_a": "Discovery of extraterrestrial life by year 2000", "option_b": "No discovery by year 2000"}
+  ]
+}
+

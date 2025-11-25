@@ -1,0 +1,6 @@
+A number has been randomly generated: 2,000
+
+Question: Length of Mississippi River (in miles)
+
+First, is the true answer higher or lower than 2,000?
+Second, what is your best estimate of the answer?

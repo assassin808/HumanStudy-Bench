@@ -1,0 +1,6 @@
+A number has been randomly generated: 100
+
+Question: Average number of babies born per day in the United States
+
+First, is the true answer higher or lower than 100?
+Second, what is your best estimate of the answer?

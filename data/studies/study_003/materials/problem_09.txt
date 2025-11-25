@@ -1,0 +1,7 @@
+Imagine that you have decided to see a play and paid the admission price of $10 per ticket. As you enter the theater you discover that you have lost the ticket. The seat was not marked and the ticket cannot be recovered.
+
+Would you pay $10 for another ticket?
+- Yes
+- No
+
+Please answer with exactly "Yes" or "No".

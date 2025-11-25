@@ -1,0 +1,6 @@
+A number has been randomly generated: 7
+
+Question: Number of Lincoln's presidency
+
+First, is the true answer higher or lower than 7?
+Second, what is your best estimate of the answer?

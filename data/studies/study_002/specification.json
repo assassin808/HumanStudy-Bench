@@ -7,13 +7,17 @@
         "name": "anchor_condition",
         "type": "categorical",
         "levels": ["high_anchor", "low_anchor"],
-        "description": "High anchor: participants receive high numerical anchor before estimating. Low anchor: participants receive low numerical anchor before estimating."
+        "description": "High vs. Low anchor provided before estimation."
       },
       {
         "name": "question",
         "type": "categorical",
-        "levels": ["washington", "chicago", "everest"],
-        "description": "Three estimation questions: Washington presidency year, Chicago population, Mt. Everest boiling point."
+        "levels": [
+          "mississippi", "everest", "meat", "sf_nyc", "redwood", 
+          "un_members", "female_profs", "chicago", "telephone", "babies",
+          "cat_speed", "gas_usage", "bars_berkeley", "colleges_ca", "lincoln"
+        ],
+        "description": "15 estimation questions from Jacowitz & Kahneman (1995)."
       }
     ],
     "within_subjects_variables": [],
@@ -21,9 +25,8 @@
       {
         "name": "numerical_estimate",
         "type": "continuous",
-        "unit": "varies_by_question",
-        "measurement": "Participant's numerical estimate for the assigned question",
-        "range": "unbounded"
+        "unit": "varies",
+        "measurement": "Participant's numerical estimate."
       },
       {
         "name": "anchoring_index",
@@ -33,122 +36,51 @@
         "range": [0, 1]
       }
     ],
-    "counterbalancing": "none",
-    "randomization": "random_assignment_to_anchor_and_question"
+    "counterbalancing": "randomized_assignment",
+    "randomization": "random_assignment_to_condition"
   },
   "participants": {
-    "n": 145,
-    "high_anchor_n": 73,
-    "low_anchor_n": 72,
-    "age_range": [18, 22],
+    "n": 300,
+    "description": "Students at University of California, Berkeley",
     "age_mean": 20,
-    "age_sd": 1.2,
-    "gender_distribution": {
-      "male": null,
-      "female": null,
-      "other": null,
-      "note": "Gender distribution not reported in original study"
-    },
-    "recruitment_source": "stanford_university_undergraduates",
-    "recruitment_criteria": [
-      "undergraduate_student",
-      "able_to_provide_numerical_estimates",
-      "no_prior_exposure_to_anchoring_tasks"
-    ],
-    "exclusion_criteria": [
-      "prior_exposure_to_anchoring_effect_studies"
-    ],
-    "compensation": "course_credit"
+    "age_sd": 1.5,
+    "recruitment_source": "university_pool"
   },
-  
   "materials": {
     "questions": {
-      "washington": {
-        "question_text": "In what year did George Washington become the first President of the United States?",
-        "high_anchor": 1920,
-        "low_anchor": 1700,
-        "correct_answer": 1789,
-        "units": "year",
-        "file": "materials/washington_high.txt or materials/washington_low.txt"
-      },
-      "chicago": {
-        "question_text": "What is the population of Chicago (in millions)?",
-        "high_anchor": 5.0,
-        "low_anchor": 0.2,
-        "correct_answer": 2.7,
-        "units": "millions",
-        "file": "materials/chicago_high.txt or materials/chicago_low.txt"
-      },
-      "everest": {
-        "question_text": "At what temperature (in Fahrenheit) does water boil on Mt. Everest?",
-        "high_anchor": 180,
-        "low_anchor": 100,
-        "correct_answer": 160,
-        "units": "degrees_fahrenheit",
-        "file": "materials/everest_high.txt or materials/everest_low.txt"
-      }
+      "mississippi": {"text": "Length of Mississippi River (in miles)", "high": 2000, "low": 70},
+      "everest": {"text": "Height of Mount Everest (in feet)", "high": 45500, "low": 2000},
+      "meat": {"text": "Amount of meat eaten per year by average American (in pounds)", "high": 1000, "low": 50},
+      "sf_nyc": {"text": "Distance from San Francisco to New York City (in miles)", "high": 6000, "low": 1500},
+      "redwood": {"text": "Height of tallest redwood (in feet)", "high": 550, "low": 65},
+      "un_members": {"text": "Number of United Nations members", "high": 127, "low": 14},
+      "female_profs": {"text": "Number of female professors at the University of California, Berkeley", "high": 130, "low": 25},
+      "chicago": {"text": "Population of Chicago (in millions)", "high": 5.0, "low": 0.2},
+      "telephone": {"text": "Year telephone was invented", "high": 1920, "low": 1850},
+      "babies": {"text": "Average number of babies born per day in the United States", "high": 50000, "low": 100},
+      "cat_speed": {"text": "Maximum speed of house cat (in miles per hour)", "high": 30, "low": 7},
+      "gas_usage": {"text": "Amount of gas used per month by average American (in gallons)", "high": 80, "low": 20},
+      "bars_berkeley": {"text": "Number of bars in Berkeley, CA", "high": 85, "low": 10},
+      "colleges_ca": {"text": "Number of state colleges and universities in California", "high": 100, "low": 20},
+      "lincoln": {"text": "Number of Lincoln's presidency", "high": 17, "low": 7}
     }
   },
   "instructions": {
-    "general": "You are participating in a study about numerical estimation and judgment. You will be asked to estimate some factual quantities.",
-    "task": "Before making your estimate, you will see a randomly generated number. This number is not related to the correct answer - it's just a reference point. Please provide your best estimate for each question.",
-    "response_format": "Provide a numerical estimate in the appropriate units (year, millions, or degrees Fahrenheit)"
+    "general": "You will be asked to estimate a quantity. Before estimating, you will be shown a randomly generated number.",
+    "task": "First, indicate whether the true value is higher or lower than the number. Then, provide your best estimate."
   },
   "trials": [
     {
-      "trial_id": "main_estimation",
+      "trial_id": "estimation_task",
       "trial_type": "critical",
-      "scenario": "numerical_estimation_with_anchor",
-      "anchor": "assigned_by_condition",
-      "question": "assigned_by_condition",
-      "expected_response_type": "numerical"
+      "scenario": "anchoring_estimation"
     }
   ],
-  
   "procedure": {
-    "description": "Participants receive a numerical anchor value presented as randomly generated, then make a comparative judgment (higher/lower than anchor), followed by providing their absolute numerical estimate. The anchor value is actually experimentally manipulated (high vs. low) to test anchoring effects.",
+    "description": "Standard anchoring paradigm: Comparative judgment followed by absolute estimation.",
     "steps": [
-      {
-        "step": 1,
-        "description": "Present anchor value",
-        "duration_minutes": 0.5,
-        "materials": "materials/{question}_{anchor}.txt",
-        "details": "Participant sees: 'A number has been randomly generated: [ANCHOR]'"
-      },
-      {
-        "step": 2,
-        "description": "Comparative judgment",
-        "duration_minutes": 0.5,
-        "details": "Participant judges: 'Is your answer higher or lower than [ANCHOR]?'"
-      },
-      {
-        "step": 3,
-        "description": "Absolute estimation",
-        "duration_minutes": 1,
-        "details": "Participant provides numerical estimate for the question"
-      }
-    ],
-    "total_duration_minutes": 2
-  },
-  
-  "key_measures": {
-    "primary": "numerical_estimate (mean difference between high and low anchor conditions)",
-    "secondary": [
-      "anchoring_index per question",
-      "overall anchoring_index",
-      "effect_size (Cohen's d)",
-      "statistical_significance (t-test p-value)"
-    ]
-  },
-  "manipulation_check": {
-    "description": "Verify participants provided numerical responses and understood the task",
-    "questions": [
-      "Did you provide a numerical estimate?",
-      "Did you see the anchor number before making your estimate?"
-    ],
-    "expected_answers": [
-      "Yes, numerical estimate provided",
-      "Yes, anchor was presented"
+      {"step": 1, "description": "Present anchor and question"},
+      {"step": 2, "description": "Participant provides estimate"}
     ]
   }
 }

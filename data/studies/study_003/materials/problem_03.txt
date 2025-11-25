@@ -1,0 +1,12 @@
+Imagine that you face the following pair of concurrent decisions. First examine both decisions, then indicate the options you prefer.
+
+Decision (i). Choose between:
+A. a sure gain of $240
+B. 25% chance to gain $1000, and 75% chance to gain nothing
+
+Decision (ii). Choose between:
+C. a sure loss of $750
+D. 75% chance to lose $1000, and 25% chance to lose nothing
+
+Please indicate your choice for Decision (i) and Decision (ii).
+Format your answer as: "Decision (i): [A or B], Decision (ii): [C or D]"

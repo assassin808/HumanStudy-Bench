@@ -1,0 +1,22 @@
+While driving through a rural area near your home you are stopped by a county police officer who informs you that you have been clocked (with radar) at 38 miles per hour in a 25-mph zone. You believe this information to be accurate. After the policeman leaves, you inspect your citation and find that the details on the summons regarding weather, visibility, time, and location of violation are highly inaccurate. The citation informs you that you may either pay a $20 fine by mail without appearing in court or you must appear in municipal court within the next two weeks to contest the charge.
+
+Option A: Pay the $20 fine by mail
+Option B: Go to court to contest the charge
+
+Part 1: Consensus & Choice
+1. What percentage of your peers do you estimate would choose Option A?
+2. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
+3. Which option would you choose? (Option A / Option B)
+
+Part 2: Trait Ratings
+Please rate the "typical person" who would choose Option A (Pay) and the "typical person" who would choose Option B (Contest) on the following traits. Use a scale from 0 to 100, where 50 is average.
+
+Traits to rate:
+- Self-confidence
+- Legal knowledge
+- Argumentativeness
+- Miserliness
+
+Format your answer as:
+Option A Person: [Trait]: [Score], ...
+Option B Person: [Trait]: [Score], ...

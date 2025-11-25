@@ -1,0 +1,22 @@
+It is proposed in Congress that the space program be revived and that large sums be allocated for the manned and unmanned exploration of the moon and planets nearest Earth. Supporters of the proposal argue that it will provide jobs, spur technology, and promote national pride and unity. Opponents argue that a space program will either necessitate higher taxes, or else drain money from important domestic priorities. Furthermore, they deny that it will accomplish the desirable effects claimed by the program's supporters. Both sides, of course, refute each other's claims and ultimately a public referendum is held.
+
+Option A: Vote for the proposed allocation of funds for space exploration
+Option B: Vote against it
+
+Part 1: Consensus & Choice
+1. What percentage of your peers do you estimate would choose Option A?
+2. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
+3. Which option would you choose? (Option A / Option B)
+
+Part 2: Trait Ratings
+Please rate the "typical person" who would choose Option A (Vote For) and the "typical person" who would choose Option B (Vote Against) on the following traits. Use a scale from 0 to 100, where 50 is average.
+
+Traits to rate:
+- Rationality
+- Social concern
+- Idealism
+- Selfishness
+
+Format your answer as:
+Option A Person: [Trait]: [Score], ...
+Option B Person: [Trait]: [Score], ...

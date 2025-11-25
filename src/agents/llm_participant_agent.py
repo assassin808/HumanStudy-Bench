@@ -30,7 +30,8 @@ class LLMParticipantAgent:
         api_key: Optional[str] = None,
         use_real_llm: bool = False,
         system_prompt_override: Optional[str] = None,
-        api_base: Optional[str] = None
+        api_base: Optional[str] = None,
+        prompt_builder: Optional[Any] = None
     ):
         """
         Initialize a participant agent.
@@ -42,12 +43,14 @@ class LLMParticipantAgent:
                    Examples: "mistralai/mistral-nemo", "gpt-4", "gpt-3.5-turbo", "anthropic/claude-3-sonnet"
             api_key: API key for LLM service (OPENROUTER_API_KEY or OPENAI_API_KEY)
             use_real_llm: If True, makes actual API calls. If False, simulates responses.
-            system_prompt_override: Optional custom system prompt
+            system_prompt_override: Optional custom system prompt (deprecated, use prompt_builder instead)
             api_base: Optional API base URL (default: "https://openrouter.ai/api/v1" for OpenRouter models)
+            prompt_builder: Optional PromptBuilder for custom system prompt support
         """
         self.participant_id = participant_id
         self.profile = profile
         self.model = model
+        self.prompt_builder = prompt_builder
         
         # Determine API key and base URL
         # Check if model is OpenRouter model (contains "/" like "mistralai/mistral-nemo")
@@ -81,7 +84,9 @@ class LLMParticipantAgent:
         Construct system prompt that makes the LLM take on the participant role.
         
         This is the "pretend you are xxx" prompt based on profile.
+        If a custom system_prompt.txt exists, its content will be appended to the default prompt.
         """
+        # Legacy support: if system_prompt_override is provided, use it
         if self.system_prompt_override:
             return self.system_prompt_override
         
@@ -106,15 +111,13 @@ class LLMParticipantAgent:
             # Fallback to education field
             identity_parts.append(f"- Education: {education}")
         
-        # Extract personality traits if available
-        traits = self.profile.get('personality_traits', {})
-        if traits:
-            trait_list = [f"{k}: {v:.2f}" for k, v in traits.items()]
-            identity_parts.append(f"- Personality traits: {', '.join(trait_list)}")
+        # Note: personality_traits are not shown in default system prompt
+        # They are used internally for behavior modeling but not exposed to the LLM
         
         identity_section = "\n".join(identity_parts)
         
-        prompt = f"""You are participating in a psychology experiment as a human participant.
+        # Default system prompt
+        base_prompt = f"""You are participating in a psychology experiment as a human participant.
 
 YOUR IDENTITY:
 {identity_section}
@@ -129,7 +132,20 @@ IMPORTANT INSTRUCTIONS:
 
 Respond naturally and authentically as this person would."""
         
-        return prompt
+        # If prompt_builder has custom system prompt template, append it as-is
+        # Note: Custom prompt is appended without template variable substitution
+        # Age, gender, etc. are already in the default prompt above
+        if self.prompt_builder and hasattr(self.prompt_builder, 'build_system_prompt'):
+            try:
+                custom_content = self.prompt_builder.build_system_prompt()
+                if custom_content:
+                    # Append custom content to base prompt (no template substitution)
+                    return f"{base_prompt}\n\n{custom_content}"
+            except Exception:
+                # If building fails, just use base prompt
+                pass
+        
+        return base_prompt
     
     def receive_instructions(self, instructions: str) -> str:
         """
@@ -430,14 +446,9 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         # Handle obedience studies (Milgram)
         shock_level = trial_info.get("shock_level", trial_info.get("voltage", 0))
         if shock_level > 0:
-            # Get obedience tendency from profile
-            obedience = self.profile.get("personality_traits", {}).get(
-                "authority_obedience", 0.65
-            )
-            
-            # Probability of continuing decreases with shock level
+            # Fixed obedience probability (no longer using personality_traits)
             # Base: 65% go to max, declining probability
-            base_prob = obedience
+            base_prob = 0.65
             shock_factor = shock_level / 30.0  # Normalize to 0-1
             continue_prob = base_prob * (1.0 - 0.3 * shock_factor)  # Decreases with shock level
             
@@ -453,10 +464,8 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         correct = trial_info.get("correct_answer")
         confederates = trial_info.get("confederate_responses", [])
         
-        # Extract conformity tendency from profile
-        conformity_tendency = self.profile.get("personality_traits", {}).get(
-            "conformity_tendency", 0.37
-        )
+        # Fixed conformity tendency (no longer using personality_traits)
+        conformity_tendency = 0.37
         
         if confederates:
             # Critical trial - group gives wrong answer
@@ -522,28 +531,42 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
                 return number_match.group(1)
         
         # Strategy 1: Look for "PROGRAM A/B" or "OPTION A/B/C" patterns
-        program_match = re.search(r'\b(PROGRAM|OPTION)\s+([ABC])\b', response_upper)
+        program_match = re.search(r'\b(PROGRAM|OPTION)\s+([A-F])\b', response_upper)
         if program_match:
             return program_match.group(2)
         
         # Strategy 2: Look for quoted single letters (e.g., "A", 'B', or "Program A")
-        quoted_match = re.search(r'["\'](?:PROGRAM\s+)?([ABC])["\']', response_upper)
+        quoted_match = re.search(r'["\'](?:PROGRAM\s+)?([A-F])["\']', response_upper)
         if quoted_match:
             return quoted_match.group(1)
         
+        # Strategy 2.5: Look for "Yes" or "No"
+        # Prioritize explicit Yes/No answers
+        yes_match = re.search(r'\bYES\b', response_upper)
+        no_match = re.search(r'\bNO\b', response_upper)
+        if yes_match and not no_match:
+            return "Yes"
+        if no_match and not yes_match:
+            return "No"
+        # If both appear, fall through to other strategies or heuristics
+        
         # Strategy 3: Look for A/B/C at start of response or after newline/colon
         clean_start = response_upper.strip()
-        if clean_start and clean_start[0] in ['A', 'B', 'C']:
+        if clean_start and clean_start[0] in ['A', 'B', 'C', 'D', 'E', 'F']:
             return clean_start[0]
         
-        line_start_match = re.search(r'(?:^|\n|:\s*)([ABC])\b', response_upper)
+        line_start_match = re.search(r'(?:^|\n|:\s*)([A-F])\b', response_upper)
         if line_start_match:
             return line_start_match.group(1)
         
-        # Strategy 4: Last resort - find first A/B/C in text
-        for letter in ['A', 'B', 'C']:
+        # Strategy 4: Last resort - find first A-F in text
+        # Note: checking specific letters to avoid false positives
+        for letter in ['A', 'B', 'C', 'D', 'E', 'F']:
             if letter in response_upper:
-                return letter
+                # Simple presence check might be too aggressive for 'A' (e.g. in "A cat")
+                # Require word boundary for single letter
+                if re.search(r'\b' + letter + r'\b', response_upper):
+                    return letter
         
         # Default to ? if completely unparseable
         return "?"
@@ -606,7 +629,8 @@ class ParticipantPool:
         random_seed: Optional[int] = None,
         api_base: Optional[str] = None,
         num_workers: Optional[int] = None,
-        profiles: Optional[List[Dict[str, Any]]] = None
+        profiles: Optional[List[Dict[str, Any]]] = None,
+        prompt_builder: Optional[Any] = None
     ):
         """
         Initialize participant pool based on study specification.
@@ -621,10 +645,7 @@ class ParticipantPool:
             api_base: Optional API base URL for OpenRouter or custom endpoints
             num_workers: Number of parallel workers for participant execution
             profiles: Optional pre-generated participant profiles (if None, will auto-generate)
-            random_seed: Random seed for reproducible profile generation
-            api_base: Optional API base URL for OpenRouter or custom endpoints
-            num_workers: Number of parallel workers for participant execution
-            profiles: Optional pre-generated participant profiles (if None, will auto-generate)
+            prompt_builder: Optional PromptBuilder for custom system prompt generation
         """
         self.specification = study_specification
         self.n_participants = n_participants or study_specification["participants"]["n"]
@@ -633,6 +654,7 @@ class ParticipantPool:
         self.api_key = api_key
         self.random_seed = random_seed
         self.api_base = api_base
+        self.prompt_builder = prompt_builder
         # Number of worker threads to use for parallel participant execution
         # If None, and using real LLMs, default to min(8, n_participants)
         self.num_workers = num_workers if num_workers is not None else (
@@ -645,6 +667,9 @@ class ParticipantPool:
         else:
             self.profiles = self._generate_profiles()
         
+        # Store prompt_builder for later use in system prompt construction
+        self.prompt_builder = prompt_builder
+        
         # Create participant agents
         self.participants: List[LLMParticipantAgent] = []
         for i, profile in enumerate(self.profiles):
@@ -654,7 +679,8 @@ class ParticipantPool:
                 model=model,
                 api_key=api_key,
                 use_real_llm=use_real_llm,
-                api_base=api_base
+                api_base=api_base,
+                prompt_builder=prompt_builder  # Pass prompt_builder for custom system prompt support
             )
             self.participants.append(agent)
     
@@ -697,35 +723,12 @@ class ParticipantPool:
                     gender = g
                     break
             
-            # Sample personality traits based on study type
-            study_type = self.specification.get("study_type", "")
-            
-            if study_type == "authority_obedience":
-                authority_obedience = np.random.beta(2.5, 2)  # Skewed toward higher obedience (~65%)
-                authority_obedience = np.clip(authority_obedience, 0.0, 1.0)
-                empathy = np.random.beta(2, 2)  # Balanced distribution
-                empathy = np.clip(empathy, 0.0, 1.0)
-                
-                personality_traits = {
-                    "authority_obedience": authority_obedience,
-                    "empathy": empathy,
-                    "moral_courage": 1.0 - authority_obedience
-                }
-            else:
-                conformity_tendency = np.random.beta(2, 3)  # Skewed toward moderate conformity
-                conformity_tendency = np.clip(conformity_tendency, 0.0, 1.0)
-                
-                personality_traits = {
-                    "conformity_tendency": conformity_tendency,
-                    "independence": 1.0 - conformity_tendency
-                }
-            
+            # Note: personality_traits removed - no longer used for behavior modeling
             profile = {
                 "participant_id": i,
                 "age": age,
                 "gender": gender,
-                "education": spec.get("recruitment_source", "college student"),
-                "personality_traits": personality_traits
+                "education": spec.get("recruitment_source", "college student")
             }
             
             profiles.append(profile)

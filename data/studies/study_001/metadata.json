@@ -1,0 +1,19 @@
+{
+  "id": "study_001",
+  "title": "The False Consensus Effect",
+  "authors": ["Ross", "Greene", "House"],
+  "year": 1977,
+  "domain": "social_psychology",
+  "subdomain": "social_cognition",
+  "keywords": ["false_consensus", "attribution", "bias", "social_perception"],
+  "difficulty": "medium",
+  "description": "Classic study on how people overestimate the prevalence of their own choices and opinions.",
+  "scenarios": [
+    "study_1_supermarket",
+    "study_1_term_paper",
+    "study_1_traffic_ticket",
+    "study_1_space_program",
+    "study_2_sign"
+  ]
+}
+

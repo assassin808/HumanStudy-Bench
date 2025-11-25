@@ -1,7 +1,6 @@
 """
-Study 002 Configuration - Jacowitz & Kahneman Anchoring Effect (1995)
-
-Implementation of classic anchoring in estimation tasks.
+Study 002 Configuration - Jacowitz & Kahneman (1995)
+Measures of Anchoring in Estimation Tasks
 """
 
 from typing import Dict, Any, List, Optional
@@ -9,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import random
 from scipy import stats
+import re
 
 from src.core.study_config import BaseStudyConfig, StudyConfigRegistry
 from src.agents.prompt_builder import PromptBuilder
@@ -16,43 +16,63 @@ from src.agents.prompt_builder import PromptBuilder
 
 class Study002PromptBuilder(PromptBuilder):
     """
-    Custom PromptBuilder for Study 002 (Anchoring Effect).
+    Custom PromptBuilder for Study 002 (Anchoring).
     
-    Handles question-specific prompt generation by loading appropriate
-    material files based on participant's assigned question and anchor condition.
+    Handles loading specific question materials based on the assigned
+    question and anchor condition.
     """
     
     def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
         """
-        Build trial prompt with question-specific scenario and anchor.
+        Build trial prompt with question-specific content.
         
         Args:
-            trial_data: Trial information including 'participant_profile' 
-                       with 'question' and 'anchor_condition' keys
+            trial_data: Trial information including specific 'question' and 'anchor_condition'
         
         Returns:
-            Trial prompt with appropriate question and anchor
+            Trial prompt with appropriate anchor and question
         """
-        # Extract assignments from participant profile
-        participant_profile = trial_data.get('participant_profile', {})
-        question = participant_profile.get('question', 'washington')
-        anchor_condition = participant_profile.get('anchor_condition', 'high')
+        # Get question and anchor specific to this trial
+        question_id = trial_data.get('question')
+        if not question_id:
+            profile = trial_data.get('participant_profile', {})
+            question_id = profile.get('question', 'mississippi')
+            
+        # Determine anchor condition
+        # 1. explicit in trial data
+        anchor_condition = trial_data.get('anchor_condition')
         
-        # Add minimal fields for trial tracking
-        trial_data["question"] = question
-        trial_data["anchor_condition"] = anchor_condition
-        trial_data["trial_type"] = "estimation"
+        # 2. from profile condition_map (within-subjects)
+        if not anchor_condition:
+            profile = trial_data.get('participant_profile', {})
+            condition_map = profile.get('condition_map', {})
+            anchor_condition = condition_map.get(question_id)
+            
+        # 3. fallback to profile global anchor (between-subjects legacy)
+        if not anchor_condition:
+            profile = trial_data.get('participant_profile', {})
+            anchor_condition = profile.get('anchor_condition', 'high')
         
-        # Load question-specific material for prompt
-        # Format: {question}_{anchor_condition}.txt
-        material_file = self.materials_path / f"{question}_{anchor_condition}.txt"
+        # Construct filename: e.g., "mississippi_high.txt"
+        filename = f"{question_id}_{anchor_condition}.txt"
+        material_file = self.materials_path / filename
+        
+        content = ""
         if material_file.exists():
             with open(material_file, 'r') as f:
-                problem_text = f.read().strip()
-            return problem_text
+                content = f.read()
+        else:
+            content = f"Error: Material file {filename} not found."
+            
+        # Append standard formatting instruction
+        formatting_instruction = (
+            "\n\nPlease provide your answer in the following format:\n"
+            "Comparison: [Higher/Lower]\n"
+            "Estimate: [Your numerical estimate]\n"
+            "Confidence: [1-10]"
+        )
         
-        # Fallback
-        return self._build_generic_trial_prompt(trial_data)
+        return content + formatting_instruction
 
 
 @StudyConfigRegistry.register("study_002")
@@ -67,56 +87,43 @@ class Study002Config(BaseStudyConfig):
     def __init__(self, study_path: Path, specification: Dict[str, Any]):
         super().__init__(study_path, specification)
         
-        # Study parameters - 3 estimation questions
-        self.questions = ["washington", "chicago", "everest"]
+        # Study parameters - 15 estimation questions from Jacowitz & Kahneman (1995)
+        self.questions = [
+            "mississippi", "everest", "meat", "sf_nyc", "redwood", 
+            "un_members", "female_profs", "chicago", "telephone", "babies",
+            "cat_speed", "gas_usage", "bars_berkeley", "colleges_ca", "lincoln"
+        ]
         self.anchor_conditions = ["high", "low"]
         
-        # Anchor values and correct answers
+        # Question Data (from Table 1 of the paper)
+        # calibration_median is used as the "reference" or "correct" answer proxy
         self.question_info = {
-            "washington": {
-                "high_anchor": 1920,
-                "low_anchor": 1700,
-                "correct_answer": 1789
-            },
-            "chicago": {
-                "high_anchor": 5.0,
-                "low_anchor": 0.2,
-                "correct_answer": 2.7
-            },
-            "everest": {
-                "high_anchor": 180,
-                "low_anchor": 100,
-                "correct_answer": 160
-            }
+            "mississippi": {"text": "Length of Mississippi River (in miles)", "high": 2000, "low": 70, "ref": 800},
+            "everest": {"text": "Height of Mount Everest (in feet)", "high": 45500, "low": 2000, "ref": 12000},
+            "meat": {"text": "Amount of meat eaten per year by average American (in pounds)", "high": 1000, "low": 50, "ref": 180},
+            "sf_nyc": {"text": "Distance from San Francisco to New York City (in miles)", "high": 6000, "low": 1500, "ref": 3200},
+            "redwood": {"text": "Height of tallest redwood (in feet)", "high": 550, "low": 65, "ref": 200},
+            "un_members": {"text": "Number of United Nations members", "high": 127, "low": 14, "ref": 50},
+            "female_profs": {"text": "Number of female professors at the University of California, Berkeley", "high": 130, "low": 25, "ref": 50},
+            "chicago": {"text": "Population of Chicago (in millions)", "high": 5.0, "low": 0.2, "ref": 1.0},
+            "telephone": {"text": "Year telephone was invented", "high": 1920, "low": 1850, "ref": 1889},
+            "babies": {"text": "Average number of babies born per day in the United States", "high": 50000, "low": 100, "ref": 2000},
+            "cat_speed": {"text": "Maximum speed of house cat (in miles per hour)", "high": 30, "low": 7, "ref": 18},
+            "gas_usage": {"text": "Amount of gas used per month by average American (in gallons)", "high": 80, "low": 20, "ref": 50},
+            "bars_berkeley": {"text": "Number of bars in Berkeley, CA", "high": 85, "low": 10, "ref": 20},
+            "colleges_ca": {"text": "Number of state colleges and universities in California", "high": 100, "low": 20, "ref": 30},
+            "lincoln": {"text": "Number of Lincoln's presidency", "high": 17, "low": 7, "ref": 16}
         }
     
     def get_prompt_builder(self) -> PromptBuilder:
-        """
-        Return Study 002 specific PromptBuilder.
-        
-        Returns:
-            Study002PromptBuilder instance that handles question-specific prompts
-        """
         return Study002PromptBuilder(self.study_path)
     
     def generate_participant_profiles(self, n_participants: int, 
                                      random_seed: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Generate participant profiles based on original study's recruitment.
-        
-        Original study (Jacowitz & Kahneman, 1995):
-        - N = 145 Stanford undergraduates
-        - Ages 18-22 (typical undergraduate range)
-        - Between-subjects design: each participant gets ONE question 
-          with EITHER high or low anchor
-        - 2x3 factorial: 2 anchor conditions × 3 questions
-        
-        Args:
-            n_participants: Number of participants to generate
-            random_seed: Random seed for reproducibility
-        
-        Returns:
-            List of participant profile dictionaries
+        Generate participant profiles.
+        Each participant answers ALL 15 questions (Within-Subjects).
+        For each question, the participant is randomly assigned to either 'high' or 'low' anchor condition.
         """
         if random_seed is not None:
             np.random.seed(random_seed)
@@ -124,353 +131,240 @@ class Study002Config(BaseStudyConfig):
         
         profiles = []
         
-        # Create balanced assignment: 2 conditions × 3 questions = 6 cells
-        # Each cell gets n_participants / 6 participants
-        cells = []
-        for question in self.questions:
-            for anchor in self.anchor_conditions:
-                cells.append((question, anchor))
-        
-        # Assign participants evenly to cells
-        n_per_cell = n_participants // len(cells)
-        remainder = n_participants % len(cells)
-        
-        assignments = []
-        for i, cell in enumerate(cells):
-            n_this_cell = n_per_cell + (1 if i < remainder else 0)
-            assignments.extend([cell] * n_this_cell)
-        
-        random.shuffle(assignments)
-        
         for i in range(n_participants):
-            # Original study: Stanford undergrads ages 18-22
-            age = int(np.clip(np.random.normal(20, 1.2), 18, 22))
+            # Generate a condition map for this participant: question -> anchor
+            condition_map = {}
+            for q in self.questions:
+                # Randomly assign high or low anchor for each question
+                condition_map[q] = random.choice(["high", "low"])
             
-            question, anchor = assignments[i]
+            # Original study: Stanford undergrads
+            age = int(np.clip(np.random.normal(20, 1.5), 18, 22))
             
             profile = {
                 "participant_id": i,
                 "age": age,
                 "education": "college_student",
-                "background": "You are a college student answering estimation questions.",
-                "question": question,  # Between-subjects: ONE question per participant
-                "anchor_condition": anchor,  # Between-subjects: high OR low anchor
-                "design": "between_subjects"
+                "background": "You are a university student participating in a judgment study.",
+                "design": "within_subjects",
+                "condition_map": condition_map  # Store the mapping here
             }
-            
             profiles.append(profile)
         
         return profiles
     
     def create_trials(self, n_trials: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Generate single trial for anchoring task.
-        
-        Each participant gets ONE trial with their assigned question and anchor.
-        Between-subjects design: both question and anchor assigned at participant level.
-        
-        Args:
-            n_trials: Ignored for this study (always 1 trial per participant)
-        
-        Returns:
-            Single trial dictionary
+        Generate trials for anchoring task.
+        Returns 15 generic trials (one for each question).
+        Specific anchors are determined at runtime based on participant profiles.
         """
-        # This is a between-subjects design with single trial
-        # Question and anchor assignment happens at participant level
-        return [{
-            "trial_number": 1,
-            "study_type": "anchoring_effect",
-            "trial_type": "estimation",
-            "scenario": "numerical_estimation_with_anchor"
-        }]
+        trials = []
+        
+        # Iterate through all 15 questions
+        for i, question_id in enumerate(self.questions):
+            trials.append({
+                "trial_number": i + 1,
+                "study_type": "anchoring_effect",
+                "trial_type": "estimation",
+                "scenario": "numerical_estimation_with_anchor",
+                "question": question_id,
+                # anchor_condition is determined per participant from profile
+            })
+            
+        return trials
     
     def aggregate_results(self, raw_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         Aggregate anchoring effect results.
-        
-        Computes:
-        1. Mean estimates for high vs low anchor conditions per question
-        2. Anchoring index: (Mean_high - Mean_low) / (Anchor_high - Anchor_low)
-        3. Statistical significance tests (t-tests)
-        4. Effect sizes (Cohen's d)
-        
-        Args:
-            raw_results: Raw results from ParticipantPool.run_experiment()
-        
-        Returns:
-            Enhanced results with anchoring effect analysis
+        Now handles multiple trials per participant.
+        Includes Confidence analysis.
         """
         individual_data = raw_results.get("individual_data", [])
-        
         if not individual_data:
-            return raw_results
-        
-        # Organize estimates by question and anchor condition
-        estimates = {
-            "washington": {"high": [], "low": []},
-            "chicago": {"high": [], "low": []},
-            "everest": {"high": [], "low": []}
-        }
-        
-        # Extract estimates from individual data
-        for participant in individual_data:
-            profile = participant.get("profile", {})
-            question = profile.get("question")
-            anchor_condition = profile.get("anchor_condition")
+            # Try to handle 'participants' key if 'individual_data' is missing
+            individual_data = raw_results.get("participants", [])
             
-            if not question or not anchor_condition:
-                continue
+        if not individual_data:
+            return {"error": "No participant data found", "n": 0}
+        
+        # Initialize storage
+        # Structure: question -> anchor_condition -> {'estimates': [], 'confidences': []}
+        data = {q: {"high": {"estimates": [], "confidences": []}, 
+                    "low": {"estimates": [], "confidences": []}} 
+                for q in self.questions}
+        
+        for p in individual_data:
+            # Get all trials for this participant
+            trials = p.get("trial_responses", []) or p.get("responses", [])
             
-            responses = participant.get("responses", [])
-            for response in responses:
-                response_text = response.get("response") or response.get("response_text", "")
-                if not response_text or response_text == "None":
+            for trial_resp in trials:
+                # Extract question and anchor from trial metadata if available
+                question = trial_resp.get("question")
+                anchor = trial_resp.get("anchor_condition")
+                
+                # Fallback: if not in response, reconstruct from profile + trial index
+                if not question or not anchor:
+                    profile = p.get("profile", {})
+                    condition_map = profile.get("condition_map", {})
+                    trial_idx = trial_resp.get("trial_number", 0) - 1
+                    if 0 <= trial_idx < len(self.questions):
+                        question = self.questions[trial_idx]
+                        anchor = condition_map.get(question)
+                
+                if not question or not anchor:
                     continue
                 
-                # Parse numeric estimate
-                estimate = self._parse_numeric_estimate(str(response_text))
-                if estimate is not None:
-                    estimates[question][anchor_condition].append(estimate)
+                # Extract numerical response and confidence
+                response_text = trial_resp.get("response_text", trial_resp.get("response", ""))
+                
+                val = self._parse_numeric_estimate(str(response_text))
+                conf = self._parse_confidence(str(response_text))
+                
+                if val is not None and question in data and anchor in ["high", "low"]:
+                    data[question][anchor]["estimates"].append(val)
+                    if conf is not None:
+                        data[question][anchor]["confidences"].append(conf)
         
-        # Compute statistics for each question
-        question_results = {}
-        anchoring_indices = []
-        cohens_ds = []
-        
-        for question in self.questions:
-            high_estimates = estimates[question]["high"]
-            low_estimates = estimates[question]["low"]
-            
-            if len(high_estimates) < 2 or len(low_estimates) < 2:
-                # Not enough data
-                question_results[question] = {
-                    "n_high": len(high_estimates),
-                    "n_low": len(low_estimates),
-                    "insufficient_data": True
-                }
-                continue
-            
-            # Compute means and SDs
-            mean_high = np.mean(high_estimates)
-            mean_low = np.mean(low_estimates)
-            sd_high = np.std(high_estimates, ddof=1)
-            sd_low = np.std(low_estimates, ddof=1)
-            
-            # Independent samples t-test
-            t_stat, p_value = stats.ttest_ind(high_estimates, low_estimates)
-            
-            # Effect size (Cohen's d)
-            pooled_sd = np.sqrt(((len(high_estimates) - 1) * sd_high**2 + 
-                                 (len(low_estimates) - 1) * sd_low**2) / 
-                                (len(high_estimates) + len(low_estimates) - 2))
-            cohens_d = (mean_high - mean_low) / pooled_sd if pooled_sd > 0 else 0
-            
-            # Anchoring index
-            anchor_high = self.question_info[question]["high_anchor"]
-            anchor_low = self.question_info[question]["low_anchor"]
-            anchoring_index = (mean_high - mean_low) / (anchor_high - anchor_low)
-            
-            question_results[question] = {
-                "n_high": len(high_estimates),
-                "n_low": len(low_estimates),
-                "mean_high": float(mean_high),
-                "mean_low": float(mean_low),
-                "sd_high": float(sd_high),
-                "sd_low": float(sd_low),
-                "anchor_high": anchor_high,
-                "anchor_low": anchor_low,
-                "correct_answer": self.question_info[question]["correct_answer"],
-                "anchoring_index": float(anchoring_index),
-                "t_statistic": float(t_stat),
-                "p_value": float(p_value),
-                "cohens_d": float(cohens_d),
-                "significant": bool(p_value < 0.05),
-                "interpretation": self._interpret_anchoring(anchoring_index, p_value)
-            }
-            
-            anchoring_indices.append(anchoring_index)
-            cohens_ds.append(cohens_d)
-        
-        # Overall statistics
-        if anchoring_indices:
-            mean_anchoring_index = np.mean(anchoring_indices)
-            sd_anchoring_index = np.std(anchoring_indices, ddof=1) if len(anchoring_indices) > 1 else 0.0
-            mean_cohens_d = np.mean(cohens_ds)
-            sd_cohens_d = np.std(cohens_ds, ddof=1) if len(cohens_ds) > 1 else 0.0
-            se_cohens_d = sd_cohens_d / np.sqrt(len(cohens_ds)) if len(cohens_ds) > 0 else 0.0
-            all_significant = all(
-                question_results[q].get("significant", False) 
-                for q in self.questions 
-                if not question_results[q].get("insufficient_data", False)
-            )
-            n_questions = len(anchoring_indices)
-        else:
-            mean_anchoring_index = 0
-            sd_anchoring_index = 0
-            mean_cohens_d = 0
-            sd_cohens_d = 0
-            se_cohens_d = 0
-            all_significant = False
-            n_questions = 0
-        
-        # Build enhanced results
-        enhanced_results = {
-            **raw_results,
-            "descriptive_statistics": {
-                "washington": question_results.get("washington", {}),
-                "chicago": question_results.get("chicago", {}),
-                "everest": question_results.get("everest", {}),
-                "overall": {
-                    "mean": float(mean_anchoring_index),  # For D1 TOST test
-                    "sd": float(sd_anchoring_index),
-                    "n": n_questions,
-                    "anchoring_index": float(mean_anchoring_index),  # Keep for compatibility
-                    "mean_anchoring_index": float(mean_anchoring_index),
-                    "mean_cohens_d": float(mean_cohens_d),
-                    "effect_size": float(mean_cohens_d),  # For D2 TOST test
-                    "se": float(se_cohens_d),
-                    "all_effects_significant": all_significant,
-                    "interpretation": self._interpret_overall_anchoring(mean_anchoring_index)
-                }
-            },
-            "inferential_statistics": {
-                "washington_effect": self._build_effect_dict(question_results.get("washington", {})),
-                "chicago_effect": self._build_effect_dict(question_results.get("chicago", {})),
-                "everest_effect": self._build_effect_dict(question_results.get("everest", {}))
-            },
-            "anchoring_analysis": {
-                "exhibits_anchoring": all_significant,
-                "anchoring_strength": self._categorize_anchoring_strength(mean_anchoring_index),
-                "consistency": "high" if len(anchoring_indices) == 3 and np.std(anchoring_indices) < 0.15 else "moderate"
-            }
+        # Compute stats
+        results = {
+            "n_total": len(individual_data),
+            "by_question": {},
+            "overall_anchoring_index": 0.0,
+            "mean_anchoring_index": 0.0, # Alias for compatibility
+            "overall_confidence": 0.0,
+            "mean_confidence": 0.0, # Alias for compatibility
+            "anchoring_indices": [],
+            "all_confidences": []
         }
         
-        return enhanced_results
-    
-    def _parse_numeric_estimate(self, response_text: str) -> Optional[float]:
-        """
-        Parse numeric estimate from response text.
+        total_ai = 0
+        valid_questions = 0
+        all_confidences = []
+        all_ais = []
         
-        Supports multiple formats:
-        1. Template format: "Higher, 1850" or "Lower, 1750"
-        2. Direct number: "1850" or "My estimate is 1850"
-        3. Sentence with number: "I think it was around 1850 years"
+        for q in self.questions:
+            high_vals = data[q]["high"]["estimates"]
+            low_vals = data[q]["low"]["estimates"]
+            
+            high_confs = data[q]["high"]["confidences"]
+            low_confs = data[q]["low"]["confidences"]
+            
+            mean_high = np.mean(high_vals) if high_vals else 0
+            mean_low = np.mean(low_vals) if low_vals else 0
+            
+            median_high = np.median(high_vals) if high_vals else 0
+            median_low = np.median(low_vals) if low_vals else 0
+            
+            mean_conf_high = np.mean(high_confs) if high_confs else 0
+            mean_conf_low = np.mean(low_confs) if low_confs else 0
+            
+            if high_confs: all_confidences.extend(high_confs)
+            if low_confs: all_confidences.extend(low_confs)
+            
+            # Calculate Anchoring Index (AI) using MEDIANS as per Jacowitz & Kahneman (1995)
+            # AI = (Median_High - Median_Low) / (Anchor_High - Anchor_Low)
+            anchor_high = self.question_info[q]["high"]
+            anchor_low = self.question_info[q]["low"]
+            denominator = anchor_high - anchor_low
+            
+            ai = (median_high - median_low) / denominator if denominator != 0 else 0
+            
+            # T-test
+            t_stat, p_val = 0.0, 1.0
+            if len(high_vals) > 1 and len(low_vals) > 1:
+                # Check for zero variance
+                if np.std(high_vals) == 0 and np.std(low_vals) == 0:
+                    p_val = 1.0 if mean_high == mean_low else 0.0
+                else:
+                    try:
+                        t_stat, p_val = stats.ttest_ind(high_vals, low_vals, equal_var=False)
+                    except Exception:
+                        pass
+            
+            results["by_question"][q] = {
+                "high_n": len(high_vals),
+                "low_n": len(low_vals),
+                "high_mean": float(mean_high),
+                "low_mean": float(mean_low),
+                "high_confidence": float(mean_conf_high),
+                "low_confidence": float(mean_conf_low),
+                "anchoring_index": float(ai),
+                "p_value": float(p_val) if not np.isnan(p_val) else 1.0
+            }
+            
+            # After calculating AI
+            if len(high_vals) > 0 and len(low_vals) > 0:
+                total_ai += ai
+                valid_questions += 1
+                all_ais.append(ai)
+                
+        results["overall_anchoring_index"] = float(total_ai / valid_questions) if valid_questions > 0 else 0.0
+        results["mean_anchoring_index"] = results["overall_anchoring_index"]
+        results["overall_confidence"] = float(np.mean(all_confidences)) if all_confidences else 0.0
+        results["mean_confidence"] = results["overall_confidence"]
+        results["anchoring_indices"] = all_ais
+        results["all_confidences"] = all_confidences
         
-        Args:
-            response_text: Raw response text
-        
-        Returns:
-            Numeric estimate or None if parsing fails
-        """
+        return results
+
+    def _parse_confidence(self, text: str) -> Optional[float]:
+        """Extract confidence score (1-10)."""
         import re
-        
-        if not response_text or response_text == "None":
-            return None
-        
-        text = str(response_text).strip()
-        
-        # Pattern 1: Template format "Higher/Lower, NUMBER"
-        # This should take priority to extract the estimate (not the anchor)
-        template_match = re.search(r'(?:HIGHER|LOWER|Higher|Lower)\s*,\s*(\d+\.?\d*)', text, re.IGNORECASE)
-        if template_match:
+        # Look for "Confidence: X"
+        match = re.search(r"Confidence:\s*(\d+)", text, re.IGNORECASE)
+        if match:
             try:
-                return float(template_match.group(1))
+                val = float(match.group(1))
+                # Clip to valid range 1-10
+                return max(1.0, min(10.0, val))
             except ValueError:
                 pass
-        
-        # Pattern 2: Look for number after keywords
-        text_upper = text.upper()
-        
-        # Remove anchor comparison part if present (to avoid extracting anchor value)
-        # e.g., "Is it higher than 1920?" should not extract 1920
-        text_upper = re.sub(r'(?:HIGHER|LOWER)\s+THAN\s+\d+', '', text_upper)
-        
-        # Remove common instruction patterns
-        text_upper = re.sub(r'(MY ESTIMATE IS|I ESTIMATE|ESTIMATE:|ANSWER:|MY ANSWER IS)', '', text_upper)
-        
-        # Pattern 3: Handle "late 1700s", "early 1800s" style responses
-        decade_match = re.search(r'(?:LATE|EARLY|MID)?\s*(\d{4})S', text_upper)
-        if decade_match:
-            try:
-                # Extract the decade (e.g., "1700s" -> 1700)
-                return float(decade_match.group(1))
-            except ValueError:
-                pass
-        
-        # Pattern 4: Extract all numbers (integer or float)
-        numbers = re.findall(r'\b(\d+\.?\d*)\b', text_upper)
-        
-        if numbers:
-            # Return the first reasonable number found
-            for num_str in numbers:
-                try:
-                    num = float(num_str)
-                    # Basic sanity check: accept numbers >= 0.1
-                    # (for Chicago population in millions like 2.7)
-                    if num >= 0.1:
-                        return num
-                except ValueError:
-                    continue
-        
         return None
-    
-    def _interpret_anchoring(self, index: float, p_value: float) -> str:
-        """Interpret anchoring effect strength."""
-        if p_value >= 0.05:
-            return "No significant anchoring effect"
+
+    def _parse_numeric_estimate(self, text: str) -> Optional[float]:
+        """
+        Extract numeric estimate from text, prioritizing 'Estimate:' format.
+        Robust against commas and other artifacts.
+        """
+        # 1. Try to find explicit "Estimate:" pattern first
+        estimate_match = re.search(r"Estimate:\s*([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if estimate_match:
+            num_str = estimate_match.group(1).replace(",", "")
+            try:
+                return float(num_str)
+            except ValueError:
+                pass
         
-        if index >= 0.5:
-            return "Very strong anchoring (index ≥ 0.5)"
-        elif index >= 0.4:
-            return "Strong anchoring consistent with original study (index 0.4-0.5)"
-        elif index >= 0.3:
-            return "Moderate anchoring (index 0.3-0.4)"
-        elif index >= 0.2:
-            return "Weak anchoring (index 0.2-0.3)"
-        else:
-            return "Minimal anchoring (index < 0.2)"
-    
-    def _interpret_overall_anchoring(self, mean_index: float) -> str:
-        """Interpret overall anchoring strength."""
-        if mean_index >= 0.45:
-            return "Very strong anchoring effect matching original study"
-        elif mean_index >= 0.35:
-            return "Strong anchoring effect similar to original study"
-        elif mean_index >= 0.25:
-            return "Moderate anchoring effect"
-        elif mean_index >= 0.15:
-            return "Weak anchoring effect"
-        else:
-            return "Minimal or no anchoring effect"
-    
-    def _categorize_anchoring_strength(self, mean_index: float) -> str:
-        """Categorize anchoring strength."""
-        if mean_index >= 0.5:
-            return "very_strong"
-        elif mean_index >= 0.4:
-            return "strong"
-        elif mean_index >= 0.3:
-            return "moderate"
-        elif mean_index >= 0.2:
-            return "weak"
-        else:
-            return "minimal"
-    
-    def _build_effect_dict(self, question_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Build standardized effect dictionary for a question."""
-        if question_result.get("insufficient_data", False):
-            return {
-                "test_type": "independent_t_test",
-                "insufficient_data": True
-            }
+        # 2. Fallback: Look for the last number in the text
+        # This is safer than first number because the anchor (first number) is usually at the start
+        # But "last number" might be confidence (1-10).
+        # So let's try to filter out single digit integers at the very end if confidence is requested.
+        # Given the new format, Confidence is at the end. Estimate is in the middle.
         
-        return {
-            "test_type": "independent_t_test",
-            "t_statistic": question_result.get("t_statistic", float('nan')),
-            "p_value": question_result.get("p_value", float('nan')),
-            "p": question_result.get("p_value", float('nan')),
-            "cohens_d": question_result.get("cohens_d", float('nan')),
-            "anchoring_index": question_result.get("anchoring_index", float('nan')),
-            "significant": question_result.get("significant", False),
-            "conclusion": question_result.get("interpretation", "Unknown")
-        }
+        # Let's try to be smarter.
+        # Remove the anchor value from consideration if possible? No, that's hard.
+        # If the text contains "Confidence:", strip everything after it.
+        
+        clean_text = text
+        if "Confidence:" in text:
+            clean_text = text.split("Confidence:")[0]
+            
+        # Now extract numbers from what remains
+        # Remove commas
+        clean_text = clean_text.replace(",", "")
+        matches = re.findall(r"[-+]?\d*\.\d+|\d+", clean_text)
+        
+        if matches:
+            # If explicit "Estimate:" wasn't found, we might still be here.
+            # If we have multiple numbers, the anchor is likely the first one if they repeated the question.
+            # The estimate is likely the second one or the last one before confidence.
+            
+            # Heuristic: if there are multiple numbers, pick the one that is NOT the anchor (if we knew it)
+            # or just pick the last one found in the "Estimate" section.
+            try:
+                return float(matches[-1])
+            except ValueError:
+                return None
+                
+        return None

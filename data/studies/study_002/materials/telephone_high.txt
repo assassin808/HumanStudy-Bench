@@ -1,0 +1,6 @@
+A number has been randomly generated: 1920
+
+Question: Year telephone was invented
+
+First, is the true answer higher or lower than 1920?
+Second, what is your best estimate of the answer?

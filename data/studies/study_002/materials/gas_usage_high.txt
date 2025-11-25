@@ -1,0 +1,6 @@
+A number has been randomly generated: 80
+
+Question: Amount of gas used per month by average American (in gallons)
+
+First, is the true answer higher or lower than 80?
+Second, what is your best estimate of the answer?

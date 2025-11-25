@@ -1,0 +1,6 @@
+A number has been randomly generated: 130
+
+Question: Number of female professors at the University of California, Berkeley
+
+First, is the true answer higher or lower than 130?
+Second, what is your best estimate of the answer?

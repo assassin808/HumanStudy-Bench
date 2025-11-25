@@ -1,0 +1,6 @@
+Choose between:
+Option X: 25% chance to win $240, and 75% chance to lose $760. (Same as A & D combined)
+Option Y: 25% chance to win $250, and 75% chance to lose $750. (Same as B & C combined)
+
+Which option do you prefer?
+Please answer with exactly "Option X" or "Option Y".

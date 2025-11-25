@@ -1,0 +1,6 @@
+A number has been randomly generated: 1,500
+
+Question: Distance from San Francisco to New York City (in miles)
+
+First, is the true answer higher or lower than 1,500?
+Second, what is your best estimate of the answer?

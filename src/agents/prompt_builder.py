@@ -40,18 +40,40 @@ class PromptBuilder:
                 self.instructions = f.read()
         else:
             self.instructions = None
+        
+        # Load custom system prompt template (optional)
+        system_prompt_file = self.materials_path / "system_prompt.txt"
+        if system_prompt_file.exists():
+            with open(system_prompt_file, "r") as f:
+                self.system_prompt_template = f.read()
+        else:
+            self.system_prompt_template = None
     
-    def build_system_prompt(self, participant_profile: Dict[str, Any]) -> str:
+    def build_system_prompt(self, participant_profile: Dict[str, Any] = None) -> Optional[str]:
         """
-        Build the system prompt that defines the participant's identity.
+        Get the custom system prompt content if it exists.
+        
+        Note: Custom system prompt is appended as-is without template variable substitution.
+        Age, gender, and other profile information are already included in the default
+        system prompt, so the custom content should be additional instructions only.
         
         Args:
-            participant_profile: Dictionary with age, gender, personality traits, etc.
+            participant_profile: Not used (kept for compatibility), custom prompt is used as-is
             
         Returns:
-            Complete system prompt string
+            Custom system prompt content string, or None if not provided
         """
-        return self._build_generic_system_prompt(participant_profile)
+        # Return custom system prompt template as-is (no template variable substitution)
+        return self.system_prompt_template
+    
+    def get_system_prompt_template(self) -> Optional[str]:
+        """
+        Get the custom system prompt template if it exists.
+        
+        Returns:
+            Custom system prompt template string, or None if not provided
+        """
+        return self.system_prompt_template
     
     def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
         """

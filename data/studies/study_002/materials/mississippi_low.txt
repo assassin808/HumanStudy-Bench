@@ -1,0 +1,6 @@
+A number has been randomly generated: 70
+
+Question: Length of Mississippi River (in miles)
+
+First, is the true answer higher or lower than 70?
+Second, what is your best estimate of the answer?

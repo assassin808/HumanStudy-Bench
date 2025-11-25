@@ -1,0 +1,6 @@
+A number has been randomly generated: 85
+
+Question: Number of bars in Berkeley, CA
+
+First, is the true answer higher or lower than 85?
+Second, what is your best estimate of the answer?

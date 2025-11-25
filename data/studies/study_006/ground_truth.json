@@ -1,0 +1,247 @@
+{
+  "study_id": "study_006",
+  "title": "A Room with a Viewpoint: Using Social Norms to Motivate Environmental Conservation in Hotels",
+  "authors": ["Noah J. Goldstein", "Robert B. Cialdini", "Vladas Griskevicius"],
+  "year": 2008,
+  "journal": "Journal of Consumer Research",
+  "volume": 35,
+  "issue": 3,
+  "pages": "472-482",
+  "delta": 0.2,
+  "delta_note": "Global equivalence margin (standardized units). Cohen (1988) defines d < 0.2 as 'negligible' effect.",
+  "evaluation_framework": {
+    "description": "Two-tier evaluation: phenomenon-level and data-level matching",
+    "type_1": {
+      "name": "phenomenon_level_match",
+      "description": "Tests whether agent exhibits social norm effect (higher participation with descriptive norms vs environmental message)",
+      "approach": "Proportion difference tests comparing message conditions",
+      "critical": true
+    },
+    "type_2": {
+      "name": "data_level_match",
+      "description": "Tests how closely agent data matches human baseline data using equivalence testing",
+      "approach": "TOST (Two One-Sided Tests) with Freeman-Tukey standardization for proportions",
+      "rationale": "Tests H₁: |d| < δ (equivalence) rather than H₁: d ≠ 0 (difference). Lower p-value indicates stronger equivalence.",
+      "critical": false
+    }
+  },
+  "original_results": {
+    "experiment_1": {
+      "sample_size": 433,
+      "environmental_condition": {
+        "n": 216,
+        "towel_reuse_rate": 0.351,
+        "towel_reuse_count": 76
+      },
+      "descriptive_norm_condition": {
+        "n": 217,
+        "towel_reuse_rate": 0.441,
+        "towel_reuse_count": 96
+      },
+      "statistical_test": {
+        "test_type": "chi_square",
+        "statistic": "χ²(1) = 3.72",
+        "p_value": 0.05,
+        "effect_size": 0.09,
+        "interpretation": "Descriptive norm message significantly outperformed environmental message"
+      }
+    },
+    "experiment_2": {
+      "sample_size": 1595,
+      "environmental_condition": {
+        "n": 319,
+        "towel_reuse_rate": 0.372,
+        "towel_reuse_count": 119
+      },
+      "descriptive_norm_guest_condition": {
+        "n": 319,
+        "towel_reuse_rate": 0.440,
+        "towel_reuse_count": 140
+      },
+      "descriptive_norm_room_condition": {
+        "n": 319,
+        "towel_reuse_rate": 0.493,
+        "towel_reuse_count": 157
+      },
+      "descriptive_norm_citizen_condition": {
+        "n": 319,
+        "towel_reuse_rate": 0.435,
+        "towel_reuse_count": 139
+      },
+      "descriptive_norm_gender_condition": {
+        "n": 319,
+        "towel_reuse_rate": 0.409,
+        "towel_reuse_count": 130
+      },
+      "statistical_tests": {
+        "overall_difference": {
+          "test_type": "chi_square",
+          "statistic": "χ²(4) = 9.87",
+          "p_value": 0.05,
+          "effect_size": 0.08
+        },
+        "descriptive_norms_vs_environmental": {
+          "test_type": "chi_square",
+          "statistic": "χ²(1) = 4.94",
+          "p_value": 0.03,
+          "effect_size": 0.06,
+          "interpretation": "All descriptive norm messages combined significantly outperformed environmental message"
+        },
+        "provincial_norm_effect": {
+          "test_type": "chi_square",
+          "statistic": "χ²(1) = 4.18",
+          "p_value": 0.05,
+          "effect_size": 0.06,
+          "interpretation": "Same room identity (provincial norm) significantly outperformed other descriptive norm conditions"
+        }
+      }
+    }
+  },
+  "descriptive_statistics": {
+    "experiment_2": {
+      "environmental": {
+        "n": 319,
+        "towel_reuse_rate": 0.372,
+        "sd": null
+      },
+      "descriptive_norm_guest": {
+        "n": 319,
+        "towel_reuse_rate": 0.440,
+        "sd": null
+      },
+      "descriptive_norm_room": {
+        "n": 319,
+        "towel_reuse_rate": 0.493,
+        "sd": null
+      },
+      "descriptive_norm_citizen": {
+        "n": 319,
+        "towel_reuse_rate": 0.435,
+        "sd": null
+      },
+      "descriptive_norm_gender": {
+        "n": 319,
+        "towel_reuse_rate": 0.409,
+        "sd": null
+      },
+      "all_descriptive_norms_combined": {
+        "n": 1276,
+        "towel_reuse_rate": 0.445,
+        "sd": null
+      }
+    }
+  },
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "Descriptive Norm Effect",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent exhibits social norm effect (descriptive norms > environmental message)",
+        "method": {
+          "test": "proportion_difference",
+          "alpha": 0.05,
+          "direction": "descriptive_norms > environmental",
+          "rationale": "Original study found descriptive norm messages (44.5%) significantly outperformed environmental message (37.2%)"
+        },
+        "critical": true,
+        "weight": 3.0
+      },
+      {
+        "test_id": "P2",
+        "test_name": "Provincial Norm Effect",
+        "test_type": "phenomenon_level",
+        "description": "Tests whether agent exhibits provincial norm effect (same room > other descriptive norms)",
+        "method": {
+          "test": "proportion_difference",
+          "alpha": 0.05,
+          "direction": "descriptive_norm_room > other_descriptive_norms",
+          "rationale": "Original study found same room identity (49.3%) significantly outperformed other descriptive norm conditions (42.8%)"
+        },
+        "critical": true,
+        "weight": 3.0
+      },
+      {
+        "test_id": "D1",
+        "test_name": "Same Room Identity Rate Match",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent same room identity rate vs human baseline",
+        "data_type": "proportion",
+        "human_baseline": {
+          "mean": 0.493,
+          "sd": 0.05,
+          "n": 319,
+          "source": "Goldstein, Cialdini, & Griskevicius (2008), Experiment 2, same room identity condition"
+        },
+        "method": {
+          "condition": "descriptive_norm_room",
+          "metric": "towel_reuse_rate",
+          "standardization": "freeman_tukey",
+          "rationale": "Tests if agent's same room identity participation rate matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 2.0
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Descriptive Norm Effect Size Match",
+        "test_type": "data_level",
+        "description": "TOST equivalence test: agent descriptive norm effect size vs human baseline",
+        "data_type": "effect_size",
+        "human_baseline": {
+          "mean_descriptive_norms": 0.445,
+          "mean_environmental": 0.372,
+          "effect_size": 0.073,
+          "se": 0.03,
+          "source": "Goldstein, Cialdini, & Griskevicius (2008), Experiment 2"
+        },
+        "method": {
+          "comparison": "descriptive_norms_vs_environmental",
+          "metric": "proportion_difference",
+          "standardization": "freeman_tukey",
+          "rationale": "Tests if agent's descriptive norm effect size matches human baseline"
+        },
+        "interpretation": {
+          "p < 0.001": "Very strong equivalence",
+          "p < 0.01": "Strong equivalence",
+          "p < 0.05": "Moderate equivalence (can claim equivalence)",
+          "p < 0.10": "Weak equivalence",
+          "p >= 0.10": "Insufficient evidence for equivalence"
+        },
+        "critical": false,
+        "weight": 2.0
+      }
+    ],
+    "scoring": {
+      "total_weight": 10.0,
+      "critical_requirement": "All phenomenon-level tests (P1, P2) must pass",
+      "passing_threshold": 0.75,
+      "grading_scale": {
+        "perfect": 1.00,
+        "excellent": 0.90,
+        "good": 0.80,
+        "pass": 0.75,
+        "fail": 0.00
+      }
+    },
+    "pass_threshold": 0.75
+  },
+  "key_findings": {
+    "main_finding": "Descriptive normative messages (informing guests that most others participate) significantly outperform traditional environmental protection messages in motivating hotel towel reuse",
+    "provincial_norm_finding": "Provincial norms (norms of one's immediate surroundings, e.g., same room) are more effective than global norms (norms of less immediate surroundings, e.g., whole hotel), even when provincial norms are rationally no more diagnostic",
+    "theoretical_implication": "Demonstrates the power of descriptive social norms and the importance of situational/provincial norms over personal identity-based norms in some contexts",
+    "practical_implication": "Hotels and other organizations can increase participation in conservation programs by using descriptive normative appeals, especially those referencing provincial (local) norms"
+  },
+  "notes": {
+    "replication_notes": "This study demonstrates robust social norm effects in real-world field settings. The provincial norm effect is particularly interesting as it shows people follow norms of situationally similar others even when those others are not personally meaningful.",
+    "implementation_notes": "Ensure messages clearly convey descriptive norms (what most people do). Provincial norms should reference the most immediate/local setting possible.",
+    "common_issues": "Some participants may not notice or read the signs. The effect may vary with individual differences in environmental concern or social identity importance."
+  }
+}

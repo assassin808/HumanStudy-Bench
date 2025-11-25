@@ -207,7 +207,9 @@ def get_study_config(
     """
     # Lazy import to avoid circular dependency
     # 新增 study 时在这里添加 import
-    if study_id == "study_002":
+    if study_id == "study_001":
+        from src.studies.study_001_config import Study001Config
+    elif study_id == "study_002":
         from src.studies.study_002_config import Study002Config
     elif study_id == "study_003":
         from src.studies.study_003_config import Study003Config
@@ -215,6 +217,8 @@ def get_study_config(
         from src.studies.study_004_config import Study004Config
     elif study_id == "study_005":
         from src.studies.study_005_config import Study005Config
+    elif study_id == "study_006":
+        from src.studies.study_006_config import Study006Config
     
     config = StudyConfigRegistry.create_config(study_id, study_path, specification)
     

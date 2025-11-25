@@ -1,0 +1,6 @@
+A number has been randomly generated: 7
+
+Question: Maximum speed of house cat (in miles per hour)
+
+First, is the true answer higher or lower than 7?
+Second, what is your best estimate of the answer?

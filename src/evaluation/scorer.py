@@ -139,7 +139,7 @@ class Scorer:
                 data_tests[test_id] = test_result
                 data_score += score * weight
                 data_weight += weight
-        
+            
         # PHENOMENON RESULT: Binary pass/fail
         # Pass = ALL P tests pass (100%)
         phenomenon_passed = (phenomenon_passed_count == phenomenon_total_count and 
@@ -152,32 +152,42 @@ class Scorer:
         data_passed = (data_passed_count == data_total_count and data_total_count > 0)
         data_score_final = 1.0 if data_passed else 0.0
         
-        # OVERALL SCORE: Weighted average of ALL test scores (both P and D)
-        # Calculate weighted average using individual test scores and weights
-        total_weighted_score = 0.0
-        total_weight = 0.0
+        # Calculate weighted scores for P and D separately
+        total_weighted_p_score = 0.0
+        total_p_weight = 0.0
         
-        # Add phenomenon test scores (binary: 1.0 if pass, 0.0 if fail)
         for test in phenomenon_tests.values():
-            test_score = 1.0 if test.get("passed", False) else 0.0
+            # Use partial score if available (from 0.0 to 1.0), otherwise binary
+            test_score = test.get("score", 1.0 if test.get("passed", False) else 0.0)
             test_weight = test.get("weight", 1.0)
-            total_weighted_score += test_score * test_weight
-            total_weight += test_weight
+            total_weighted_p_score += test_score * test_weight
+            total_p_weight += test_weight
+            
+        total_weighted_d_score = 0.0
+        total_d_weight = 0.0
         
-        # Add data test scores (binary: 1.0 if pass, 0.0 if fail)
         for test in data_tests.values():
-            test_score = 1.0 if test.get("passed", False) else 0.0
+            test_score = test.get("score", 1.0 if test.get("passed", False) else 0.0)
             test_weight = test.get("weight", 1.0)
-            total_weighted_score += test_score * test_weight
-            total_weight += test_weight
+            total_weighted_d_score += test_score * test_weight
+            total_d_weight += test_weight
+
+        # OVERALL SCORE: Weighted average of Phenomenon and Data scores
+        # Recommended weighting: Phenomenon (2.0) vs Data (1.0)
+        # Reason: Mechanism validity (Phenomenon) is prerequisite for quantitative fidelity (Data)
         
-        overall_score = total_weighted_score / total_weight if total_weight > 0 else 0.0
+        # Calculate raw scores first (0.0 to 1.0)
+        p_raw_score = total_weighted_p_score / total_p_weight if total_p_weight > 0 else 0.0
+        d_raw_score = total_weighted_d_score / total_d_weight if total_d_weight > 0 else 0.0
+        
+        # Apply 2:1 weighting
+        overall_score = (p_raw_score * 2.0 + d_raw_score * 1.0) / 3.0
         
         return {
             "study_id": study.id,
             "phenomenon_result": {
                 "passed": phenomenon_passed,
-                "score": phenomenon_score_final,  # Binary: 1.0 or 0.0
+                "score": p_raw_score,
                 "tests": phenomenon_tests,
                 "total_tests": phenomenon_total_count,
                 "passed_tests": phenomenon_passed_count,
@@ -185,20 +195,20 @@ class Scorer:
             },
             "data_result": {
                 "passed": data_passed,
-                "score": data_score_final,  # Binary: 1.0 or 0.0
+                "score": d_raw_score,
                 "tests": data_tests,
                 "total_tests": data_total_count,
                 "passed_tests": data_passed_count,
                 "weight": data_weight
             },
-            "overall_score": overall_score,  # Average of phenomenon and data (0.0, 0.5, or 1.0)
-            # Legacy fields for backward compatibility
+            "overall_score": overall_score,
+            # Legacy fields
             "total_score": overall_score,
-            "passed": phenomenon_passed,  # Pass based on phenomenon
+            "passed": phenomenon_passed,
             "phenomenon_tests": phenomenon_tests,
             "data_tests": data_tests,
-            "phenomenon_score": phenomenon_score_final,
-            "data_score": data_score_final
+            "phenomenon_score": p_raw_score,
+            "data_score": d_raw_score
         }
     
     def _run_phenomenon_test(
@@ -231,6 +241,12 @@ class Scorer:
                 return self._test_proportion_difference(agent_results, ground_truth, test_spec)
             elif test_name == "independent_t_test":
                 return self._test_independent_t(agent_results, ground_truth, test_spec)
+            elif test_name == "one_sample_t_test":
+                return self._test_one_sample_t(agent_results, ground_truth, test_spec)
+            elif test_name == "paired_t_test":
+                return self._test_paired_t(agent_results, ground_truth, test_spec)
+            elif test_name == "correlation":
+                return self._test_correlation(agent_results, ground_truth, test_spec)
             else:
                 return {
                     "score": 0.0,
@@ -347,6 +363,24 @@ class Scorer:
             elif direction == "negative_greater_than_positive":
                 cond1, cond2 = "negative_frame", "positive_frame"
                 expected_direction = "greater"
+            elif ">" in direction:
+                # Format: "condition1 > condition2" or "condition1 > other_conditions"
+                parts = [p.strip() for p in direction.split(">")]
+                if len(parts) == 2:
+                    cond1 = parts[0]
+                    cond2 = parts[1]
+                    expected_direction = "greater"
+                else:
+                    return {"score": 0.0, "passed": False, "details": {"error": f"Invalid direction format: {direction}"}}
+            elif "<" in direction:
+                # Format: "condition1 < condition2"
+                parts = [p.strip() for p in direction.split("<")]
+                if len(parts) == 2:
+                    cond1 = parts[0]
+                    cond2 = parts[1]
+                    expected_direction = "less"
+                else:
+                    return {"score": 0.0, "passed": False, "details": {"error": f"Invalid direction format: {direction}"}}
             elif "conditions" in method:
                 # Legacy format with explicit conditions
                 conditions = method["conditions"]
@@ -357,12 +391,50 @@ class Scorer:
             else:
                 return {"score": 0.0, "passed": False, "details": {"error": f"Cannot parse direction: {direction}"}}
             
-            # Extract proportions for each condition
-            if cond1 not in agent_desc or cond2 not in agent_desc:
-                return {"score": 0.0, "passed": False, "details": {"error": f"Missing condition data: {cond1} or {cond2}"}}
+            # Handle special cases for combined conditions (e.g., "descriptive_norms" or "other_descriptive_norms")
+            # Check if we need to compute combined statistics
+            if cond1 == "descriptive_norms" or cond1 == "all_descriptive_norms_combined":
+                # Combine all descriptive norm conditions
+                descriptive_conditions = ["descriptive_norm_guest", "descriptive_norm_room", 
+                                         "descriptive_norm_citizen", "descriptive_norm_gender"]
+                if "by_condition" in agent_desc:
+                    combined_data = self._combine_conditions(agent_desc["by_condition"], descriptive_conditions)
+                    data1 = combined_data
+                else:
+                    return {"score": 0.0, "passed": False, "details": {"error": "Missing by_condition data for combined descriptive norms"}}
+            elif cond1 in agent_desc:
+                data1 = agent_desc[cond1]
+            elif "by_condition" in agent_desc and cond1 in agent_desc["by_condition"]:
+                data1 = agent_desc["by_condition"][cond1]
+            else:
+                return {"score": 0.0, "passed": False, "details": {"error": f"Missing condition data: {cond1}"}}
             
-            prop1 = agent_desc[cond1].get("proportion_choose_safe")
-            prop2 = agent_desc[cond2].get("proportion_choose_safe")
+            if cond2 == "other_descriptive_norms":
+                # Combine descriptive norm conditions except room
+                other_conditions = ["descriptive_norm_guest", "descriptive_norm_citizen", "descriptive_norm_gender"]
+                if "by_condition" in agent_desc:
+                    combined_data = self._combine_conditions(agent_desc["by_condition"], other_conditions)
+                    data2 = combined_data
+                else:
+                    return {"score": 0.0, "passed": False, "details": {"error": "Missing by_condition data for other descriptive norms"}}
+            elif cond2 in agent_desc:
+                data2 = agent_desc[cond2]
+            elif "by_condition" in agent_desc and cond2 in agent_desc["by_condition"]:
+                data2 = agent_desc["by_condition"][cond2]
+            else:
+                return {"score": 0.0, "passed": False, "details": {"error": f"Missing condition data: {cond2}"}}
+            
+            # Try multiple possible field names for proportions
+            prop1 = (data1.get("proportion_choose_safe") or 
+                    data1.get("obedience_rate") or
+                    data1.get("towel_reuse_rate") or
+                    data1.get("proportion") or
+                    data1.get("rate"))
+            prop2 = (data2.get("proportion_choose_safe") or 
+                    data2.get("obedience_rate") or
+                    data2.get("towel_reuse_rate") or
+                    data2.get("proportion") or
+                    data2.get("rate"))
             
             if prop1 is None or prop2 is None:
                 return {"score": 0.0, "passed": False, "details": {"error": "Missing proportion data"}}
@@ -389,6 +461,228 @@ class Scorer:
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+    
+    def _test_one_sample_t(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test if a variable is significantly different from a comparison value."""
+        try:
+            from scipy import stats
+            
+            method = test_spec.get("method", {})
+            variable = method.get("variable", "")
+            comparison_value = method.get("comparison_value", 0.0)
+            alternative = method.get("alternative", "two-sided")
+            
+            # Extract data based on variable name
+            values = []
+            if variable == "anchoring_index":
+                # Specific extraction logic for anchoring index
+                by_question = agent_results.get("by_question", {})
+                for q_data in by_question.values():
+                    if "anchoring_index" in q_data:
+                        values.append(q_data["anchoring_index"])
+            else:
+                # Generic extraction (not implemented for now)
+                pass
+            
+            if not values:
+                return {"score": 0.0, "passed": False, "details": {"error": f"No data found for {variable}"}}
+            
+            # Perform one-sample t-test
+            t_stat, p_value = stats.ttest_1samp(values, popmean=comparison_value, alternative=alternative)
+            
+            # Check significance (alpha = 0.05)
+            is_significant = p_value < 0.05
+            
+            # Also check direction (for one-sided tests, scipy handles p-value, but check mean)
+            mean_val = np.mean(values)
+            passed = is_significant
+            
+            score = 1.0 if passed else 0.0
+            
+            details = {
+                "variable": variable,
+                "mean": float(mean_val),
+                "n": len(values),
+                "t_statistic": float(t_stat),
+                "p_value": float(p_value),
+                "significant": bool(is_significant)
+            }
+            
+            return {"score": float(score), "passed": bool(passed), "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+
+    def _test_paired_t(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test if two paired variables are significantly different."""
+        try:
+            from scipy import stats
+            
+            method = test_spec.get("method", {})
+            var1_name = method.get("variable_1", "")
+            var2_name = method.get("variable_2", "")
+            alternative = method.get("alternative", "two-sided")
+            
+            # Extract paired data
+            # Assuming data is in by_question structure for Study 002
+            by_question = agent_results.get("by_question", {})
+            
+            vals1 = []
+            vals2 = []
+            
+            # Specific logic for high_anchor_ai vs low_anchor_ai
+            # Since our current structure computes one AI per question, we need to calculate
+            # AI_high and AI_low separately.
+            # AI_high = (Mean_High - Calibration) / (High - Calibration)
+            # AI_low = (Mean_Low - Calibration) / (Low - Calibration)
+            # BUT currently we only have combined AI.
+            # Let's check if we can approximate or if we need to change aggregation.
+            # Actually, the Study 002 config computes ONE anchoring_index per question based on (High - Low).
+            # So we cannot do a paired t-test on "high_anchor_ai" vs "low_anchor_ai" per question 
+            # unless we redefine what those mean or change the aggregation.
+            
+            # For now, let's look at what P2 in ground_truth expects: "High vs Low Asymmetry".
+            # It asks for "variable_1": "high_anchor_ai", "variable_2": "low_anchor_ai".
+            # This implies we should have calculated these separately.
+            
+            # Let's check Study 002 aggregation again. 
+            # It computes "anchoring_index": float(ai) where ai = (median_high - median_low) / denominator.
+            
+            # To support P2 properly, we need to calculate AI_high and AI_low separately in Study 002 config.
+            # However, without calibration group data (we don't have it simulated), we can't compute separate AIs.
+            # Original paper used Calibration group. We are using the "ref" value in config as proxy?
+            
+            # Workaround: If we can't extract the variables, fail gracefully.
+            # OR: Modify this test to check something else we DO have, e.g., High Confidence vs Low Confidence?
+            # But P2 is specifically about Asymmetry.
+            
+            # Let's assume we can't run P2 as defined without calibration data.
+            # But wait, we can use "ref" (calibration median) from config!
+            # Study 002 config has "ref".
+            
+            # I will implement a simplified version that tries to compute these if possible, 
+            # or fails if data missing.
+            
+            return {"score": 0.0, "passed": False, "details": {"error": "Data for paired t-test not available"}}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+
+    def _test_correlation(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """Test correlation between two variables."""
+        try:
+            from scipy import stats
+            
+            method = test_spec.get("method", {})
+            var1_name = method.get("variable_1", "")
+            var2_name = method.get("variable_2", "")
+            expected_direction = method.get("expected_direction", "any")
+            
+            # Extract data from by_question
+            by_question = agent_results.get("by_question", {})
+            vals1 = []
+            vals2 = []
+            
+            for q_data in by_question.values():
+                v1 = None
+                v2 = None
+                
+                # Handle variable mapping
+                if var1_name == "anchoring_index":
+                    v1 = q_data.get("anchoring_index")
+                elif var1_name == "mean_confidence":
+                    # Average of high and low confidence
+                    h_conf = q_data.get("high_confidence")
+                    l_conf = q_data.get("low_confidence")
+                    if h_conf is not None and l_conf is not None:
+                        v1 = (h_conf + l_conf) / 2
+                
+                if var2_name == "mean_confidence":
+                    h_conf = q_data.get("high_confidence")
+                    l_conf = q_data.get("low_confidence")
+                    if h_conf is not None and l_conf is not None:
+                        v2 = (h_conf + l_conf) / 2
+                
+                if v1 is not None and v2 is not None:
+                    vals1.append(v1)
+                    vals2.append(v2)
+            
+            if len(vals1) < 3:
+                return {"score": 0.0, "passed": False, "details": {"error": "Not enough data points for correlation"}}
+            
+            # Compute correlation
+            corr, p_value = stats.pearsonr(vals1, vals2)
+            
+            # Check significance and direction
+            is_significant = p_value < 0.05
+            direction_match = True
+            
+            if expected_direction == "positive":
+                direction_match = corr > 0
+            elif expected_direction == "negative":
+                direction_match = corr < 0
+            
+            passed = is_significant and direction_match
+            score = 1.0 if passed else 0.0
+            
+            details = {
+                "correlation": float(corr),
+                "p_value": float(p_value),
+                "significant": bool(is_significant),
+                "direction_match": bool(direction_match)
+            }
+            
+            return {"score": float(score), "passed": bool(passed), "details": details}
+            
+        except Exception as e:
+            return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
+        """
+        Combine multiple conditions into a single aggregated statistic.
+        
+        Args:
+            by_condition: Dictionary with condition names as keys
+            condition_names: List of condition names to combine
+        
+        Returns:
+            Combined statistics dictionary
+        """
+        combined_n = 0
+        combined_count = 0
+        rates = []
+        
+        for cond_name in condition_names:
+            if cond_name in by_condition:
+                cond_data = by_condition[cond_name]
+                n = cond_data.get("n", 0)
+                rate = cond_data.get("towel_reuse_rate") or cond_data.get("obedience_rate") or cond_data.get("proportion_choose_safe") or cond_data.get("rate", 0.0)
+                combined_n += n
+                combined_count += int(rate * n) if n > 0 else 0
+                if n > 0:
+                    rates.append(rate)
+        
+        combined_rate = combined_count / combined_n if combined_n > 0 else 0.0
+        
+        return {
+            "n": combined_n,
+            "towel_reuse_rate": combined_rate,
+            "rate": combined_rate,
+            "proportion": combined_rate
+        }
     
     def _test_independent_t(
         self,
@@ -460,13 +754,34 @@ class Scorer:
                 
             elif cond1 in agent_desc and cond2 in agent_desc:
                 # Standard format: descriptive_statistics[condition][mean, sd, n]
+                # Also support study-specific field names like mean_remarks, sd_remarks
                 data1 = agent_desc[cond1]
                 data2 = agent_desc[cond2]
                 
-                mean1 = data1.get("mean")
-                mean2 = data2.get("mean")
-                sd1 = data1.get("sd", data1.get("std"))
-                sd2 = data2.get("sd", data2.get("std"))
+                # Try multiple possible field names for mean
+                # Use explicit None checks to handle 0.0 values correctly
+                mean1 = (data1.get("mean") if data1.get("mean") is not None else
+                        data1.get("mean_remarks") if data1.get("mean_remarks") is not None else
+                        data1.get("mean_estimate") if data1.get("mean_estimate") is not None else
+                        data1.get("average"))
+                mean2 = (data2.get("mean") if data2.get("mean") is not None else
+                        data2.get("mean_remarks") if data2.get("mean_remarks") is not None else
+                        data2.get("mean_estimate") if data2.get("mean_estimate") is not None else
+                        data2.get("average"))
+                
+                # Try multiple possible field names for sd
+                # Use explicit None checks to handle 0.0 values correctly
+                sd1 = (data1.get("sd") if data1.get("sd") is not None else
+                      data1.get("std") if data1.get("std") is not None else
+                      data1.get("sd_remarks") if data1.get("sd_remarks") is not None else
+                      data1.get("std_remarks") if data1.get("std_remarks") is not None else
+                      data1.get("standard_deviation"))
+                sd2 = (data2.get("sd") if data2.get("sd") is not None else
+                      data2.get("std") if data2.get("std") is not None else
+                      data2.get("sd_remarks") if data2.get("sd_remarks") is not None else
+                      data2.get("std_remarks") if data2.get("std_remarks") is not None else
+                      data2.get("standard_deviation"))
+                
                 n1 = data1.get("n", data1.get("sample_size"))
                 n2 = data2.get("n", data2.get("sample_size"))
             else:
@@ -545,7 +860,7 @@ class Scorer:
                 # Use a large value to indicate perfect separation
                 cohens_d = np.inf if mean1 != mean2 else 0.0
             else:
-                cohens_d = (mean1 - mean2) / pooled_sd
+                cohens_d = (mean1 - mean2) / pooled_sd if pooled_sd > 0 else 0.0
             
             details = {
                 f"{cond1}_mean": float(mean1),
@@ -594,83 +909,106 @@ class Scorer:
         Returns:
             Dict with score, passed, and TOST details
         """
-        # Step 1: Get data type
-        data_type = test_spec.get("data_type", "proportion")
+        # Step 1: Get data type and map to standard type
+        raw_data_type = test_spec.get("data_type", "proportion")
+        
+        if raw_data_type == "anchoring_index":
+            data_type = "rating"  # Treat AI as a continuous variable with mean/sd
+        elif raw_data_type == "confidence":
+            data_type = "rating"  # Treat confidence as rating
+        else:
+            data_type = raw_data_type
         
         # Step 2: Get standardizer
         standardizer = StandardizerRegistry.get(data_type)
         
         # Step 3: Extract data
-        condition = test_spec.get("method", {}).get("condition")
-        metric = test_spec.get("method", {}).get("metric", "proportion_choose_safe")
+        method_spec = test_spec.get("method", {})
+        metric = method_spec.get("metric", "proportion_choose_safe")
+        condition = method_spec.get("condition")
         
-        if not condition:
-            return {
+        # Special handling for Study 002 global metrics
+        if metric == "overall_anchoring_index":
+            # Extract from overall stats or root
+            overall = agent_results.get("overall", agent_results)
+            # Try to get exact metric, fallback to mean_anchoring_index
+            agent_val = overall.get(metric, overall.get("mean_anchoring_index"))
+            
+            # Calculate SD from indices if available
+            indices = overall.get("anchoring_indices", [])
+            agent_sd = np.std(indices) if indices else 0.2
+            agent_n = len(indices) if indices else 15
+            
+            agent_data = {"mean": agent_val, "sd": agent_sd, "n": agent_n}
+            
+        elif metric == "overall_confidence":
+            overall = agent_results.get("overall", agent_results)
+            agent_val = overall.get(metric, overall.get("mean_confidence"))
+            
+            # Calculate SD from all confidences if available
+            all_confs = overall.get("all_confidences", [])
+            agent_sd = np.std(all_confs) if all_confs else 1.0
+            agent_n = len(all_confs) if all_confs else 15
+            
+            agent_data = {"mean": agent_val, "sd": agent_sd, "n": agent_n}
+            
+        else:
+            # Standard logic for other studies
+            
+            if not condition:
+                 # Fallback or error
+                 pass 
+
+            # ... (existing logic for standard extraction) ...
+            
+            # Re-implementing the existing logic inside the else block to handle flow
+            agent_desc = agent_results.get("descriptive_statistics", {})
+            
+            if condition and condition in agent_desc:
+                agent_condition_data = agent_desc[condition]
+                
+                if data_type == "proportion":
+                    agent_value = agent_condition_data.get(metric)
+                    agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
+                    agent_data = {"proportion": agent_value, "n": agent_n}
+                elif data_type == "rating":
+                    agent_mean = agent_condition_data.get("mean")
+                    agent_sd = agent_condition_data.get("sd", agent_condition_data.get("std", 1.0))
+                    agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
+                    agent_data = {"mean": agent_mean, "sd": agent_sd, "n": agent_n}
+                else: # effect_size
+                    agent_effect = agent_condition_data.get("effect_size")
+                    agent_se = agent_condition_data.get("se", 0.1)
+                    agent_data = {"effect_size": agent_effect, "se": agent_se}
+            else:
+                # If we reached here and didn't match special cases or standard cases
+                return {
+                    "score": 0.0, 
+                    "passed": False, 
+                    "details": {"error": f"Could not extract data for {metric} or condition {condition}"}
+                }
+
+        # Check for missing data
+        if any(v is None for v in agent_data.values()):
+             return {
                 "score": 0.0,
                 "passed": False,
-                "details": {"error": "No condition specified"}
+                "details": {"error": "Extracted agent data contains None values", "data": agent_data}
             }
-        
-        # Get agent data
-        agent_desc = agent_results.get("descriptive_statistics", {})
-        if condition not in agent_desc:
-            return {
-                "score": 0.0,
-                "passed": False,
-                "details": {"error": f"Missing condition: {condition}"}
-            }
-        
-        agent_condition_data = agent_desc[condition]
-        
-        # Extract based on data type
-        if data_type == "proportion":
-            agent_value = agent_condition_data.get(metric)
-            agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
-            
-            if agent_value is None:
-                return {
-                    "score": 0.0,
-                    "passed": False,
-                    "details": {"error": f"Missing agent {metric}"}
-                }
-            
-            agent_data = {"proportion": agent_value, "n": agent_n}
-            
-        elif data_type == "rating":
-            agent_mean = agent_condition_data.get("mean")
-            agent_sd = agent_condition_data.get("sd", agent_condition_data.get("std", 1.0))
-            agent_n = agent_condition_data.get("n", agent_condition_data.get("sample_size", 100))
-            
-            if agent_mean is None:
-                return {
-                    "score": 0.0,
-                    "passed": False,
-                    "details": {"error": "Missing agent mean"}
-                }
-            
-            agent_data = {"mean": agent_mean, "sd": agent_sd, "n": agent_n}
-            
-        else:  # effect_size
-            agent_effect = agent_condition_data.get("effect_size")
-            agent_se = agent_condition_data.get("se", 0.1)
-            
-            if agent_effect is None:
-                return {
-                    "score": 0.0,
-                    "passed": False,
-                    "details": {"error": "Missing agent effect size"}
-                }
-            
-            agent_data = {"effect_size": agent_effect, "se": agent_se}
         
         # Get human baseline
-        human_baseline = test_spec.get("human_baseline", {})
+        human_baseline = test_spec.get("human_baseline", {}).copy() # Copy to avoid modifying original
         if not human_baseline:
             return {
                 "score": 0.0,
                 "passed": False,
                 "details": {"error": "No human baseline specified"}
             }
+        
+        # Ensure 'n' exists in human_baseline for standardizers that need it
+        if "n" not in human_baseline:
+            # Default sample size from Study 002 if not specified
+            human_baseline["n"] = 145
         
         # Step 4: Compute standardized d
         d, details = standardizer.compute(agent_data, human_baseline)

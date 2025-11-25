@@ -1,0 +1,6 @@
+A number has been randomly generated: 20
+
+Question: Number of state colleges and universities in California
+
+First, is the true answer higher or lower than 20?
+Second, what is your best estimate of the answer?

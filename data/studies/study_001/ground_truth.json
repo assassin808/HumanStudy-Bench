@@ -1,0 +1,68 @@
+{
+  "study_id": "study_001",
+  "title": "The False Consensus Effect: An Egocentric Bias in Social Perception",
+  "authors": ["Lee Ross", "David Greene", "Pamela House"],
+  "year": 1977,
+  "journal": "Journal of Experimental Social Psychology",
+  "volume": 13,
+  "issue": 3,
+  "pages": "279-301",
+  "delta": 0.2,
+  "delta_note": "Global equivalence margin (standardized units).",
+  "evaluation_framework": {
+    "description": "Two-tier evaluation: phenomenon-level (FCE presence) and data-level matching",
+    "type_1": {
+      "name": "phenomenon_level_match",
+      "description": "Tests whether agent exhibits False Consensus Effect: Estimate(Own_Choice) > Estimate(Other_Choice)",
+      "approach": "Compare estimates of peer consensus conditional on the agent's choice. Pass if diff > 0 and significant.",
+      "critical": true
+    },
+    "type_2": {
+      "name": "data_level_match",
+      "description": "Tests magnitude of the consensus gap against human data",
+      "approach": "Comparison of FCE magnitude (Mean_A - Mean_B) with original study results.",
+      "critical": false
+    }
+  },
+  "original_results": {
+    "study_1": {
+      "study_1_supermarket": {
+        "pay_estimate_by_payers": 75.6,
+        "pay_estimate_by_nonpayers": 57.3,
+        "fce": 18.3
+      },
+      "study_1_term_paper": {
+        "ask_estimate_by_askers": 67.4,
+        "ask_estimate_by_nonaskers": 45.9,
+        "fce": 21.5
+      },
+      "study_1_traffic_ticket": {
+        "contest_estimate_by_contesters": 71.8,
+        "contest_estimate_by_payers": 51.7,
+        "fce": 20.1
+      },
+      "study_1_space_program": {
+        "increase_estimate_by_supporters": 47.9,
+        "increase_estimate_by_opponents": 39.0,
+        "fce": 8.9
+      }
+    },
+    "study_2": {
+      "description": "Questionnaire (34 items)",
+      "overall_fce": 10.5,
+      "note": "Average difference across 34 items in original study was roughly 10-15%"
+    },
+    "study_3": {
+      "study_3_sign_joes": {
+        "wear_estimate_by_wearers": 64.6,
+        "wear_estimate_by_refusers": 31.2,
+        "fce": 33.4
+      },
+      "study_3_sign_repent": {
+        "wear_estimate_by_wearers": 58.3,
+        "wear_estimate_by_refusers": 29.7,
+        "fce": 28.6
+      }
+    }
+  }
+}
