@@ -1,0 +1,6 @@
+A certain town is served by two hospitals. In the larger hospital about 45 babies are born each day, and in the smaller hospital about 15 babies are born each day. As you know, about 50% of all babies are boys. The exact percentage of baby boys, however, varies from day to day. Sometimes it may be higher than 50%, sometimes lower.
+
+For a period of 1 year, each hospital recorded the days on which more than 60% of the babies born were boys. Which hospital do you think recorded more such days?
+
+Please provide your answer in the following format:
+Answer: The larger hospital OR Answer: The smaller hospital OR Answer: About the same

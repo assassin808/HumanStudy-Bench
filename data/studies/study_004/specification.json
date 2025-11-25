@@ -6,8 +6,18 @@
       {
         "name": "assigned_problem",
         "type": "categorical",
-        "levels": ["birth_sequence", "program_choice"],
-        "description": "Birth sequence: Judge probability of birth order sequences. Program choice: Choose between programs based on student composition."
+        "levels": [
+          "birth_sequence",
+          "program_choice",
+          "marbles_distribution",
+          "hospital_problem",
+          "word_length",
+          "height_check",
+          "posterior_chips",
+          "posterior_height_1",
+          "posterior_height_6"
+        ],
+        "description": "Various problems from Kahneman & Tversky (1972) testing representativeness heuristic"
       }
     ],
     "within_subjects_variables": [],
@@ -15,9 +25,15 @@
       {
         "name": "representativeness_judgment",
         "type": "mixed",
-        "measurement": "Birth sequence: numerical estimate or comparative judgment. Program choice: categorical choice (A or B)",
+        "measurement": "Numerical estimate or categorical choice depending on problem",
         "birth_sequence_type": "numerical_or_comparative",
-        "program_choice_type": "categorical"
+        "program_choice_type": "categorical",
+        "marbles_type": "categorical",
+        "hospital_type": "categorical",
+        "word_length_type": "categorical",
+        "height_check_type": "categorical",
+        "posterior_chips_type": "probability",
+        "posterior_height_type": "odds"
       },
       {
         "name": "proportion_showing_bias",
@@ -60,51 +76,79 @@
     "birth_sequence": {
       "description": "Birth order sequence probability judgment task",
       "file": "materials/birth_sequence.txt",
-      "reference_sequence": "GBGBBG",
-      "target_sequence": "BGBBBB",
-      "correct_answer": "equally_likely (both 1/64)",
       "bias_response": "BGBBBB judged as less likely"
     },
     "program_choice": {
       "description": "Student program selection based on class composition",
       "file": "materials/program_choice.txt",
-      "program_A": "65% boys (low variance)",
-      "program_B": "55% boys (high variance)",
-      "observed": "55% boys in one class",
-      "correct_answer": "Program B (higher variance makes 55% more likely)",
-      "bias_response": "Program A (55% closer to 65%)"
+      "bias_response": "Program A"
+    },
+    "marbles_distribution": {
+      "description": "Judgment of random distribution",
+      "file": "materials/marbles_distribution.txt",
+      "bias_response": "Type I (looks more random but less probable)"
+    },
+    "hospital_problem": {
+      "description": "Sampling distribution variance",
+      "file": "materials/hospital_problem.txt",
+      "bias_response": "About the same"
+    },
+    "word_length": {
+      "description": "Sampling distribution variance (page vs line)",
+      "file": "materials/word_length.txt",
+      "bias_response": "About the same"
+    },
+    "height_check": {
+      "description": "Sampling distribution variance (3 vs 1)",
+      "file": "materials/height_check.txt",
+      "bias_response": "About the same"
+    },
+    "posterior_chips": {
+      "description": "Posterior probability ignoring base rates",
+      "file": "materials/posterior_chips.txt",
+      "bias_response": "Underestimation (close to sample proportion)"
+    },
+    "posterior_height_1": {
+      "description": "Posterior odds for single case",
+      "file": "materials/posterior_height_1.txt",
+      "bias_response": "Higher odds than sample of 6"
+    },
+    "posterior_height_6": {
+      "description": "Posterior odds for sample of 6",
+      "file": "materials/posterior_height_6.txt",
+      "bias_response": "Lower odds than single case"
     },
     "instructions_file": "materials/instructions.txt"
   },
   "instructions": {
     "general": "You will be presented with probability judgment problems. Please read each problem carefully and provide your best judgment.",
     "task": "For each problem, evaluate the probabilities or make choices based on the information provided.",
-    "response_format": "Birth sequence: Provide numerical estimate or indicate comparative likelihood. Program choice: Select Program A or Program B."
+    "response_format": "Varies by problem (selection, numerical estimate, or probability)."
   },
   "trials": [
     {
       "trial_id": "representativeness_judgment",
       "trial_type": "critical",
       "scenario": "assigned_by_condition",
-      "problem": "birth_sequence or program_choice",
+      "problem": "one of 9 conditions",
       "expected_response_type": "varies_by_problem"
     }
   ],
   "procedure": {
-    "description": "Participants receive one problem from a questionnaire containing ~24 probability judgment questions. Each problem tests whether they judge based on representativeness (similarity to stereotype) rather than statistical principles. The birth sequence problem tests understanding of sample randomness. The program choice problem tests understanding of variance and regression to the mean.",
+    "description": "Participants receive one problem from a comprehensive set testing the representativeness heuristic across different domains (randomness perception, sampling distributions, posterior probability).",
     "steps": [
       {
         "step": 1,
         "description": "Read problem scenario",
         "duration_minutes": 2,
         "materials": "materials/{problem}.txt",
-        "details": "Participant reads the problem description with relevant statistical information"
+        "details": "Participant reads the problem description"
       },
       {
         "step": 2,
         "description": "Make judgment or choice",
         "duration_minutes": 1,
-        "details": "Birth sequence: Judge relative probabilities. Program choice: Select program A or B"
+        "details": "Participant provides answer according to specific problem format"
       }
     ],
     "total_duration_minutes": 3
@@ -114,18 +158,16 @@
     "secondary": [
       "proportion_showing_representativeness_bias",
       "bias_rate_by_problem_type",
-      "consistency_with_original_study"
+      "consistency_across_domains"
     ]
   },
   "manipulation_check": {
-    "description": "Verify participants understood the problem and probability concepts",
+    "description": "Verify participants understood the problem",
     "questions": [
-      "What were the two options presented?",
-      "Did you consider statistical principles in your answer?"
+      "Did you consider the statistical information provided?"
     ],
     "expected_answers": [
-      "Birth sequence: GBGBBG and BGBBBB. Program: Program A and Program B",
-      "Awareness of statistical considerations"
+      "Yes"
     ]
   }
 }

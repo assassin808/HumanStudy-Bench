@@ -207,7 +207,8 @@ class Study001Config(BaseStudyConfig):
             responses = participant.get("responses", [])
             if not responses: continue
             
-            resp_text = responses[0].get("response", "") or responses[0].get("response_text", "")
+            # Always use full response text for extraction
+            resp_text = responses[0].get("response_text", "")
             
             # Handle Study 2 (Full Questionnaire)
             if scenario == "study_2_questionnaire_full":
@@ -281,8 +282,10 @@ class Study001Config(BaseStudyConfig):
         - phenomenon_score: Proportion of tasks showing significant FCE in correct direction.
         - data_match_score: Similarity of FCE magnitude to human baseline.
         """
+        print(f"DEBUG: Inside custom_scoring")
         inferential_stats = results.get("inferential_statistics", {})
         descriptive_stats = results.get("descriptive_statistics", {})
+        print(f"DEBUG: keys in descriptive_stats: {list(descriptive_stats.keys())}")
         
         # 1. Phenomenon-level Scoring
         # Check Study 1 (4 stories) and Study 3 (2 signs)
@@ -364,14 +367,26 @@ class Study001Config(BaseStudyConfig):
         }
 
     def _process_single_scenario_response(self, key: str, text: str, results_map: Dict):
+        """
+        Process a single scenario response.
+        
+        The estimate extracted is always for Option A (as per the prompt format).
+        We need to group these estimates by the participant's choice:
+        - Group 'A': estimates from people who chose Option A
+        - Group 'B': estimates from people who chose Option B
+        
+        Both groups contain estimates for Option A, allowing us to calculate FCE:
+        FCE = mean(estimates from A choosers) - mean(estimates from B choosers)
+        """
         if key not in results_map:
             results_map[key] = {'A': [], 'B': []}
             
         choice = self._extract_choice(text)
-        estimate = self._extract_estimate(text)
+        estimate_for_option_a = self._extract_estimate(text)
         
-        if choice and estimate is not None:
-            results_map[key][choice].append(estimate)
+        if choice and estimate_for_option_a is not None:
+            # Add this person's estimate for Option A to their choice group
+            results_map[key][choice].append(estimate_for_option_a)
 
     def _process_full_questionnaire_response(self, text: str, results_map: Dict):
         """Parse JSON list response from full questionnaire."""
@@ -406,29 +421,70 @@ class Study001Config(BaseStudyConfig):
 
     def _extract_choice(self, text: str) -> Optional[str]:
         """Extract choice A or B from text (for single scenarios)."""
-        text = text.upper()
-        if "OPTION A" in text and "OPTION B" not in text: return 'A'
-        if "OPTION B" in text and "OPTION A" not in text: return 'B'
-        if re.search(r"CHOOSE.*?A", text): return 'A'
-        if re.search(r"CHOOSE.*?B", text): return 'B'
-        if "A" in text[:50] and "B" not in text[:50]: return 'A'
-        if "B" in text[:50] and "A" not in text[:50]: return 'B'
+        text_upper = text.upper()
+        
+        # Strategy 1: Look for the exact format we requested: "My choice: Option X" or "3. My choice: Option X"
+        exact_match = re.search(r'(?:3\.\s*)?MY CHOICE:\s*OPTION\s+([AB])', text_upper)
+        if exact_match:
+            return exact_match.group(1)
+        
+        # Strategy 2: Look for numbered format "3. Option X" (without "My choice:")
+        numbered_match = re.search(r'3\.\s*(?:MY CHOICE:?\s*)?OPTION\s+([AB])', text_upper)
+        if numbered_match:
+            return numbered_match.group(1)
+        
+        # Strategy 3: Look for "I would choose Option X" or "I choose Option X"
+        choice_match = re.search(r'(?:I WOULD CHOOSE|I CHOOSE)\s+OPTION\s+([AB])', text_upper)
+        if choice_match:
+            return choice_match.group(1)
+        
+        # Strategy 4: Look for "choose Option X" pattern (more flexible)
+        choose_match = re.search(r'CHOOSE\s+OPTION\s+([AB])', text_upper)
+        if choose_match:
+            return choose_match.group(1)
+        
+        # Strategy 5: Fallback - look for standalone "Option A" or "Option B" near end of text
+        # (avoid matching the prompt text at the beginning)
+        last_500 = text_upper[-500:] if len(text_upper) > 500 else text_upper
+        if "OPTION B" in last_500 and "OPTION A" not in last_500:
+            return 'B'
+        if "OPTION A" in last_500 and "OPTION B" not in last_500:
+            return 'A'
+        
         return None
 
     def _extract_estimate(self, text: str) -> Optional[float]:
         """Extract percentage estimate for Option A (for single scenarios)."""
-        text = text.replace("\n", " ")
-        matches_q2 = re.findall(r"2\.\s*(\d+(?:\.\d+)?)\s*%", text)
-        if matches_q2:
-            return float(matches_q2[0])
-        matches = re.findall(r"(\d+(?:\.\d+)?)\s*%", text)
+        text_clean = text.replace("\n", " ")
+        
+        # Strategy 1: Look for exact format "1. Estimate for Option A: XX%"
+        exact_match = re.search(r'1\.\s*ESTIMATE FOR OPTION A:\s*(\d+(?:\.\d+)?)\s*%', text_clean.upper())
+        if exact_match:
+            return float(exact_match.group(1))
+        
+        # Strategy 2: Look for "2. Estimate for Option A: XX%" (for Study 3 format)
+        study3_match = re.search(r'2\.\s*ESTIMATE FOR OPTION A:\s*(\d+(?:\.\d+)?)\s*%', text_clean.upper())
+        if study3_match:
+            return float(study3_match.group(1))
+        
+        # Strategy 3: Look for any line starting with "1." followed by a percentage
+        line1_match = re.search(r'1\.\s*[^:]*?(\d+(?:\.\d+)?)\s*%', text_clean)
+        if line1_match:
+            return float(line1_match.group(1))
+        
+        # Strategy 4: Look for first percentage in the text
+        matches = re.findall(r'(\d+(?:\.\d+)?)\s*%', text_clean)
         if matches:
             return float(matches[0])
-        numbers = re.findall(r"\b(\d{1,3})\b", text)
+        
+        # Strategy 5: Look for bare numbers (fallback)
+        numbers = re.findall(r'\b(\d{1,3})\b', text_clean)
         if numbers:
             valid_nums = [float(n) for n in numbers if 0 <= float(n) <= 100]
             if valid_nums:
                 for num in valid_nums:
-                    if num > 5: return num
+                    if num > 5: 
+                        return num
                 return valid_nums[-1]
+        
         return None

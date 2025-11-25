@@ -1,0 +1,6 @@
+A medical survey is being held to study some factors pertaining to coronary diseases. Two teams are collecting data. One checks three men a day, and the other checks one man a day. These men are chosen randomly from the population. Each man's height is measured during the checkup. The average height of adult males is 5 ft 10 in., and there are as many men whose height is above average as there are men whose height is below average.
+
+The team checking three men a day ranks them with respect to their height, and counts the days on which the height of the middle man is more than 5 ft 11 in. The other team merely counts the days on which the man they checked was taller than 5 ft 11 in. Which team do you think counted more such days?
+
+Please provide your answer in the following format:
+Answer: The team checking 3 OR Answer: The team checking 1 OR Answer: About the same

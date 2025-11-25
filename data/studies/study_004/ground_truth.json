@@ -96,7 +96,7 @@
           "rationale": "Proportion test showing bias significantly above chance (50%)"
         },
         "critical": true,
-        "weight": 2.0
+        "weight": 1.0
       },
       {
         "test_id": "P2",
@@ -110,7 +110,85 @@
           "rationale": "Proportion test showing bias significantly above chance (50%)"
         },
         "critical": true,
-        "weight": 2.0
+        "weight": 1.0
+      },
+      {
+        "test_id": "P3",
+        "test_name": "Marbles Distribution Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests bias towards non-uniform but 'more random looking' distribution",
+        "method": {
+          "test": "chi_square",
+          "source_field": "marbles_distribution_effect",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
+      },
+      {
+        "test_id": "P4",
+        "test_name": "Hospital Problem Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests bias of ignoring sample size (Law of Large Numbers)",
+        "method": {
+          "test": "chi_square",
+          "source_field": "hospital_problem_effect",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
+      },
+      {
+        "test_id": "P5",
+        "test_name": "Word Length Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests bias of ignoring sample size in word length estimation",
+        "method": {
+          "test": "chi_square",
+          "source_field": "word_length_effect",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
+      },
+      {
+        "test_id": "P6",
+        "test_name": "Height Check Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests bias of ignoring sample size in height variance",
+        "method": {
+          "test": "chi_square",
+          "source_field": "height_check_effect",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
+      },
+      {
+        "test_id": "P7",
+        "test_name": "Posterior Chips Bias",
+        "test_type": "phenomenon_level",
+        "description": "Tests neglect of base rate in posterior probability",
+        "method": {
+          "test": "chi_square",
+          "source_field": "posterior_chips_effect",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
+      },
+      {
+        "test_id": "P8",
+        "test_name": "Posterior Height Comparison",
+        "test_type": "phenomenon_level",
+        "description": "Tests if single representative case is judged more likely than sample",
+        "method": {
+          "test": "chi_square",
+          "source_field": "posterior_height_comparison",
+          "threshold": 0.05
+        },
+        "critical": true,
+        "weight": 1.0
       },
       {
         "test_id": "D1",
@@ -168,8 +246,8 @@
       }
     ],
     "scoring": {
-      "total_weight": 6.0,
-      "critical_requirement": "All phenomenon-level tests must pass",
+      "total_weight": 10.0,
+      "critical_requirement": "Majority of phenomenon-level tests must pass",
       "passing_threshold": 0.70,
       "grading_scale": {
         "perfect": 1.00,

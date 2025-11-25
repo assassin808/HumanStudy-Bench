@@ -8,9 +8,10 @@ Option A: Agree to carry the sandwich board around campus
 Option B: Refuse to carry it
 
 Part 1: Choice & Consensus
-1. Which option would you choose? (Option A / Option B)
-2. What percentage of your peers do you estimate would choose Option A?
-3. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
+Please answer in this EXACT format:
+1. My choice: Option [A or B]
+2. Estimate for Option A: [number]%
+3. Estimate for Option B: [number]%
 
 Part 2: Trait Ratings
 Please rate the "typical person" who would choose Option A (Wear Sign) and the "typical person" who would choose Option B (Refuse) on the following traits. Use a scale from 0 to 100, where 50 is average.

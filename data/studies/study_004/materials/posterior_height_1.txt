@@ -1,0 +1,8 @@
+The average heights of adult males and females in the US are, respectively, 5 ft 10 in. and 5 ft 4 in. Both distributions are approximately normal with a standard deviation of about 2.5 in.
+
+An investigator has selected one population by chance and has drawn from it a random sample.
+
+What do you think are the odds that he has selected the male population if the sample consists of a single person whose height is 5 ft 10 in.?
+
+Please provide your answer in the following format:
+Answer: [Number representing the odds, e.g. 3.0]

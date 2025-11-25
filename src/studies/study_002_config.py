@@ -32,26 +32,9 @@ class Study002PromptBuilder(PromptBuilder):
         Returns:
             Trial prompt with appropriate anchor and question
         """
-        # Get question and anchor specific to this trial
-        question_id = trial_data.get('question')
-        if not question_id:
-            profile = trial_data.get('participant_profile', {})
-            question_id = profile.get('question', 'mississippi')
-            
-        # Determine anchor condition
-        # 1. explicit in trial data
-        anchor_condition = trial_data.get('anchor_condition')
-        
-        # 2. from profile condition_map (within-subjects)
-        if not anchor_condition:
-            profile = trial_data.get('participant_profile', {})
-            condition_map = profile.get('condition_map', {})
-            anchor_condition = condition_map.get(question_id)
-            
-        # 3. fallback to profile global anchor (between-subjects legacy)
-        if not anchor_condition:
-            profile = trial_data.get('participant_profile', {})
-            anchor_condition = profile.get('anchor_condition', 'high')
+        # Get question and anchor from trial data (now explicitly specified in create_trials)
+        question_id = trial_data.get('question', 'mississippi')
+        anchor_condition = trial_data.get('anchor_condition', 'high')
         
         # Construct filename: e.g., "mississippi_high.txt"
         filename = f"{question_id}_{anchor_condition}.txt"
@@ -122,8 +105,8 @@ class Study002Config(BaseStudyConfig):
                                      random_seed: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Generate participant profiles.
-        Each participant answers ALL 15 questions (Within-Subjects).
-        For each question, the participant is randomly assigned to either 'high' or 'low' anchor condition.
+        True Within-Subjects design: Each participant answers ALL 15 questions with BOTH anchors.
+        Total: 15 questions × 2 anchors = 30 trials per participant.
         """
         if random_seed is not None:
             np.random.seed(random_seed)
@@ -132,12 +115,6 @@ class Study002Config(BaseStudyConfig):
         profiles = []
         
         for i in range(n_participants):
-            # Generate a condition map for this participant: question -> anchor
-            condition_map = {}
-            for q in self.questions:
-                # Randomly assign high or low anchor for each question
-                condition_map[q] = random.choice(["high", "low"])
-            
             # Original study: Stanford undergrads
             age = int(np.clip(np.random.normal(20, 1.5), 18, 22))
             
@@ -146,8 +123,8 @@ class Study002Config(BaseStudyConfig):
                 "age": age,
                 "education": "college_student",
                 "background": "You are a university student participating in a judgment study.",
-                "design": "within_subjects",
-                "condition_map": condition_map  # Store the mapping here
+                "design": "within_subjects"
+                # No condition_map needed - each participant does all questions with both anchors
             }
             profiles.append(profile)
         
@@ -156,21 +133,28 @@ class Study002Config(BaseStudyConfig):
     def create_trials(self, n_trials: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Generate trials for anchoring task.
-        Returns 15 generic trials (one for each question).
-        Specific anchors are determined at runtime based on participant profiles.
+        True Within-Subjects: Each question appears twice (once with high anchor, once with low).
+        Returns 30 trials (15 questions × 2 anchors), randomized order.
         """
         trials = []
         
-        # Iterate through all 15 questions
-        for i, question_id in enumerate(self.questions):
-            trials.append({
-                "trial_number": i + 1,
-                "study_type": "anchoring_effect",
-                "trial_type": "estimation",
-                "scenario": "numerical_estimation_with_anchor",
-                "question": question_id,
-                # anchor_condition is determined per participant from profile
-            })
+        # Generate all question-anchor combinations
+        for question_id in self.questions:
+            for anchor_condition in self.anchor_conditions:
+                trials.append({
+                    "study_type": "anchoring_effect",
+                    "trial_type": "estimation",
+                    "scenario": "numerical_estimation_with_anchor",
+                    "question": question_id,
+                    "anchor_condition": anchor_condition  # Explicitly specify anchor
+                })
+        
+        # Randomize trial order to avoid order effects
+        random.shuffle(trials)
+        
+        # Assign trial numbers after shuffling
+        for i, trial in enumerate(trials):
+            trial["trial_number"] = i + 1
             
         return trials
     
@@ -199,18 +183,10 @@ class Study002Config(BaseStudyConfig):
             trials = p.get("trial_responses", []) or p.get("responses", [])
             
             for trial_resp in trials:
-                # Extract question and anchor from trial metadata if available
-                question = trial_resp.get("question")
-                anchor = trial_resp.get("anchor_condition")
-                
-                # Fallback: if not in response, reconstruct from profile + trial index
-                if not question or not anchor:
-                    profile = p.get("profile", {})
-                    condition_map = profile.get("condition_map", {})
-                    trial_idx = trial_resp.get("trial_number", 0) - 1
-                    if 0 <= trial_idx < len(self.questions):
-                        question = self.questions[trial_idx]
-                        anchor = condition_map.get(question)
+                # Extract question and anchor from trial_info (now explicitly stored)
+                trial_info = trial_resp.get("trial_info", {})
+                question = trial_info.get("question") or trial_resp.get("question")
+                anchor = trial_info.get("anchor_condition") or trial_resp.get("anchor_condition")
                 
                 if not question or not anchor:
                     continue

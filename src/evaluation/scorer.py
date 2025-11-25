@@ -247,6 +247,8 @@ class Scorer:
                 return self._test_paired_t(agent_results, ground_truth, test_spec)
             elif test_name == "correlation":
                 return self._test_correlation(agent_results, ground_truth, test_spec)
+            elif test_name == "range_test":
+                return self._test_range(agent_results, ground_truth, test_spec)
             else:
                 return {
                     "score": 0.0,
@@ -1316,12 +1318,13 @@ class Scorer:
         agent_results: Dict,
         ground_truth: Dict,
         test_spec: Dict
-    ) -> float:
+    ) -> Dict[str, Any]:
         """Test if statistic is within expected range."""
         try:
             statistic_name = test_spec.get("statistic", "")
-            min_val = test_spec.get("min", float("-inf"))
-            max_val = test_spec.get("max", float("inf"))
+            method = test_spec.get("method", {})
+            min_val = method.get("min", float("-inf"))
+            max_val = method.get("max", float("inf"))
             
             # Try to find the statistic value
             value = None
@@ -1342,27 +1345,38 @@ class Scorer:
             # If not found, check descriptive statistics
             if value is None:
                 agent_desc = agent_results.get("descriptive_statistics", {})
-                for dv_name, dv_data in agent_desc.items():
-                    # Check if statistic is directly in the DV data
-                    if isinstance(dv_data, dict):
-                        # Could be nested by condition or direct stats
-                        if statistic_name in dv_data:
-                            value = dv_data[statistic_name]
-                            break
-                        # Check in conditions
-                        for condition, stats in dv_data.items():
-                            if isinstance(stats, dict) and statistic_name in stats:
-                                value = stats[statistic_name]
+                
+                # Check if statistic is directly in the descriptive statistics root
+                if statistic_name in agent_desc:
+                    value = agent_desc[statistic_name]
+                else:
+                    for dv_name, dv_data in agent_desc.items():
+                        # Check if statistic is directly in the DV data
+                        if isinstance(dv_data, dict):
+                            # Could be nested by condition or direct stats
+                            if statistic_name in dv_data:
+                                value = dv_data[statistic_name]
                                 break
-                    if value is not None:
-                        break
+                            # Check in conditions
+                            for condition, stats in dv_data.items():
+                                if isinstance(stats, dict) and statistic_name in stats:
+                                    value = stats[statistic_name]
+                                    break
+                        if value is not None:
+                            break
             
             if value is None:
-                return 0.0
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": f"Statistic '{statistic_name}' not found in results"}
+                }
             
             # Check range
-            if min_val <= value <= max_val:
-                return 1.0
+            in_range = min_val <= value <= max_val
+            
+            if in_range:
+                score = 1.0
             else:
                 # Partial credit based on distance
                 if value < min_val:
@@ -1372,10 +1386,26 @@ class Scorer:
                 
                 range_size = max(max_val - min_val, 0.01)  # Avoid division by zero
                 penalty = min(distance / range_size, 1.0)
-                return max(0.0, 1.0 - penalty)
+                score = max(0.0, 1.0 - penalty)
+            
+            return {
+                "score": float(score),
+                "passed": bool(in_range),
+                "details": {
+                    "statistic": statistic_name,
+                    "value": float(value),
+                    "min": float(min_val),
+                    "max": float(max_val),
+                    "in_range": bool(in_range)
+                }
+            }
         
-        except Exception:
-            return 0.0
+        except Exception as e:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": str(e)}
+            }
     
     def _test_similarity(
         self,

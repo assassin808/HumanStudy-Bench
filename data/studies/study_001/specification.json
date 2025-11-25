@@ -1,0 +1,40 @@
+{
+  "study_id": "study_001",
+  "title": "The False Consensus Effect: An Egocentric Bias in Social Perception",
+  "participants": {
+    "n": 320,
+    "population": "Stanford University Undergraduates",
+    "recruitment_source": "Introductory Psychology Course",
+    "demographics": {
+      "age_range": [18, 22],
+      "gender_distribution": {
+        "male": 50,
+        "female": 50
+      }
+    }
+  },
+  "design": {
+    "type": "Mixed",
+    "factors": [
+      {
+        "name": "Scenario",
+        "levels": ["Supermarket", "Term Paper", "Traffic Ticket", "Space Program", "Sign Experiment"],
+        "type": "Between-Subjects"
+      },
+      {
+        "name": "Response",
+        "levels": ["Choice", "Consensus Estimate"],
+        "type": "Within-Subjects"
+      }
+    ]
+  },
+  "procedure": {
+    "steps": [
+      "Read scenario description",
+      "Estimate percentage of peers who would choose Option A vs B",
+      "Indicate own choice",
+      "Rate traits of typical Option A and Option B choosers (Study 3)"
+    ]
+  }
+}
+

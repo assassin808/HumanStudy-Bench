@@ -196,7 +196,9 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         """
         if self.use_real_llm:
             system_prompt = self._construct_system_prompt()
-            response_text = self._call_llm(system_prompt, trial_prompt)
+            # Determine max_tokens based on trial type
+            max_tokens = self._get_max_tokens_for_trial(trial_info or {})
+            response_text = self._call_llm(system_prompt, trial_prompt, max_tokens=max_tokens)
             # Parse response to extract choice
             choice = self._parse_response(response_text, trial_info or {})
         else:
@@ -218,7 +220,37 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         
         return response_data
     
-    def _call_llm(self, system_prompt: str, user_message: str, max_retries: int = 3) -> str:
+    def _get_max_tokens_for_trial(self, trial_info: Dict[str, Any]) -> int:
+        """
+        Determine appropriate max_tokens based on trial type.
+        
+        Args:
+            trial_info: Trial metadata
+            
+        Returns:
+            Max tokens for this trial
+        """
+        # Check if this is Study 001 questionnaire (needs long output)
+        if self.profile.get("assigned_scenario") == "study_2_questionnaire_full":
+            return 3000  # Need space for 34-item JSON array
+        
+        # Check study type
+        study_type = trial_info.get("study_type", "")
+        
+        if study_type == "false_consensus_effect":
+            # Study 001 single scenarios need space for trait ratings
+            return 400
+        elif study_type == "framing_effect":
+            # Simple A/B choice
+            return 100
+        elif study_type == "representativeness_heuristic":
+            # Numerical estimate
+            return 150
+        else:
+            # Default
+            return 200
+    
+    def _call_llm(self, system_prompt: str, user_message: str, max_retries: int = 3, max_tokens: int = 200) -> str:
         """
         Make actual API call to LLM with automatic retry on failure.
         
@@ -303,7 +335,7 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
                         {"role": "user", "content": user_message}
                     ],
                     temperature=0.7,
-                    max_tokens=150
+                    max_tokens=max_tokens
                 )
                 
                 result = response.choices[0].message.content.strip()
@@ -373,6 +405,7 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         - Obedience studies (Milgram): Decreasing compliance with shock level
         - Framing studies (Tversky & Kahneman): Frame-dependent risk preferences
         - Representativeness studies (Kahneman & Tversky 1972): Representativeness bias
+        - False Consensus Effect (Ross et al. 1977): Estimates bias based on own choice
         """
         import random
         
@@ -415,6 +448,66 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
                     response_text = "Program B"
             
             return choice, response_text
+        
+        # Handle False Consensus Effect (Study 001)
+        if study_type == "false_consensus_effect":
+            profile = self.profile
+            scenario = profile.get("assigned_scenario", "unknown")
+            
+            # Handle Study 2 Full Questionnaire
+            if scenario == "study_2_questionnaire_full":
+                # Generate JSON list for 34 items
+                items = []
+                # Simulate 34 items
+                for i in range(1, 35):
+                    # Random choice A or B (assume 50/50 split for simulation)
+                    my_choice = "Option A" if random.random() < 0.5 else "Option B"
+                    
+                    # FCE Simulation:
+                    # If I choose A, I estimate A higher (e.g., 60-80%)
+                    # If I choose B, I estimate A lower (e.g., 20-40%)
+                    if my_choice == "Option A":
+                        est_a = int(random.gauss(65, 10))
+                    else:
+                        est_a = int(random.gauss(35, 10))
+                    
+                    est_a = max(0, min(100, est_a))
+                    est_b = 100 - est_a
+                    
+                    items.append({
+                        "id": f"item_{i}",
+                        "my_choice": my_choice,
+                        "estimate_a": est_a,
+                        "estimate_b": est_b
+                    })
+                
+                response_text = json.dumps(items)
+                choice = "JSON_RESPONSE" # Special marker
+                
+                return choice, response_text
+                
+            # Handle Study 1 & 3 (Single Scenarios)
+            else:
+                # Random choice
+                choice_idx = 0 if random.random() < 0.5 else 1
+                choices = ["Option A", "Option B"]
+                choice = choices[choice_idx]
+                
+                # FCE Simulation
+                if choice == "Option A":
+                    est_a = int(random.gauss(70, 10))
+                else:
+                    est_a = int(random.gauss(40, 10))
+                
+                est_a = max(0, min(100, est_a))
+                
+                response_text = f"I would choose {choice}. I estimate {est_a}% of students would choose Option A."
+                
+                # Extract just A or B for the 'response' field
+                choice_letter = "A" if choice == "Option A" else "B"
+                
+                return choice_letter, response_text
+
         
         # Handle framing effect studies
         if study_type == "framing_effect":

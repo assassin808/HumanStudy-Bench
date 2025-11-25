@@ -75,8 +75,8 @@
     "total_duration_minutes": 5
   },
   "materials": {
-    "problem_01": "materials/positive_frame.txt",
-    "problem_02": "materials/negative_frame.txt",
+    "problem_01": "materials/problem_01.txt",
+    "problem_02": "materials/problem_02.txt",
     "problem_03": "materials/problem_03.txt",
     "problem_04": "materials/problem_04.txt",
     "problem_05": "materials/problem_05.txt",

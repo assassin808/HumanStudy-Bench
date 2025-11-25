@@ -4,9 +4,10 @@ Option A: Sign the release
 Option B: Refuse to sign the release
 
 Part 1: Consensus & Choice
-1. What percentage of your peers do you estimate would choose Option A?
-2. What percentage of your peers do you estimate would choose Option B? (Total should be 100%)
-3. Which option would you choose? (Option A / Option B)
+Please answer in this EXACT format:
+1. Estimate for Option A: [number]%
+2. Estimate for Option B: [number]%
+3. My choice: Option [A or B]
 
 Part 2: Trait Ratings
 Please rate the "typical person" who would choose Option A (Sign) and the "typical person" who would choose Option B (Refuse) on the following traits. Use a scale from 0 to 100, where:

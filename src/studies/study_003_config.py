@@ -1,7 +1,8 @@
 """
 Study 003 Configuration - Tversky & Kahneman Framing Effect (1981)
 
-Implementation of the Asian Disease Problem demonstrating framing effects.
+Implementation of multiple decision problems from the original paper demonstrating framing effects,
+certainty effects, and psychological accounting.
 """
 
 from typing import Dict, Any, List, Optional
@@ -16,37 +17,53 @@ from src.agents.prompt_builder import PromptBuilder
 
 class Study003PromptBuilder(PromptBuilder):
     """
-    Custom PromptBuilder for Study 003 (Framing Effect).
+    Custom PromptBuilder for Study 003 (Framing Effect & others).
     
-    Handles frame-specific prompt generation by loading positive_frame.txt
-    or negative_frame.txt based on participant's framing_condition.
+    Handles condition-specific prompt generation by loading the appropriate material file
+    based on participant's condition (e.g., problem_01.txt, problem_08.txt).
     """
     
     def build_trial_prompt(self, trial_data: Dict[str, Any]) -> str:
         """
-        Build trial prompt with frame-specific scenario.
+        Build trial prompt with condition-specific scenario.
         
         Args:
             trial_data: Trial information, may include 'participant_profile' 
-                       with 'framing_condition' key
+                       with 'condition' key
         
         Returns:
-            Trial prompt with appropriate frame text
+            Trial prompt with appropriate text
         """
-        # Extract framing condition from participant profile
+        # Extract condition from participant profile
         participant_profile = trial_data.get('participant_profile', {})
-        framing_condition = participant_profile.get('framing_condition')
+        condition = participant_profile.get('condition')
         
-        if framing_condition:
-            # Load frame-specific material (positive_frame.txt or negative_frame.txt)
-            frame_file = self.materials_path / f"{framing_condition}.txt"
+        if condition:
+            # Load condition-specific material
+            
+            file_map = {
+                "problem_01": "problem_01.txt",
+                "problem_02": "problem_02.txt",
+                "problem_03": "problem_03.txt",
+                "problem_04": "problem_04.txt",
+                "problem_05": "problem_05.txt",
+                "problem_06": "problem_06.txt",
+                "problem_07": "problem_07.txt",
+                "problem_08": "problem_08.txt",
+                "problem_09": "problem_09.txt",
+                "problem_10_1": "problem_10_1.txt",
+                "problem_10_2": "problem_10_2.txt"
+            }
+            
+            filename = file_map.get(condition, f"{condition}.txt")
+            frame_file = self.materials_path / filename
+            
             if frame_file.exists():
                 with open(frame_file, 'r') as f:
                     frame_text = f.read().strip()
-                # Return frame text directly
                 return frame_text
         
-        # Fallback to generic prompt if no frame condition
+        # Fallback to generic prompt
         return self._build_generic_trial_prompt(trial_data)
 
 
@@ -54,50 +71,46 @@ class Study003PromptBuilder(PromptBuilder):
 @StudyConfigRegistry.register("study_003")
 class Study003Config(BaseStudyConfig):
     """
-    Tversky & Kahneman (1981) Framing Effect - Asian Disease Problem
+    Tversky & Kahneman (1981) - The Framing of Decisions and the Psychology of Choice
     
-    Classic demonstration of framing effect: identical options produce
-    different choices depending on gain vs loss framing.
+    Replicates multiple problems from the paper:
+    - Problem 1 & 2: Asian Disease (Framing Effect)
+    - Problem 3 & 4: Framing of Acts
+    - Problem 5, 6, 7: Certainty & Pseudocertainty Effects
+    - Problem 8 & 9: Psychological Accounting (Theater Ticket)
+    - Problem 10: Psychological Accounting (Calculator)
     """
     
     def __init__(self, study_path: Path, specification: Dict[str, Any]):
         super().__init__(study_path, specification)
         
-        # Framing study parameters
-        self.frames = ["positive_frame", "negative_frame"]
-        self.options = ["Program A", "Program B"]
+        # List of all conditions
+        self.conditions = [
+            "problem_01", "problem_02", 
+            "problem_03", "problem_04",
+            "problem_05", "problem_06", "problem_07",
+            "problem_08", "problem_09",
+            "problem_10_1", "problem_10_2"
+        ]
+        
+        # Sample sizes from original paper (approximate total N=1360)
+        self.condition_ns = {
+            "problem_01": 152, "problem_02": 155,
+            "problem_03": 150, "problem_04": 86,
+            "problem_05": 77,  "problem_06": 85, "problem_07": 81,
+            "problem_08": 183, "problem_09": 200,
+            "problem_10_1": 93, "problem_10_2": 88
+        }
     
     
     def get_prompt_builder(self) -> PromptBuilder:
-        """
-        Return Study 003 specific PromptBuilder.
-        
-        Returns:
-            Study003PromptBuilder instance that handles framing conditions
-        """
+        """Return Study 003 specific PromptBuilder."""
         return Study003PromptBuilder(self.study_path)
+
     def generate_participant_profiles(self, n_participants: int, 
                                      random_seed: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Generate participant profiles based on original study's recruitment.
-        
-        Original study (Tversky & Kahneman, 1981):
-        - N = 152 university students and faculty
-        - No specific age, gender, or demographic data reported
-        - Between-subjects design: 76 per condition (positive/negative frame)
-        
-        This method generates profiles faithful to the original:
-        - Age: University population (students 18-25, faculty 30-65)
-        - Gender: Not specified, so not included in profile
-        - Education: Mix of students and faculty
-        - Frame assignment: Random 50/50 split
-        
-        Args:
-            n_participants: Number of participants to generate
-            random_seed: Random seed for reproducibility
-        
-        Returns:
-            List of participant profile dictionaries
+        Generate participant profiles assigned to specific conditions.
         """
         if random_seed is not None:
             np.random.seed(random_seed)
@@ -105,26 +118,37 @@ class Study003Config(BaseStudyConfig):
         
         profiles = []
         
-        # Determine number per frame (should be equal for between-subjects)
-        n_positive = n_participants // 2
-        n_negative = n_participants - n_positive
+        # Determine N for each condition
+        # If n_participants is small (e.g. for testing), distribute evenly
+        # If n_participants matches total N, try to match original proportions
         
-        # Create frames list for assignment
-        frames = ["positive_frame"] * n_positive + ["negative_frame"] * n_negative
-        random.shuffle(frames)
+        total_original_n = sum(self.condition_ns.values())
         
-        # Original study: "university students and faculty"
-        # We model this as ~70% students, ~30% faculty (reasonable university mix)
-        for i in range(n_participants):
-            is_faculty = np.random.random() < 0.3
+        # Create list of conditions to assign
+        assigned_conditions = []
+        
+        # Calculate how many participants per condition
+        for cond, original_n in self.condition_ns.items():
+            # Proportional allocation
+            count = int(round(n_participants * (original_n / total_original_n)))
+            assigned_conditions.extend([cond] * count)
             
+        # Adjust length if rounding caused mismatch
+        while len(assigned_conditions) < n_participants:
+            assigned_conditions.append(random.choice(self.conditions))
+        while len(assigned_conditions) > n_participants:
+            assigned_conditions.pop()
+            
+        random.shuffle(assigned_conditions)
+        
+        for i in range(n_participants):
+            # Profile generation logic
+            is_faculty = np.random.random() < 0.3
             if is_faculty:
-                # Faculty: age 30-65, typically 40-50
                 age = int(np.clip(np.random.normal(45, 8), 30, 65))
                 education = "university_faculty"
                 background = "You are a university faculty member who regularly makes decisions involving statistical reasoning and risk assessment."
             else:
-                # Students: age 18-25, typically 20-22
                 age = int(np.clip(np.random.normal(21, 2), 18, 25))
                 education = "university_student"
                 background = "You are a university student who considers different perspectives when making decisions."
@@ -134,9 +158,7 @@ class Study003Config(BaseStudyConfig):
                 "age": age,
                 "education": education,
                 "background": background,
-                "framing_condition": frames[i],  # Critical: assign frame here
-                # Note: gender not included as it was not reported in original study
-                # Note: personality traits not included as this is a cognitive bias study
+                "condition": assigned_conditions[i]
             }
             
             profiles.append(profile)
@@ -145,316 +167,170 @@ class Study003Config(BaseStudyConfig):
     
     def create_trials(self, n_trials: Optional[int] = None) -> List[Dict[str, Any]]:
         """
-        Generate single trial for Asian Disease Problem.
-        
-        Each participant gets one trial in their assigned frame condition.
-        
-        Args:
-            n_trials: Ignored for this study (always 1 trial per participant)
-        
-        Returns:
-            Single trial dictionary
+        Generate single trial. Condition is determined by participant profile.
         """
-        # This is a between-subjects design with single trial
-        # Frame assignment happens at participant level
         return [{
             "trial_number": 1,
             "study_type": "framing_effect",
             "trial_type": "main_choice",
-            "scenario": "asian_disease_problem",
-            "expected_deaths": 600,
-            "program_A_certain": 200,  # 200 saved / 400 die
-            "program_B_probability_all": 1/3,
-            "program_B_probability_none": 2/3,
-            "correct_answer": None,  # No objectively correct answer
-            "frame": "assigned_by_condition"  # Set by participant profile
+            "scenario": "decision_problem",
+            "frame": "assigned_by_condition"
         }]
     
     def aggregate_results(self, raw_results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Aggregate framing effect results.
-        
-        Computes:
-        1. Choice proportions by frame
-        2. Framing effect size (difference in certain choice proportion)
-        3. Statistical significance test
-        4. Risk attitude by frame
-        
-        Args:
-            raw_results: Raw results from ParticipantPool.run_experiment()
-        
-        Returns:
-            Enhanced results with framing effect analysis
+        Aggregate results for all problems (1-10).
         """
         individual_data = raw_results.get("individual_data", [])
-        
         if not individual_data:
             return raw_results
         
-        # Separate by frame condition
-        positive_frame_data = []
-        negative_frame_data = []
+        # Group participants by condition
+        by_condition = {cond: [] for cond in self.conditions}
         
         for participant in individual_data:
-            frame = participant.get("profile", {}).get("framing_condition", "positive_frame")
-            if frame == "positive_frame":
-                positive_frame_data.append(participant)
-            else:
-                negative_frame_data.append(participant)
+            cond = participant.get("profile", {}).get("condition")
+            if cond in by_condition:
+                by_condition[cond].append(participant)
         
-        # Count choices by frame
-        pos_frame_choices = self._count_choices(positive_frame_data)
-        neg_frame_choices = self._count_choices(negative_frame_data)
+        # Calculate stats for each condition
+        descriptive_stats = {}
         
-        # Calculate proportions
-        n_positive = len(positive_frame_data)
-        n_negative = len(negative_frame_data)
+        for cond, participants in by_condition.items():
+            n = len(participants)
+            if n == 0:
+                continue
+                
+            choices = self._count_choices(participants)
+            
+            # Calculate relevant proportions based on condition
+            stats_entry = {
+                "n": n,
+                "counts": choices
+            }
+            
+            # Add specific metrics expected by Scorer
+            if cond == "problem_01":
+                stats_entry["proportion_A"] = choices.get("A", 0) / n
+                stats_entry["proportion_choose_safe"] = stats_entry["proportion_A"] # Alias
+                
+            elif cond == "problem_02":
+                stats_entry["proportion_C"] = choices.get("C", 0) / n # Safe option (loss)
+                stats_entry["proportion_D"] = choices.get("D", 0) / n # Risky option
+                stats_entry["proportion_choose_safe"] = stats_entry["proportion_C"]
+                
+            elif cond == "problem_05":
+                stats_entry["proportion_A"] = choices.get("A", 0) / n
+                stats_entry["proportion_choose_safe"] = stats_entry["proportion_A"]
+                
+            elif cond == "problem_07":
+                stats_entry["proportion_E"] = choices.get("E", 0) / n
+                stats_entry["proportion_choose_safe"] = stats_entry["proportion_E"]
+                
+            elif cond in ["problem_08", "problem_09", "problem_10_1", "problem_10_2"]:
+                stats_entry["proportion_Yes"] = choices.get("YES", 0) / n
+                stats_entry["proportion_choose_safe"] = stats_entry["proportion_Yes"] # Map Yes to "safe" generic slot
+            
+            descriptive_stats[cond] = stats_entry
+
+        # Inferential Statistics (Comparisons)
+        inferential_stats = {}
         
-        if n_positive == 0 or n_negative == 0:
-            return raw_results
-        
-        pos_certain_prop = pos_frame_choices["Program A"] / n_positive if n_positive > 0 else 0
-        pos_risky_prop = pos_frame_choices["Program B"] / n_positive if n_positive > 0 else 0
-        neg_certain_prop = neg_frame_choices["Program A"] / n_negative if n_negative > 0 else 0
-        neg_risky_prop = neg_frame_choices["Program B"] / n_negative if n_negative > 0 else 0
-        
-        # Framing effect: difference in certain option choice
-        framing_effect_size = pos_certain_prop - neg_certain_prop
-        
-        # Statistical test: chi-square test of independence
-        # Contingency table: [positive_A, positive_B; negative_A, negative_B]
-        contingency_table = np.array([
-            [pos_frame_choices["Program A"], pos_frame_choices["Program B"]],
-            [neg_frame_choices["Program A"], neg_frame_choices["Program B"]]
-        ])
-        
-        # Try chi-square test, but handle case where expected frequencies are too low
-        try:
-            chi2, p_value, dof, expected = stats.chi2_contingency(contingency_table)
-        except ValueError as e:
-            # If chi-square fails (e.g., zero cells), report NaN
-            print(f"⚠️  Warning: Chi-square test failed - {e}")
-            print(f"   Contingency table: {contingency_table.tolist()}")
-            print(f"   This usually means insufficient variation in responses.")
-            chi2, p_value, dof = float('nan'), float('nan'), 1
-        
-        # Calculate Cohen's h for data-level matching
-        # Cohen's h quantifies difference between two proportions
-        # Formula: h = 2 * (arcsin(√p1) - arcsin(√p2))
-        
-        # Human baseline from original paper (Tversky & Kahneman, 1981)
-        human_pos_certain = 0.72  # 72% chose certain option in positive frame
-        human_neg_certain = 0.22  # 22% chose certain option in negative frame
-        
-        # Cohen's h for positive frame (agent vs human)
-        cohens_h_positive = self._calculate_cohens_h(pos_certain_prop, human_pos_certain)
-        
-        # Cohen's h for negative frame (agent vs human)  
-        cohens_h_negative = self._calculate_cohens_h(neg_certain_prop, human_neg_certain)
-        
-        # Cohen's h for effect size (compare magnitude of framing effect)
-        # Human effect size: 0.72 - 0.22 = 0.50
-        human_effect_size = human_pos_certain - human_neg_certain
-        cohens_h_effect_size = abs(framing_effect_size - human_effect_size)
-        
-        # Build enhanced results matching ground_truth structure
+        # P1: Problem 1 vs 2 (Framing Effect)
+        if "problem_01" in descriptive_stats and "problem_02" in descriptive_stats:
+            p1_stats = descriptive_stats["problem_01"]
+            p2_stats = descriptive_stats["problem_02"]
+            
+            # Compare Risk Averse choices (A vs C)
+            # Note: In Prob 1, A is safe. In Prob 2, C is safe.
+            # We compare proportion of SAFE choices.
+            
+            count_safe_1 = p1_stats["counts"].get("A", 0)
+            n1 = p1_stats["n"]
+            count_safe_2 = p2_stats["counts"].get("C", 0)
+            n2 = p2_stats["n"]
+            
+            chi2, p = self._run_chi_square(count_safe_1, n1, count_safe_2, n2)
+            inferential_stats["chi_square_test"] = {"chi_square": chi2, "p_value": p} # Main effect for compatibility
+            inferential_stats["framing_effect_test"] = {"chi_square": chi2, "p_value": p}
+            
+            # Framing effect size
+            descriptive_stats["framing_effect_size"] = (count_safe_1/n1) - (count_safe_2/n2)
+
+        # P2: Problem 5 vs 7 (Certainty Effect)
+        if "problem_05" in descriptive_stats and "problem_07" in descriptive_stats:
+            # Compare Option A (Safe) vs Option E (Probabilistic)
+            # Hypothesis: A is chosen more than E due to certainty premium
+            count_A = descriptive_stats["problem_05"]["counts"].get("A", 0)
+            n5 = descriptive_stats["problem_05"]["n"]
+            count_E = descriptive_stats["problem_07"]["counts"].get("E", 0)
+            n7 = descriptive_stats["problem_07"]["n"]
+            
+            chi2, p = self._run_chi_square(count_A, n5, count_E, n7)
+            inferential_stats["certainty_effect_test"] = {"chi_square": chi2, "p_value": p}
+
+        # P3: Problem 8 vs 9 (Lost Ticket)
+        if "problem_08" in descriptive_stats and "problem_09" in descriptive_stats:
+            # Compare Yes responses
+            count_Y8 = descriptive_stats["problem_08"]["counts"].get("YES", 0)
+            n8 = descriptive_stats["problem_08"]["n"]
+            count_Y9 = descriptive_stats["problem_09"]["counts"].get("YES", 0)
+            n9 = descriptive_stats["problem_09"]["n"]
+            
+            chi2, p = self._run_chi_square(count_Y8, n8, count_Y9, n9)
+            inferential_stats["ticket_accounting_test"] = {"chi_square": chi2, "p_value": p}
+
+        # P4: Problem 10_1 vs 10_2 (Calculator)
+        if "problem_10_1" in descriptive_stats and "problem_10_2" in descriptive_stats:
+            # Compare Yes responses
+            count_Y1 = descriptive_stats["problem_10_1"]["counts"].get("YES", 0)
+            n1 = descriptive_stats["problem_10_1"]["n"]
+            count_Y2 = descriptive_stats["problem_10_2"]["counts"].get("YES", 0)
+            n2 = descriptive_stats["problem_10_2"]["n"]
+            
+            chi2, p = self._run_chi_square(count_Y1, n1, count_Y2, n2)
+            inferential_stats["calculator_accounting_test"] = {"chi_square": chi2, "p_value": p}
+
         enhanced_results = {
             **raw_results,
-            "descriptive_statistics": {
-                "positive_frame": {
-                    "n": n_positive,
-                    "option_A_count": pos_frame_choices["Program A"],
-                    "option_B_count": pos_frame_choices["Program B"],
-                        "proportion_choose_safe": pos_certain_prop,  # Certain option (Program A) in positive frame
-                    "proportion_choose_risky": pos_risky_prop
-                },
-                "negative_frame": {
-                    "n": n_negative,
-                    "option_A_count": neg_frame_choices["Program A"],
-                    "option_B_count": neg_frame_choices["Program B"],
-                        "proportion_choose_safe": neg_certain_prop,  # Certain option (Program A) in negative frame for comparison
-                        "proportion_choose_risky": neg_risky_prop
-                },
-                "framing_effect": {
-                    "proportion_difference": framing_effect_size
-                },
-                "by_frame": {
-                    "positive_frame": {
-                        "n": n_positive,
-                        "option_A_count": pos_frame_choices["Program A"],
-                        "option_B_count": pos_frame_choices["Program B"],
-                        "option_A_proportion": pos_certain_prop,
-                        "option_B_proportion": pos_risky_prop,
-                        "risk_averse_proportion": pos_certain_prop,
-                        "risk_seeking_proportion": pos_risky_prop
-                    },
-                    "negative_frame": {
-                        "n": n_negative,
-                        "option_A_count": neg_frame_choices["Program A"],
-                        "option_B_count": neg_frame_choices["Program B"],
-                        "option_A_proportion": neg_certain_prop,
-                        "option_B_proportion": neg_risky_prop,
-                        "risk_averse_proportion": neg_risky_prop,  # In negative frame, Program B avoids certain loss
-                        "risk_seeking_proportion": neg_certain_prop
-                    }
-                },
-                "overall": {
-                    "n": n_positive + n_negative,
-                    "mean_certain_choice_positive": pos_certain_prop,
-                    "mean_certain_choice_negative": neg_certain_prop,
-                    "framing_effect_size": framing_effect_size,
-                    "framing_effect_note": f"{abs(framing_effect_size)*100:.1f} percentage point difference"
-                },
-                # Add top-level fields for scorer to find
-                "positive_frame_option_A_proportion": pos_certain_prop,
-                "negative_frame_option_B_proportion": neg_risky_prop,
-                "framing_effect_size": framing_effect_size
-            },
-            "inferential_statistics": {
-                "chi_square_test": {
-                    "test_type": "chi_square",
-                    "statistic": f"χ²({dof}) = {chi2:.2f}",
-                    "chi_square": float(chi2),
-                    "degrees_of_freedom": int(dof),
-                    "p_value": float(p_value),
-                    "p": float(p_value),  # Add alias for compatibility
-                    "p_value_note": f"p = {p_value:.4f}" if p_value >= 0.001 else "p < 0.001",
-                    "significant": bool(p_value < 0.05),
-                    "effect_interpretation": self._interpret_effect(framing_effect_size, p_value)
-                },
-                "data_level_match": {
-                    "cohens_h_positive_frame": {
-                        "value": float(cohens_h_positive),
-                        "agent_proportion": pos_certain_prop,
-                        "human_baseline": human_pos_certain,
-                        "interpretation": self._interpret_cohens_h(cohens_h_positive)
-                    },
-                    "cohens_h_negative_frame": {
-                        "value": float(cohens_h_negative),
-                        "agent_proportion": neg_certain_prop,
-                        "human_baseline": human_neg_certain,
-                        "interpretation": self._interpret_cohens_h(cohens_h_negative)
-                    },
-                    "effect_size_match": {
-                        "agent_effect_size": framing_effect_size,
-                        "human_effect_size": human_effect_size,
-                        "absolute_difference": float(cohens_h_effect_size),
-                        "interpretation": self._interpret_effect_size_match(cohens_h_effect_size)
-                    }
-                },
-                # Keep backwards compatibility
-                "main_effect": {
-                    "test_type": "chi_square",
-                    "statistic": f"χ²({dof}) = {chi2:.2f}",
-                    "chi_square": float(chi2),
-                    "degrees_of_freedom": int(dof),
-                    "p_value": float(p_value),
-                    "p": float(p_value),  # Add alias for compatibility
-                    "p_value_note": f"p = {p_value:.4f}" if p_value >= 0.001 else "p < 0.001",
-                    "significant": bool(p_value < 0.05),
-                    "effect_interpretation": self._interpret_effect(framing_effect_size, p_value)
-                }
-            },
-            "framing_analysis": {
-                "positive_frame_risk_aversion": bool(pos_certain_prop > 0.5),
-                "negative_frame_risk_seeking": bool(neg_risky_prop > 0.5),
-                "preference_reversal": bool((pos_certain_prop > 0.5) and (neg_risky_prop > 0.5)),
-                "effect_direction_correct": bool(framing_effect_size > 0.30)
-            }
+            "descriptive_statistics": descriptive_stats,
+            "inferential_statistics": inferential_stats
         }
         
         return enhanced_results
     
     def _count_choices(self, participant_data: List[Dict[str, Any]]) -> Dict[str, int]:
-        """Count Program A vs Program B choices."""
-        counts = {"Program A": 0, "Program B": 0}
-        
-        for participant in participant_data:
-            # Get choice from responses (key is "responses", not "trial_results")
-            responses = participant.get("responses", [])
+        """Count choices flexibly (A/B/C/D/E/F/Yes/No)."""
+        counts = {}
+        for p in participant_data:
+            responses = p.get("responses", [])
             if responses:
-                last_response = responses[-1]
-                response_text = last_response.get("response_text", "").strip()
-                response = last_response.get("response", "").strip()
+                resp = responses[-1].get("response", "?").upper()
+                # Normalize A/B/C... to standard keys
+                if resp in ["PROGRAM A", "OPTION A", "A"]: key = "A"
+                elif resp in ["PROGRAM B", "OPTION B", "B"]: key = "B"
+                elif resp in ["PROGRAM C", "OPTION C", "C"]: key = "C"
+                elif resp in ["PROGRAM D", "OPTION D", "D"]: key = "D"
+                elif resp in ["OPTION E", "E"]: key = "E"
+                elif resp in ["OPTION F", "F"]: key = "F"
+                elif resp in ["YES", "Y"]: key = "YES"
+                elif resp in ["NO", "N"]: key = "NO"
+                else: key = "OTHER"
                 
-                # Check both response and response_text
-                combined = (response + " " + response_text).upper()
-                
-                # Normalize response - look for A or B in the text
-                if "PROGRAM A" in combined or response.upper() == "A":
-                    counts["Program A"] += 1
-                elif "PROGRAM B" in combined or response.upper() == "B":
-                    counts["Program B"] += 1
-        
+                counts[key] = counts.get(key, 0) + 1
         return counts
-    
-    def _interpret_effect(self, effect_size: float, p_value: float) -> str:
-        """Interpret the framing effect."""
-        if p_value >= 0.05:
-            return "No significant framing effect detected"
+
+    def _run_chi_square(self, count1, n1, count2, n2):
+        """Helper for 2x2 Chi-Square Test."""
+        if n1 == 0 or n2 == 0:
+            return 0.0, 1.0
         
-        if effect_size >= 0.50:
-            return "Very strong framing effect (preference reversal >50pp)"
-        elif effect_size >= 0.40:
-            return "Strong framing effect consistent with original study"
-        elif effect_size >= 0.30:
-            return "Moderate framing effect"
-        elif effect_size >= 0.20:
-            return "Small but significant framing effect"
-        else:
-            return "Minimal framing effect"
-    
-    def _calculate_cohens_h(self, p1: float, p2: float) -> float:
-        """
-        Calculate Cohen's h for two proportions.
-        
-        Formula: h = 2 * (arcsin(√p1) - arcsin(√p2))
-        
-        Args:
-            p1: First proportion (0-1)
-            p2: Second proportion (0-1)
-            
-        Returns:
-            Cohen's h value (absolute value)
-        """
-        phi1 = 2 * np.arcsin(np.sqrt(p1))
-        phi2 = 2 * np.arcsin(np.sqrt(p2))
-        return abs(phi1 - phi2)
-    
-    def _interpret_cohens_h(self, h: float) -> str:
-        """
-        Interpret Cohen's h effect size (Cohen, 1988).
-        
-        Args:
-            h: Cohen's h value
-            
-        Returns:
-            Interpretation string
-        """
-        if h < 0.20:
-            return "Excellent match (negligible difference)"
-        elif h < 0.50:
-            return "Good match (small difference)"
-        elif h < 0.80:
-            return "Acceptable match (medium difference)"
-        else:
-            return "Poor match (large difference)"
-    
-    def _interpret_effect_size_match(self, diff: float) -> str:
-        """
-        Interpret how well agent's effect size matches human baseline.
-        
-        Args:
-            diff: Absolute difference in effect sizes
-            
-        Returns:
-            Interpretation string
-        """
-        if diff < 0.10:
-            return "Excellent match (< 10 percentage points)"
-        elif diff < 0.20:
-            return "Good match (< 20 percentage points)"
-        elif diff < 0.30:
-            return "Acceptable match (< 30 percentage points)"
-        else:
-            return f"Poor match ({diff*100:.1f} percentage point difference)"
+        table = np.array([
+            [count1, n1 - count1],
+            [count2, n2 - count2]
+        ])
+        try:
+            chi2, p, _, _ = stats.chi2_contingency(table)
+            return chi2, p
+        except:
+            return 0.0, 1.0

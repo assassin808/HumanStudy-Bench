@@ -1,0 +1,6 @@
+An investigator studying some properties of language selected a paperback and computed the average word-length in every page of the book (i.e., the number of letters in that page divided by the number of words). Another investigator took the first line in each page and computed the line's average word-length. The average word-length in the entire book is four. However, not every line or page has exactly that average. Some may have a higher average word-length, some lower.
+
+The first investigator counted the number of pages that had an average word-length of 6 or more and the second investigator counted the number of lines that had an average word-length of 6 or more. Which investigator do you think recorded a larger number of such units (pages for one, lines for the other)?
+
+Please provide your answer in the following format:
+Answer: The page investigator OR Answer: The line investigator OR Answer: About the same
