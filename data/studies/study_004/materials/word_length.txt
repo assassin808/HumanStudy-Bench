@@ -2,5 +2,9 @@ An investigator studying some properties of language selected a paperback and co
 
 The first investigator counted the number of pages that had an average word-length of 6 or more and the second investigator counted the number of lines that had an average word-length of 6 or more. Which investigator do you think recorded a larger number of such units (pages for one, lines for the other)?
 
+A) The page investigator
+B) The line investigator
+C) About the same (i.e., within 5% of each other)
+
 Please provide your answer in the following format:
-Answer: The page investigator OR Answer: The line investigator OR Answer: About the same
+Answer: [Your choice - A, B, or C]

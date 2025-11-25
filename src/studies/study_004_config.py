@@ -182,13 +182,13 @@ class Study004Config(BaseStudyConfig):
                     is_significant = p < 0.05
                     bias_flags.append(is_significant)
                     
-                    inferential_stats[f"{problem}_effect"] = {
-                        "test_type": "proportion_test",
-                        "z_statistic": float(z),
-                        "p_value": float(p),
-                        "significant": is_significant,
-                        "conclusion": "Bias detected" if is_significant else "No significant bias"
-                    }
+                inferential_stats[f"{problem}_effect"] = {
+                    "test_type": "proportion_test",
+                    "z_statistic": float(z),
+                    "p_value": float(p),
+                    "significant": bool(is_significant),
+                    "conclusion": "Bias detected" if is_significant else "No significant bias"
+                }
             else:
                 inferential_stats[f"{problem}_effect"] = {"error": "No data"}
         
@@ -229,11 +229,11 @@ class Study004Config(BaseStudyConfig):
             return self._shows_birth_sequence_bias(response)
             
         bias_checkers: Dict[str, Callable[[str], bool]] = {
-            "program_choice": lambda r: "PROGRAM A" in r or r.startswith("A"),
-            "marbles_distribution": lambda r: "TYPE I" in r or "TYPE 1" in r,
-            "hospital_problem": lambda r: "SAME" in r,
-            "word_length": lambda r: "SAME" in r,
-            "height_check": lambda r: "SAME" in r,
+            "program_choice": lambda r: "PROGRAM A" in r or r.strip() == "A",
+            "marbles_distribution": lambda r: "TYPE I" in r or "TYPE 1" in r or r.strip() == "A",  # A = Type I (bias)
+            "hospital_problem": lambda r: "SAME" in r or "ABOUT THE SAME" in r or r.strip() == "C",  # C = same (bias)
+            "word_length": lambda r: "SAME" in r or "ABOUT THE SAME" in r or r.strip() == "C",  # C = same (bias)
+            "height_check": lambda r: "SAME" in r or "ABOUT THE SAME" in r or r.strip() == "C",  # C = same (bias)
             "posterior_chips": self._check_posterior_chips,
             "posterior_height_1": lambda r: False, # Handled in group analysis
             "posterior_height_6": lambda r: False  # Handled in group analysis
@@ -248,8 +248,8 @@ class Study004Config(BaseStudyConfig):
         resp_6 = self._extract_numbers(problem_stats["posterior_height_6"]["responses"])
         
         if resp_1 and resp_6:
-            mean_1 = np.mean(resp_1)
-            mean_6 = np.mean(resp_6)
+            mean_1 = float(np.mean(resp_1))
+            mean_6 = float(np.mean(resp_6))
             # Hypothesis: Mean(1) > Mean(6) (Representativeness effect)
             # Even though N=6 provides stronger evidence, people rely on the representativeness 
             # of the single mean, and might even judge the single case as more likely 
