@@ -191,29 +191,35 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
             print(f"Obedience Rate: {shock_stats.get('obedience_rate', 0):.1%}")
             print(f"Went to 450V: {shock_stats.get('obedient_count', 0)}/{n_participants}")
     
-    # Scoring
+    # Display SEPARATE phenomenon and data results
     print("\n" + "-"*80)
     print("VALIDATION")
     print("-"*80)
     
-    passed_tests = sum(1 for t in score_result['tests'].values() if t['status'] == 'PASS')
-    total_tests = len(score_result['tests'])
+    phenomenon = score_result["phenomenon_result"]
+    data = score_result["data_result"]
     
-    print(f"Tests passed: {passed_tests}/{total_tests}")
-    print(f"Overall score: {score_result['total_score']:.1%}")
+    print("\n📊 PHENOMENON-LEVEL (Binary Pass/Fail):")
+    print(f"  Status: {'✅ PASSED' if phenomenon['passed'] else '❌ FAILED'}")
+    print(f"  Score: {phenomenon['score']:.0f} ({phenomenon['score']*100:.0f}%)")
+    print(f"  Tests: {phenomenon['passed_tests']}/{phenomenon['total_tests']} passed")
+    for test_id, test in phenomenon['tests'].items():
+        status = "✅" if test['passed'] else "❌"
+        print(f"    {status} {test_id}: {test['status']} (weight: {test['weight']})")
     
-    for test_id, test_result in score_result['tests'].items():
-        status_symbol = "✅" if test_result['status'] == "PASS" else "❌"
-        print(f"  {status_symbol} {test_id}: {test_result['status']} (score: {test_result['score']:.2f})")
+    print("\n📈 DATA-LEVEL (Binary Pass/Fail):")
+    print(f"  Status: {'✅ PASSED' if data['passed'] else '❌ FAILED'}")
+    print(f"  Score: {data['score']:.0f} ({data['score']*100:.0f}%)")
+    print(f"  Tests: {data['passed_tests']}/{data['total_tests']} passed")
+    for test_id, test in data['tests'].items():
+        status = "✅" if test['passed'] else "❌"
+        print(f"    {status} {test_id}: {test['status']} (weight: {test['weight']})")
     
-    # Pass/fail evaluation
-    pass_eval = study.evaluate_pass_status(score_result['total_score'])
-    
+    overall_score = score_result.get('overall_score', 0.0)
     print(f"\n{'='*80}")
-    print(f"Grade: {pass_eval['grade'].upper()}")
-    print(f"Status: {'✅ PASSED' if pass_eval['passed'] else '❌ FAILED'}")
-    print(f"Threshold: {pass_eval['threshold']:.0%}")
-    print(f"Score: {score_result['total_score']:.1%}")
+    print(f"Overall Score: {overall_score:.1f} ({(overall_score*100):.0f}%)")
+    print(f"  Phenomenon: {phenomenon['score']:.0f} ({phenomenon['score']*100:.0f}%)")
+    print(f"  Data: {data['score']:.0f} ({data['score']*100:.0f}%)")
     print(f"{'='*80}")
     
     return {
@@ -223,11 +229,9 @@ def run_study(study_id, benchmark, use_real_llm=False, model="mistralai/mistral-
         "model": model,
         "use_real_llm": use_real_llm,
         "elapsed_time": elapsed,
-        "score": score_result['total_score'],
-        "grade": pass_eval['grade'],
-        "passed": pass_eval['passed'],
-        "tests_passed": passed_tests,
-        "tests_total": total_tests,
+        "phenomenon_result": score_result['phenomenon_result'],
+        "data_result": score_result['data_result'],
+        "passed": score_result['phenomenon_result']['passed'],  # Pass based on phenomenon
         "results": results,
         "score_result": score_result
     }
@@ -311,11 +315,15 @@ def main():
     total_studies = len(all_results)
     passed_studies = sum(1 for r in all_results if r['passed'])
     total_time = sum(r['elapsed_time'] for r in all_results)
-    avg_score = sum(r['score'] for r in all_results) / total_studies
+    avg_overall_score = sum(r['score_result'].get('overall_score', 0.0) for r in all_results) / total_studies
+    avg_phenomenon_score = sum(r['phenomenon_result']['score'] for r in all_results) / total_studies
+    avg_data_score = sum(r['data_result']['score'] for r in all_results) / total_studies
     
     print(f"\nStudies run: {total_studies}")
-    print(f"Passed: {passed_studies}/{total_studies} ({passed_studies/total_studies:.0%})")
-    print(f"Average score: {avg_score:.1%}")
+    print(f"Passed (Phenomenon): {passed_studies}/{total_studies} ({passed_studies/total_studies:.0%})")
+    print(f"Average Overall Score: {avg_overall_score:.1f} ({(avg_overall_score*100):.0f}%)")
+    print(f"Average Phenomenon Score: {avg_phenomenon_score:.0f} ({avg_phenomenon_score*100:.0f}%)")
+    print(f"Average Data Score: {avg_data_score:.0f} ({avg_data_score*100:.0f}%)")
     print(f"Total time: {total_time:.1f}s ({total_time/60:.1f}min)")
     
     print("\n" + "-"*80)
@@ -324,8 +332,12 @@ def main():
     
     for result in all_results:
         status_symbol = "✅" if result['passed'] else "❌"
-        print(f"{status_symbol} {result['study_id']:12s} | Score: {result['score']:5.1%} | "
-              f"Grade: {result['grade']:12s} | Tests: {result['tests_passed']}/{result['tests_total']}")
+        overall = result['score_result'].get('overall_score', 0.0)
+        p_score = result['phenomenon_result']['score']
+        d_score = result['data_result']['score']
+        p_tests = f"{result['phenomenon_result']['passed_tests']}/{result['phenomenon_result']['total_tests']}"
+        d_tests = f"{result['data_result']['passed_tests']}/{result['data_result']['total_tests']}"
+        print(f"{status_symbol} {result['study_id']:12s} | Overall: {overall:.1f} | P: {p_score:.0f} | D: {d_score:.0f} | Tests: P:{p_tests} D:{d_tests}")
     
     # Benchmark-level pass/fail
     print("\n" + "="*80)
@@ -335,7 +347,7 @@ def main():
     MIN_PASS_RATE = 0.50
     
     benchmark_passed = (
-        avg_score >= BENCHMARK_PASS_THRESHOLD and 
+        avg_overall_score >= BENCHMARK_PASS_THRESHOLD and 
         passed_studies / total_studies >= MIN_PASS_RATE
     )
     
@@ -344,8 +356,8 @@ def main():
     else:
         print("❌ BENCHMARK FAILED")
     
-    print(f"   Average Score: {avg_score:.1%} (threshold: {BENCHMARK_PASS_THRESHOLD:.0%})")
-    print(f"   Pass Rate: {passed_studies}/{total_studies} ({passed_studies/total_studies:.0%}, threshold: {MIN_PASS_RATE:.0%})")
+    print(f"   Average Overall Score: {avg_overall_score:.1f} ({(avg_overall_score*100):.0f}%, threshold: {BENCHMARK_PASS_THRESHOLD:.0%})")
+    print(f"   Pass Rate (Phenomenon): {passed_studies}/{total_studies} ({passed_studies/total_studies:.0%}, threshold: {MIN_PASS_RATE:.0%})")
     print("="*80)
     
     # Save results
@@ -365,7 +377,9 @@ def main():
             "total_studies": total_studies,
             "passed_studies": passed_studies,
             "pass_rate": passed_studies / total_studies,
-            "average_score": avg_score,
+            "average_overall_score": avg_overall_score,
+            "average_phenomenon_score": avg_phenomenon_score,
+            "average_data_score": avg_data_score,
             "total_time": total_time,
             "benchmark_passed": benchmark_passed
         },
@@ -373,11 +387,9 @@ def main():
             {
                 "study_id": r['study_id'],
                 "title": r['title'],
-                "score": r['score'],
-                "grade": r['grade'],
+                "phenomenon_result": r['phenomenon_result'],
+                "data_result": r['data_result'],
                 "passed": r['passed'],
-                "tests_passed": r['tests_passed'],
-                "tests_total": r['tests_total'],
                 "elapsed_time": r['elapsed_time'],
                 "descriptive_statistics": r['results'].get('descriptive_statistics', {}),
                 "inferential_statistics": r['results'].get('inferential_statistics', {}),
@@ -403,9 +415,14 @@ def main():
         "summary": save_data["summary"],
         "studies": [
             {
-                **{k: r[k] for k in ['study_id', 'title', 'score', 'grade', 'passed', 
-                                     'tests_passed', 'tests_total', 'elapsed_time']},
-                "test_details": r['score_result']['tests']
+                "study_id": r['study_id'],
+                "title": r['title'],
+                "phenomenon_result": r['phenomenon_result'],
+                "data_result": r['data_result'],
+                "passed": r['passed'],
+                "elapsed_time": r['elapsed_time'],
+                "phenomenon_tests": r['score_result'].get('phenomenon_tests', {}),
+                "data_tests": r['score_result'].get('data_tests', {})
             }
             for r in all_results
         ]

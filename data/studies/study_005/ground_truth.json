@@ -104,7 +104,7 @@
           "expected_direction": "greater",
           "threshold": 0.05
         },
-        "critical": false,
+        "critical": true,
         "weight": 1.0
       },
       {

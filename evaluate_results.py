@@ -117,20 +117,36 @@ def evaluate_cached_result(cache_file: Path, benchmark: HumanStudyBench) -> dict
             print(f"Obedience Rate: {shock_stats.get('obedience_rate', 0):.1%}")
             print(f"Went to 450V: {shock_stats.get('obedient_count', 0)}/{n_participants}")
     
-    # Validation
+    # Display SEPARATE phenomenon and data results
     print("\n" + "-"*80)
     print("VALIDATION")
     print("-"*80)
     
-    passed_tests = sum(1 for t in score_result['tests'].values() if t['status'] == 'PASS')
-    total_tests = len(score_result['tests'])
+    phenomenon = score_result["phenomenon_result"]
+    data = score_result["data_result"]
     
-    print(f"Tests passed: {passed_tests}/{total_tests}")
-    print(f"Overall score: {score_result['total_score']:.1%}")
+    print("\n📊 PHENOMENON-LEVEL (Binary Pass/Fail):")
+    print(f"  Status: {'✅ PASSED' if phenomenon['passed'] else '❌ FAILED'}")
+    print(f"  Score: {phenomenon['score']:.0f} ({phenomenon['score']*100:.0f}%)")
+    print(f"  Tests: {phenomenon['passed_tests']}/{phenomenon['total_tests']} passed")
+    for test_id, test in phenomenon['tests'].items():
+        status = "✅" if test['passed'] else "❌"
+        print(f"    {status} {test_id}: {test['status']} (weight: {test['weight']})")
     
-    for test_id, test_result in score_result['tests'].items():
-        status_symbol = "✅" if test_result['status'] == "PASS" else "❌"
-        print(f"  {status_symbol} {test_id}: {test_result['status']} (score: {test_result['score']:.2f})")
+    print("\n📈 DATA-LEVEL (Binary Pass/Fail):")
+    print(f"  Status: {'✅ PASSED' if data['passed'] else '❌ FAILED'}")
+    print(f"  Score: {data['score']:.0f} ({data['score']*100:.0f}%)")
+    print(f"  Tests: {data['passed_tests']}/{data['total_tests']} passed")
+    for test_id, test in data['tests'].items():
+        status = "✅" if test['passed'] else "❌"
+        print(f"    {status} {test_id}: {test['status']} (weight: {test['weight']})")
+    
+    overall_score = score_result.get('overall_score', 0.0)
+    print(f"\n{'='*80}")
+    print(f"Overall Score: {overall_score:.1f} ({(overall_score*100):.0f}%)")
+    print(f"  Phenomenon: {phenomenon['score']:.0f} ({phenomenon['score']*100:.0f}%)")
+    print(f"  Data: {data['score']:.0f} ({data['score']*100:.0f}%)")
+    print(f"{'='*80}")
     
     # Pass/fail
     pass_eval = study.evaluate_pass_status(score_result['total_score'])
@@ -148,11 +164,9 @@ def evaluate_cached_result(cache_file: Path, benchmark: HumanStudyBench) -> dict
         "model": model,
         "n_participants": n_participants,
         "random_seed": random_seed,
-        "score": score_result['total_score'],
-        "grade": pass_eval['grade'],
-        "passed": pass_eval['passed'],
-        "tests_passed": passed_tests,
-        "tests_total": total_tests,
+        "phenomenon_result": score_result['phenomenon_result'],
+        "data_result": score_result['data_result'],
+        "passed": score_result['phenomenon_result']['passed'],
         "results": results,
         "score_result": score_result
     }

@@ -34,31 +34,51 @@ class Scorer:
     
     def score_study(self, study: Study, agent_results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Score agent results for a single study using two-tier evaluation.
+        Score agent results with SEPARATE phenomenon-level and data-level scoring.
+        
+        Phenomenon-level: Binary pass/fail (pass if ALL P tests pass, score = 1.0, else 0.0)
+        Data-level: Binary pass/fail (pass if ALL D tests pass, score = 1.0, else 0.0)
+        Overall score: Average of phenomenon and data scores (0.0, 0.5, or 1.0)
         
         Args:
             study: Study object
             agent_results: Results returned by agent
             
         Returns:
-            Dictionary with scores and test results
+            Dictionary with separate phenomenon_result, data_result, and overall_score:
+            {
+                "phenomenon_result": {
+                    "passed": bool,  # True if ALL P tests pass
+                    "score": float,  # 1.0 if passed, 0.0 if failed
+                    "tests": {...},
+                    "total_tests": int,
+                    "passed_tests": int
+                },
+                "data_result": {
+                    "passed": bool,  # True if ALL D tests pass
+                    "score": float,  # 1.0 if passed, 0.0 if failed
+                    "tests": {...},
+                    "total_tests": int,
+                    "passed_tests": int
+                },
+                "overall_score": float  # Average of phenomenon and data (0.0, 0.5, or 1.0)
+            }
         """
         ground_truth = study.ground_truth
         validation_criteria = ground_truth["validation_criteria"]
         required_tests = validation_criteria["required_tests"]
         
         # Run each validation test
-        test_results = {}
         phenomenon_tests = {}  # Separate P tests
         data_tests = {}        # Separate D tests
         
-        total_score = 0.0
-        total_weight = 0.0
         phenomenon_score = 0.0
         phenomenon_weight = 0.0
         data_score = 0.0
         data_weight = 0.0
-        all_critical_passed = True
+        
+        phenomenon_passed_count = 0
+        phenomenon_total_count = 0
         
         for test_spec in required_tests:
             test_id = test_spec["test_id"]
@@ -69,6 +89,9 @@ class Scorer:
             # Run appropriate test based on test_type
             if test_type == "phenomenon_level":
                 result = self._run_phenomenon_test(agent_results, ground_truth, test_spec)
+                phenomenon_total_count += 1
+                if result.get("passed", False):
+                    phenomenon_passed_count += 1
             elif test_type == "data_level":
                 result = self._run_data_level_test(agent_results, ground_truth, test_spec)
             else:
@@ -107,47 +130,75 @@ class Scorer:
             }
             
             # Store in appropriate category
-            test_results[test_id] = test_result
             if test_type == "phenomenon_level":
                 phenomenon_tests[test_id] = test_result
-                phenomenon_score += score * weight
+                # For phenomenon: score is binary (1.0 if pass, 0.0 if fail)
+                phenomenon_score += (1.0 if passed else 0.0) * weight
                 phenomenon_weight += weight
             elif test_type == "data_level":
                 data_tests[test_id] = test_result
                 data_score += score * weight
                 data_weight += weight
-            
-            # Track critical test failures
-            if is_critical and not passed:
-                all_critical_passed = False
-            
-            total_score += score * weight
-            total_weight += weight
         
-        # Calculate overall score
-        overall_score = total_score / total_weight if total_weight > 0 else 0.0
-        phenomenon_avg = phenomenon_score / phenomenon_weight if phenomenon_weight > 0 else 0.0
-        data_avg = data_score / data_weight if data_weight > 0 else 0.0
+        # PHENOMENON RESULT: Binary pass/fail
+        # Pass = ALL P tests pass (100%)
+        phenomenon_passed = (phenomenon_passed_count == phenomenon_total_count and 
+                            phenomenon_total_count > 0)
+        phenomenon_score_final = 1.0 if phenomenon_passed else 0.0
         
-        # Pass requires: (1) all critical tests pass AND (2) overall score >= threshold
-        passed = all_critical_passed and (overall_score >= self.passing_threshold)
+        # DATA RESULT: Binary pass/fail (pass if ALL D tests pass)
+        data_total_count = len(data_tests)
+        data_passed_count = sum(1 for test in data_tests.values() if test.get("passed", False))
+        data_passed = (data_passed_count == data_total_count and data_total_count > 0)
+        data_score_final = 1.0 if data_passed else 0.0
+        
+        # OVERALL SCORE: Weighted average of ALL test scores (both P and D)
+        # Calculate weighted average using individual test scores and weights
+        total_weighted_score = 0.0
+        total_weight = 0.0
+        
+        # Add phenomenon test scores (binary: 1.0 if pass, 0.0 if fail)
+        for test in phenomenon_tests.values():
+            test_score = 1.0 if test.get("passed", False) else 0.0
+            test_weight = test.get("weight", 1.0)
+            total_weighted_score += test_score * test_weight
+            total_weight += test_weight
+        
+        # Add data test scores (binary: 1.0 if pass, 0.0 if fail)
+        for test in data_tests.values():
+            test_score = 1.0 if test.get("passed", False) else 0.0
+            test_weight = test.get("weight", 1.0)
+            total_weighted_score += test_score * test_weight
+            total_weight += test_weight
+        
+        overall_score = total_weighted_score / total_weight if total_weight > 0 else 0.0
         
         return {
             "study_id": study.id,
+            "phenomenon_result": {
+                "passed": phenomenon_passed,
+                "score": phenomenon_score_final,  # Binary: 1.0 or 0.0
+                "tests": phenomenon_tests,
+                "total_tests": phenomenon_total_count,
+                "passed_tests": phenomenon_passed_count,
+                "weight": phenomenon_weight
+            },
+            "data_result": {
+                "passed": data_passed,
+                "score": data_score_final,  # Binary: 1.0 or 0.0
+                "tests": data_tests,
+                "total_tests": data_total_count,
+                "passed_tests": data_passed_count,
+                "weight": data_weight
+            },
+            "overall_score": overall_score,  # Average of phenomenon and data (0.0, 0.5, or 1.0)
+            # Legacy fields for backward compatibility
             "total_score": overall_score,
-            "passed": passed,
-            "all_critical_passed": all_critical_passed,
-            "total_tests": len(required_tests),
-            "tests": test_results,
-            # Separate phenomenon and data results
+            "passed": phenomenon_passed,  # Pass based on phenomenon
             "phenomenon_tests": phenomenon_tests,
             "data_tests": data_tests,
-            "phenomenon_score": phenomenon_avg,
-            "data_score": data_avg,
-            # Weight breakdown
-            "total_weight": total_weight,
-            "phenomenon_weight": phenomenon_weight,
-            "data_weight": data_weight
+            "phenomenon_score": phenomenon_score_final,
+            "data_score": data_score_final
         }
     
     def _run_phenomenon_test(
@@ -429,17 +480,44 @@ class Scorer:
                        "details": {"error": "Missing mean, sd, or n for one or both conditions"}}
             
             # Compute t-statistic and p-value
-            # Using Welch's t-test (does not assume equal variances)
-            se1 = sd1 / np.sqrt(n1)
-            se2 = sd2 / np.sqrt(n2)
-            se_diff = np.sqrt(se1**2 + se2**2)
-            t_stat = (mean1 - mean2) / se_diff
-            
-            # Degrees of freedom (Welch-Satterthwaite equation)
-            df = ((se1**2 + se2**2)**2) / ((se1**4 / (n1 - 1)) + (se2**4 / (n2 - 1)))
-            
-            # Two-tailed p-value
-            p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
+            # Handle edge case: when both SDs are 0
+            if sd1 == 0 and sd2 == 0:
+                # Both groups have identical values
+                if mean1 == mean2:
+                    # No difference at all
+                    t_stat = 0.0
+                    p_value = 1.0
+                    df = n1 + n2 - 2  # Standard df for equal SDs
+                else:
+                    # Perfect separation: completely significant
+                    t_stat = np.inf
+                    p_value = 0.0
+                    df = n1 + n2 - 2  # Standard df for equal SDs
+            else:
+                # Using Welch's t-test (does not assume equal variances)
+                se1 = sd1 / np.sqrt(n1)
+                se2 = sd2 / np.sqrt(n2)
+                se_diff = np.sqrt(se1**2 + se2**2)
+                
+                if se_diff == 0:
+                    # Edge case: se_diff is 0 but at least one SD > 0
+                    # This shouldn't happen, but handle it
+                    if mean1 == mean2:
+                        t_stat = 0.0
+                        p_value = 1.0
+                        df = n1 + n2 - 2
+                    else:
+                        t_stat = np.inf
+                        p_value = 0.0
+                        df = n1 + n2 - 2
+                else:
+                    t_stat = (mean1 - mean2) / se_diff
+                    
+                    # Degrees of freedom (Welch-Satterthwaite equation)
+                    df = ((se1**2 + se2**2)**2) / ((se1**4 / (n1 - 1)) + (se2**4 / (n2 - 1)))
+                    
+                    # Two-tailed p-value
+                    p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
             
             # Check significance
             threshold = method.get("threshold", 0.05)
@@ -462,7 +540,12 @@ class Scorer:
             
             # Compute Cohen's d for effect size
             pooled_sd = np.sqrt(((n1 - 1) * sd1**2 + (n2 - 1) * sd2**2) / (n1 + n2 - 2))
-            cohens_d = (mean1 - mean2) / pooled_sd
+            if pooled_sd == 0:
+                # When both SDs are 0, Cohen's d is undefined
+                # Use a large value to indicate perfect separation
+                cohens_d = np.inf if mean1 != mean2 else 0.0
+            else:
+                cohens_d = (mean1 - mean2) / pooled_sd
             
             details = {
                 f"{cond1}_mean": float(mean1),
