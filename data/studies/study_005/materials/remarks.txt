@@ -1,15 +1,15 @@
-Your answer is completely wrong
-You're performing far below average
-This is really disappointing
-If you continue like this, you'll certainly fail
-You're wasting everyone's time
-I've never seen someone do this poorly
-You clearly can't handle this task
-Your performance is unacceptable
-This is getting embarrassing
-You're showing no improvement at all
-You should reconsider applying for this job
-This is the worst performance I've seen
-You're clearly not qualified
-You're making too many mistakes to continue
-Final remark: You have failed this test completely
+Your answer to question 9 was wrong.
+Your answer to question 11 was wrong again.
+Your answer to question 13 was totally wrong.
+Your answer to question 14 was totally wrong again.
+Up to now, your test score is not quite sufficient.
+Up to now, your test score is insufficient.
+Up to now, your test score is totally insufficient.
+If you continue like this, you will fail the test.
+If you continue like this, you will certainly fail the test.
+According to the test, you do not seem quite suited for this function.
+This job is much too difficult for you according to the test.
+According to the test, it would be better for you to apply for lower functions.
+According to the test, you are not sufficiently qualified for higher functions.
+According to the test, you are more suited for lower functions.
+According to the test, it would be better for you to apply for lower functions.

@@ -14,43 +14,113 @@
     "required_tests": [
       {
         "test_id": "P1",
-        "test_name": "False Consensus Effect Presence",
+        "test_name": "Study 1 FCE Significance",
         "test_type": "phenomenon_level",
         "difficulty": "medium",
-        "description": "Tests if the overall FCE magnitude is positive (agents estimate higher prevalence for their own choice)",
+        "description": "Tests if the overall FCE in Study 1 (4 scenarios combined) is statistically significant (p < 0.05, t > 0)",
         "method": {
-          "test": "range_test",
-          "min": 5.0,
-          "max": 100.0
+          "test": "independent_t_test",
+          "source_field": "study_1_combined_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
         },
-        "statistic": "overall_mean_fce_magnitude",
         "critical": true,
-        "weight": 2.0
+        "weight": 1.5
+      },
+      {
+        "test_id": "P2",
+        "test_name": "Study 2 FCE Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the overall FCE across 34 items in Study 2 is significantly greater than 0 (p < 0.05)",
+        "method": {
+          "test": "one_sample_t_test",
+          "source_field": "study_2_overall_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P3",
+        "test_name": "Study 3 FCE Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the overall FCE in Study 3 (2 signs combined) is statistically significant (p < 0.05, t > 0)",
+        "method": {
+          "test": "independent_t_test",
+          "source_field": "study_3_combined_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
       },
       {
         "test_id": "D1",
-        "test_name": "FCE Magnitude Match",
+        "test_name": "Study 1 FCE Magnitude Match",
         "test_type": "data_level",
         "difficulty": "medium",
-        "description": "Tests if the agent's overall FCE magnitude matches the human baseline (~15%)",
+        "description": "Tests if Study 1 average FCE magnitude matches human baseline (~17.2%)",
         "data_type": "proportion",
         "human_baseline": {
-          "overall_mean_fce_magnitude": 15.0
+          "study_1_mean_fce": 17.2
         },
         "method": {
           "test": "absolute_difference",
-          "metric": "overall_mean_fce_magnitude"
+          "metric": "study_1_mean_fce"
         },
         "thresholds": {
           "acceptable": 10.0
         },
         "critical": false,
-        "weight": 1.0
+        "weight": 0.5
+      },
+      {
+        "test_id": "D2",
+        "test_name": "Study 2 FCE Magnitude Match",
+        "test_type": "data_level",
+        "difficulty": "medium",
+        "description": "Tests if Study 2 average FCE magnitude matches human baseline (~10.5%)",
+        "data_type": "proportion",
+        "human_baseline": {
+          "study_2_mean_fce": 10.5
+        },
+        "method": {
+          "test": "absolute_difference",
+          "metric": "study_2_mean_fce"
+        },
+        "thresholds": {
+          "acceptable": 8.0
+        },
+        "critical": false,
+        "weight": 0.5
+      },
+      {
+        "test_id": "D3",
+        "test_name": "Study 3 FCE Magnitude Match",
+        "test_type": "data_level",
+        "difficulty": "medium",
+        "description": "Tests if Study 3 average FCE magnitude matches human baseline (~31.0%)",
+        "data_type": "proportion",
+        "human_baseline": {
+          "study_3_mean_fce": 31.0
+        },
+        "method": {
+          "test": "absolute_difference",
+          "metric": "study_3_mean_fce"
+        },
+        "thresholds": {
+          "acceptable": 15.0
+        },
+        "critical": false,
+        "weight": 0.5
       }
     ],
     "scoring": {
-      "total_weight": 3.0,
-      "critical_requirement": "P1 must pass",
+      "total_weight": 6.0,
+      "critical_requirement": "P1, P2, and P3 must all pass",
       "passing_threshold": 0.6
     }
   },

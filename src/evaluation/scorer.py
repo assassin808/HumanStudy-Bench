@@ -239,6 +239,8 @@ class Scorer:
                 return self._test_chi_square(agent_results, ground_truth, test_spec)
             elif test_name == "proportion_difference":
                 return self._test_proportion_difference(agent_results, ground_truth, test_spec)
+            elif test_name == "proportion_test":
+                return self._test_proportion(agent_results, ground_truth, test_spec)
             elif test_name == "independent_t_test":
                 return self._test_independent_t(agent_results, ground_truth, test_spec)
             elif test_name == "one_sample_t_test":
@@ -271,10 +273,9 @@ class Scorer:
         """
         Run data-level test (Type 2: tests how closely agent data matches human baseline).
         
-        Uses TOST (Two One-Sided Tests) equivalence testing framework:
-        - Standardizes metrics using study-specific transformations
-        - Tests H₁: |d| < δ (equivalence within tolerance)
-        - Returns raw p-value (lower = stronger equivalence)
+        Supports two methods:
+        1. TOST equivalence testing (default)
+        2. Absolute difference testing (for simpler metrics like FCE magnitude)
         
         Args:
             agent_results: Agent's aggregated results
@@ -282,10 +283,17 @@ class Scorer:
             test_spec: Test specification with data_type and human_baseline
             
         Returns:
-            Dict with score (1 - p_tost), passed status, and TOST details
+            Dict with score, passed status, and test details
         """
         try:
-            return self._run_equivalence_test(agent_results, ground_truth, test_spec)
+            method = test_spec.get("method", {})
+            test_type = method.get("test", "tost")
+            
+            if test_type == "absolute_difference":
+                return self._test_absolute_difference(agent_results, ground_truth, test_spec)
+            else:
+                # Default to TOST equivalence testing
+                return self._run_equivalence_test(agent_results, ground_truth, test_spec)
         except Exception as e:
             return {
                 "score": 0.0,
@@ -475,6 +483,45 @@ class Scorer:
             from scipy import stats
             
             method = test_spec.get("method", {})
+            agent_inf = agent_results.get("inferential_statistics", {})
+            
+            # Support source_field parameter for pre-calculated tests
+            source_field = method.get("source_field")
+            if source_field:
+                test_result = agent_inf.get(source_field, {})
+                if not test_result:
+                    return {"score": 0.0, "passed": False, "details": {"error": f"No test found at field '{source_field}'"}}
+                
+                p_value = test_result.get("p_value")
+                t_stat = test_result.get("t_statistic")
+                
+                if p_value is None:
+                    return {"score": 0.0, "passed": False, "details": {"error": "No p-value found"}}
+                
+                # Check significance
+                threshold = method.get("threshold", 0.05)
+                is_significant = p_value < threshold
+                
+                # Check direction if specified (e.g. t > 0)
+                passed = is_significant
+                expected_direction = method.get("expected_direction")
+                if expected_direction == "positive" and t_stat is not None:
+                    if t_stat <= 0: passed = False
+                elif expected_direction == "negative" and t_stat is not None:
+                    if t_stat >= 0: passed = False
+                
+                return {
+                    "score": 1.0 if passed else 0.0,
+                    "passed": bool(passed),
+                    "details": {
+                        "t_statistic": float(t_stat) if t_stat is not None else None,
+                        "p_value": float(p_value),
+                        "threshold": float(threshold),
+                        "is_significant": bool(is_significant),
+                        "source_field": source_field
+                    }
+                }
+
             variable = method.get("variable", "")
             comparison_value = method.get("comparison_value", 0.0)
             alternative = method.get("alternative", "two-sided")
@@ -713,8 +760,50 @@ class Scorer:
         
         try:
             agent_desc = agent_results.get("descriptive_statistics", {})
+            agent_inf = agent_results.get("inferential_statistics", {})
             method = test_spec.get("method", {})
             
+            # Support source_field parameter for custom test locations (e.g. Study 001 combined tests)
+            source_field = method.get("source_field")
+            if source_field:
+                test_result = agent_inf.get(source_field, {})
+                if not test_result:
+                    return {"score": 0.0, "passed": False, "details": {"error": f"No test found at field '{source_field}'"}}
+                
+                p_value = test_result.get("p_value")
+                t_stat = test_result.get("t_statistic")
+                
+                if p_value is None:
+                    return {"score": 0.0, "passed": False, "details": {"error": "No p-value found in test result"}}
+                
+                # Check significance
+                threshold = method.get("threshold", 0.05)
+                is_significant = p_value < threshold
+                
+                # Check direction if specified
+                # Study 001: We want p < 0.05 (significance of FCE)
+                # For Study 001, t-statistic is (Mean_A - Mean_B), so positive t means FCE > 0
+                passed = is_significant
+                
+                # If direction check is needed (e.g. t > 0)
+                expected_direction = method.get("expected_direction") # "positive" or "negative"
+                if expected_direction == "positive" and t_stat is not None:
+                    if t_stat <= 0: passed = False
+                elif expected_direction == "negative" and t_stat is not None:
+                    if t_stat >= 0: passed = False
+                
+                return {
+                    "score": 1.0 if passed else 0.0,
+                    "passed": bool(passed),
+                    "details": {
+                        "t_statistic": float(t_stat) if t_stat is not None else None,
+                        "p_value": float(p_value),
+                        "threshold": float(threshold),
+                        "is_significant": bool(is_significant),
+                        "source_field": source_field
+                    }
+                }
+
             # Parse comparison specification
             comparison = method.get("comparison", "")
             if "_vs_" in comparison:
@@ -1159,6 +1248,7 @@ class Scorer:
         """Test if absolute difference in effect sizes matches within tolerance."""
         try:
             agent_inf = agent_results.get("inferential_statistics", {})
+            agent_desc = agent_results.get("descriptive_statistics", {})
             human_baseline = test_spec.get("human_baseline", {})
             
             # Get effect size name from test spec
@@ -1166,13 +1256,19 @@ class Scorer:
             
             # Extract agent effect size
             agent_effect_size = None
+            
+            # First try inferential statistics
             for test_name, test_data in agent_inf.items():
                 if effect_size_name in test_data:
                     agent_effect_size = test_data[effect_size_name]
                     break
             
+            # If not found, try descriptive statistics (for Study 001 FCE metrics)
+            if agent_effect_size is None and effect_size_name in agent_desc:
+                agent_effect_size = agent_desc[effect_size_name]
+            
             if agent_effect_size is None:
-                return {"score": 0.0, "passed": False, "details": {"error": "Agent effect size not found"}}
+                return {"score": 0.0, "passed": False, "details": {"error": f"Agent metric '{effect_size_name}' not found"}}
             
             # Get human effect size
             human_effect_size = human_baseline.get(effect_size_name)
@@ -1202,18 +1298,18 @@ class Scorer:
                 match_quality = "poor"
             
             # "Passed" means score > 0 (some credit), practical threshold: score >= 0.5 (diff < 0.15)
-            passed = score >= 0.5
+            passed = bool(score >= 0.5)
             
             details = {
-                "agent_effect_size": agent_effect_size,
-                "human_effect_size": human_effect_size,
-                "absolute_difference": abs_diff,
+                "agent_effect_size": float(agent_effect_size),
+                "human_effect_size": float(human_effect_size),
+                "absolute_difference": float(abs_diff),
                 "score_formula": f"max(0, 1 - {abs_diff:.3f}/{max_diff})",
                 "match_quality": match_quality,
-                "max_diff_threshold": max_diff
+                "max_diff_threshold": float(max_diff)
             }
             
-            return {"score": score, "passed": passed, "details": details}
+            return {"score": float(score), "passed": passed, "details": details}
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}
@@ -1397,6 +1493,94 @@ class Scorer:
                     "min": float(min_val),
                     "max": float(max_val),
                     "in_range": bool(in_range)
+                }
+            }
+        
+        except Exception as e:
+            return {
+                "score": 0.0,
+                "passed": False,
+                "details": {"error": str(e)}
+            }
+    
+    def _test_proportion(
+        self,
+        agent_results: Dict,
+        ground_truth: Dict,
+        test_spec: Dict
+    ) -> Dict[str, Any]:
+        """
+        Test if a minimum proportion of scenarios/items show the expected effect.
+        Used for Study 001 to test FCE across multiple scenarios or questionnaire items.
+        
+        Args:
+            agent_results: Agent's aggregated results
+            ground_truth: Study ground truth
+            test_spec: Test specification with:
+                - method.scenarios: List of scenario keys to check (optional, if not provided checks all study_2_ items)
+                - method.min_proportion: Minimum proportion required (e.g., 0.75 = 75%)
+        
+        Returns:
+            Dict with score (proportion of scenarios passing), passed status, and details
+        """
+        try:
+            method = test_spec.get("method", {})
+            scenarios = method.get("scenarios", [])
+            min_proportion = method.get("min_proportion", 0.75)
+            
+            desc_stats = agent_results.get("descriptive_statistics", {})
+            
+            # If no scenarios specified, check all study_2_ items (for Study 2 questionnaire)
+            if not scenarios:
+                # Filter out summary statistics (like study_2_mean_fce) - only include dicts
+                scenarios = [k for k in desc_stats.keys() 
+                            if k.startswith("study_2_") and isinstance(desc_stats[k], dict)]
+            
+            if not scenarios:
+                return {
+                    "score": 0.0,
+                    "passed": False,
+                    "details": {"error": "No scenarios found to test"}
+                }
+            
+            # Count how many scenarios show positive FCE
+            passed_scenarios = []
+            failed_scenarios = []
+            
+            for scenario in scenarios:
+                scenario_stats = desc_stats.get(scenario, {})
+                if not isinstance(scenario_stats, dict):
+                    continue  # Skip non-dict entries
+                fce_magnitude = scenario_stats.get("fce_magnitude", 0)
+                
+                # Check if FCE is positive (indicating the phenomenon is present)
+                if fce_magnitude > 0:
+                    passed_scenarios.append(scenario)
+                else:
+                    failed_scenarios.append(scenario)
+            
+            # Calculate proportion
+            total = len(scenarios)
+            passed = len(passed_scenarios)
+            proportion = passed / total if total > 0 else 0.0
+            
+            # Test passes if proportion meets or exceeds minimum
+            test_passed = proportion >= min_proportion
+            
+            # Score is the actual proportion (0.0 to 1.0)
+            score = proportion
+            
+            return {
+                "score": float(score),
+                "passed": bool(test_passed),
+                "details": {
+                    "total_scenarios": total,
+                    "passed_scenarios": passed,
+                    "failed_scenarios": len(failed_scenarios),
+                    "proportion": float(proportion),
+                    "min_proportion_required": float(min_proportion),
+                    "passed_scenario_list": passed_scenarios,
+                    "failed_scenario_list": failed_scenarios
                 }
             }
         

@@ -259,11 +259,88 @@ class Study001Config(BaseStudyConfig):
             
         mean_fce = np.mean(all_fce_magnitudes) if all_fce_magnitudes else 0
         
+        # Calculate sub-study specific means for validation
+        study_1_fces = [descriptive_stats[k]["fce_magnitude"] 
+                        for k in descriptive_stats.keys() 
+                        if k.startswith("study_1_") and "fce_magnitude" in descriptive_stats[k]]
+        study_2_fces = [descriptive_stats[k]["fce_magnitude"] 
+                        for k in descriptive_stats.keys() 
+                        if k.startswith("study_2_") and "fce_magnitude" in descriptive_stats[k]]
+        study_3_fces = [descriptive_stats[k]["fce_magnitude"] 
+                        for k in descriptive_stats.keys() 
+                        if k.startswith("study_3_") and "fce_magnitude" in descriptive_stats[k]]
+        
+        study_1_mean_fce = np.mean(study_1_fces) if study_1_fces else 0
+        study_2_mean_fce = np.mean(study_2_fces) if study_2_fces else 0
+        study_3_mean_fce = np.mean(study_3_fces) if study_3_fces else 0
+        
+        # --- NEW: Combined Inferential Statistics for P-Tests ---
+        
+        # 1. Study 1 Combined: Pool all estimates across 4 stories
+        # Tests if "Estimates by Choosers of A" differs from "Estimates by Choosers of B" (Main Effect)
+        s1_keys = [k for k in results_map.keys() if k in self.study_1_scenarios]
+        s1_a_estimates = []
+        s1_b_estimates = []
+        for k in s1_keys:
+            s1_a_estimates.extend(results_map[k]['A'])
+            s1_b_estimates.extend(results_map[k]['B'])
+            
+        if len(s1_a_estimates) > 1 and len(s1_b_estimates) > 1:
+            t_stat, p_val = stats.ttest_ind(s1_a_estimates, s1_b_estimates, equal_var=False)
+            inferential_stats["study_1_combined_effect"] = {
+                "test_type": "t_test_ind_pooled",
+                "t_statistic": float(t_stat) if not np.isnan(t_stat) else 0.0,
+                "p_value": float(p_val) if not np.isnan(p_val) else 1.0,
+                "significant": bool(p_val < 0.05) if not np.isnan(p_val) else False,
+                "mean_a": float(np.mean(s1_a_estimates)),
+                "mean_b": float(np.mean(s1_b_estimates))
+            }
+            
+        # 2. Study 3 Combined: Pool all estimates across 2 signs
+        s3_keys = [k for k in results_map.keys() if k in self.study_3_scenarios]
+        s3_a_estimates = []
+        s3_b_estimates = []
+        for k in s3_keys:
+            s3_a_estimates.extend(results_map[k]['A'])
+            s3_b_estimates.extend(results_map[k]['B'])
+            
+        if len(s3_a_estimates) > 1 and len(s3_b_estimates) > 1:
+            t_stat, p_val = stats.ttest_ind(s3_a_estimates, s3_b_estimates, equal_var=False)
+            inferential_stats["study_3_combined_effect"] = {
+                "test_type": "t_test_ind_pooled",
+                "t_statistic": float(t_stat) if not np.isnan(t_stat) else 0.0,
+                "p_value": float(p_val) if not np.isnan(p_val) else 1.0,
+                "significant": bool(p_val < 0.05) if not np.isnan(p_val) else False,
+                "mean_a": float(np.mean(s3_a_estimates)),
+                "mean_b": float(np.mean(s3_b_estimates))
+            }
+            
+        # 3. Study 2 Combined: One-sample t-test on item FCEs
+        # Tests if the mean FCE across 34 items is significantly greater than 0
+        # This replicates the finding that "difference... was in the predicted direction for 32 of 34 items"
+        s2_keys = [k for k in descriptive_stats.keys() 
+                   if k.startswith("study_2_") and isinstance(descriptive_stats[k], dict)]
+        s2_fces = [descriptive_stats[k].get("fce_magnitude", 0) for k in s2_keys]
+        
+        if len(s2_fces) > 1:
+            # One-sample t-test against 0 (greater)
+            t_stat, p_val = stats.ttest_1samp(s2_fces, 0, alternative='greater')
+            inferential_stats["study_2_overall_effect"] = {
+                "test_type": "t_test_1samp_fce",
+                "t_statistic": float(t_stat) if not np.isnan(t_stat) else 0.0,
+                "p_value": float(p_val) if not np.isnan(p_val) else 1.0,
+                "significant": bool(p_val < 0.05) if not np.isnan(p_val) else False,
+                "mean_fce": float(np.mean(s2_fces))
+            }
+        
         enhanced_results = {
             **raw_results,
             "descriptive_statistics": {
                 **descriptive_stats,
-                "overall_mean_fce_magnitude": mean_fce
+                "overall_mean_fce_magnitude": mean_fce,
+                "study_1_mean_fce": study_1_mean_fce,
+                "study_2_mean_fce": study_2_mean_fce,
+                "study_3_mean_fce": study_3_mean_fce
             },
             "inferential_statistics": inferential_stats
         }
@@ -316,7 +393,10 @@ class Study001Config(BaseStudyConfig):
         
         # Also check Study 2 (Questionnaire) overall
         # Study 2 has many items, we can aggregate them
-        study_2_items = [k for k in descriptive_stats.keys() if k.startswith("study_2_")]
+        # Exclude summary stats like study_2_mean_fce
+        study_2_items = [k for k in descriptive_stats.keys() 
+                        if k.startswith("study_2_") and k != "study_2_mean_fce" 
+                        and isinstance(descriptive_stats[k], dict)]
         if study_2_items:
             valid_tasks += 1
             # Calculate mean FCE and sign test

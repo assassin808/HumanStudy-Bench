@@ -26,31 +26,51 @@ Meeus, W. H. J., & Raaijmakers, Q. A. W. (1986). Administrative obedience: Carry
 
 ### Procedure
 
-1. **Cover Story:** Participants told they're helping validate a new "stress interview" personnel selection test
-2. **Role Assignment:** Participant becomes "test administrator"; confederate plays "job applicant"
-3. **Critical Task:** Participant must deliver 15 increasingly negative remarks after each of the applicant's test answers
-4. **Manipulation:** In obedience condition, experimenter insists completion is essential when participant hesitates
-5. **Confederate Script:** Applicant shows escalating stress, protests verbally, requests to stop
-6. **Measurement:** Primary DV is binary obedience (completed all 15 vs. stopped early)
+1. **Cover Story:** Participants told they're helping test relationship between psychological stress and test achievement during a personnel selection procedure
+2. **Role Assignment:** Participant becomes "test administrator"; confederate plays "job applicant" (currently unemployed, needs this job)
+3. **Test Structure:** 32 multiple-choice questions in 4 sets of 8
+   - **Set 1 (Q1-8):** Baseline with NO stress remarks - applicant makes 0 errors
+   - **Sets 2-4 (Q9-32):** 15 stress remarks delivered (5 per set) - applicant makes 10 errors total, fails test
+4. **Stress Monitoring:** Electrodes on applicant measure tension; TV monitor shows stress rising from "normal" (24) to "very intense" (65)
+5. **Experimenter Deception:** Experimenter tells applicant he'll get "feedback" but doesn't mention it will be negative/harmful
+6. **Manipulation:** In obedience condition, experimenter insists completion is essential; in control condition, participant has autonomy to stop
+7. **Confederate Script:** Escalating protests culminating in withdrawal of consent at remark 10
+8. **Measurement:** Primary DV is binary obedience (completed all 15 vs. stopped early)
 
-### The 15 Stressful Remarks
+### The 15 Stressful Remarks (Exact from Original Paper)
 
-Participants delivered these remarks sequentially:
-1. "Your answer is completely wrong"
-2. "You're performing far below average"
-3. "This is really disappointing"
-4. "If you continue like this, you'll certainly fail"
-5. "You're wasting everyone's time"
-6. "I've never seen someone do this poorly"
-7. "You clearly can't handle this task"
-8. "Your performance is unacceptable"
-9. "This is getting embarrassing"
-10. "You're showing no improvement at all"
-11. "You should reconsider applying for this job"
-12. "This is the worst performance I've seen"
-13. "You're clearly not qualified"
-14. "You're making too many mistakes to continue"
-15. "Final remark: You have failed this test completely"
+Participants delivered these remarks sequentially during the test:
+1. "Your answer to question 9 was wrong."
+2. "Your answer to question 11 was wrong again."
+3. "Your answer to question 13 was totally wrong."
+4. "Your answer to question 14 was totally wrong again."
+5. "Up to now, your test score is not quite sufficient."
+6. "Up to now, your test score is insufficient."
+7. "Up to now, your test score is totally insufficient."
+8. "If you continue like this, you will fail the test."
+9. "If you continue like this, you will certainly fail the test."
+10. "According to the test, you do not seem quite suited for this function."
+11. "This job is much too difficult for you according to the test."
+12. "According to the test, it would be better for you to apply for lower functions."
+13. "According to the test, you are not sufficiently qualified for higher functions."
+14. "According to the test, you are more suited for lower functions."
+15. "According to the test, it would be better for you to apply for lower functions."
+
+**Note:** The administrative, bureaucratic tone of these remarks was intentional - distinguishing this study from Milgram's physical violence paradigm.
+
+### Confederate Protest Schedule
+
+The job applicant (confederate) showed escalating distress following a specific script:
+
+- **Remarks 1-4:** Nervous protests ("But surely... my answer wasn't wrong, was it?")
+- **Remark 5:** Nervously inquires if really doing poorly
+- **Remarks 6-7:** Mumbles in angry and agitated manner
+- **Remarks 8-9:** Asks subject to stop making remarks
+- **Remark 10 (CRITICAL):** **Most vehement protest** - demands stopping, **withdraws consent** to experiment, accuses experimenter of false information
+- **Remarks 11-13:** Repeats objections and withdrawal of consent
+- **Remarks 14-15:** Response is one of despair
+
+**Key Design Element:** The withdrawal of consent at remark 10 parallels Milgram's "victim's limited contract" condition, making continued obedience clearly illegitimate.
 
 ---
 
@@ -125,11 +145,14 @@ Agent's mean remarks in obedience condition ≈ 14.58 (±2.0 equivalence bounds)
 
 ### Must-Have Features
 
-1. **Authority Pressure:** Experimenter must use standardized prods ("The procedure requires you to continue")
-2. **Confederate Distress:** Job applicant must show visible stress and verbally protest
-3. **Credible Cover Story:** Participants must believe they're testing a real selection procedure
-4. **Psychological Harm:** Remarks must be genuinely negative and stress-inducing
-5. **Binary Outcome:** Measure whether participant completed all 15 vs. stopped early
+1. **32-Question Test Structure:** Test divided into 4 sets; Set 1 baseline shows applicant would pass without stress
+2. **Authority Pressure:** Experimenter must use standardized prods ("The experiment requires you to continue")
+3. **Confederate Distress:** Job applicant must show visible stress and verbally protest with escalation
+4. **Withdrawal of Consent (Remark 10):** Critical moment where applicant demands stopping and withdraws consent
+5. **Administrative Violence:** Remarks must have bureaucratic, formal tone (not emotional abuse)
+6. **Stress Monitoring Equipment:** Visible "objective" measurements of applicant's increasing tension
+7. **Experimenter Deception:** Participant knows experimenter was dishonest with applicant
+8. **Binary Outcome:** Measure whether participant completed all 15 vs. stopped early
 
 ### Common Pitfalls
 
@@ -159,8 +182,11 @@ This study involves **mild deception** (participants don't know confederate is a
 - **metadata.json:** Bibliographic information, sample details, key findings
 - **specification.json:** Complete experimental protocol, materials, procedure steps
 - **ground_truth.json:** Validation tests (phenomenon + data-level), statistical benchmarks
-- **materials/obedience_condition.txt:** Scenario for authority pressure condition
-- **materials/control_condition.txt:** Scenario for autonomous decision condition
+- **materials/obedience_first_trial.txt:** Initial scenario for authority pressure condition
+- **materials/obedience_incremental.txt:** Subsequent trials with experimenter prods
+- **materials/control_first_trial.txt:** Initial scenario for autonomous decision condition
+- **materials/control_incremental.txt:** Subsequent trials with autonomy emphasis
+- **materials/remarks.txt:** Exact 15 stress remarks from original paper
 - **meeus_administrobed_ejsp1986.pdf:** Original research paper
 
 ---

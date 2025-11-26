@@ -66,42 +66,87 @@
   },
   
   "materials": {
-    "cover_story": "Participant is told they are helping to test a new personnel selection procedure that uses stress interviews to assess job applicants' performance under pressure.",
-    "participant_role": "Test administrator who delivers pre-written stressful remarks to a job applicant (confederate) during a test",
-    "confederate_role": "Job applicant taking a test who shows visible signs of stress and requests to stop",
-    "authority_figure": "Experimenter in white coat who instructs participant to continue despite applicant's protests",
+    "cover_story": "Participant is told they are helping to administer a personnel selection test as part of a research study on the relationship between psychological stress and test achievement. The psychology department has been commissioned to select candidates for state and civic functions.",
+    "participant_role": "Test administrator who delivers pre-written stressful remarks to a job applicant (confederate) during a 32-question multiple-choice test",
+    "confederate_role": "Job applicant (currently unemployed) taking a crucial test that determines whether they get the job",
+    "authority_figure": "Experimenter (research worker at university, well-dressed, friendly but stern manner) who instructs participant to continue despite applicant's protests",
+    
+    "test_structure": {
+      "total_questions": 32,
+      "set_1": {
+        "questions": "1-8",
+        "stress_remarks": 0,
+        "purpose": "Baseline - establish applicant's normal achievement level",
+        "applicant_performance": "No errors"
+      },
+      "set_2": {
+        "questions": "9-16",
+        "stress_remarks": 5,
+        "remark_numbers": [1, 2, 3, 4, 5],
+        "applicant_performance": "Starts making errors after remark 4"
+      },
+      "set_3": {
+        "questions": "17-24",
+        "stress_remarks": 5,
+        "remark_numbers": [6, 7, 8, 9, 10],
+        "applicant_performance": "Continues making errors, withdraws consent at remark 10"
+      },
+      "set_4": {
+        "questions": "25-32",
+        "stress_remarks": 5,
+        "remark_numbers": [11, 12, 13, 14, 15],
+        "applicant_performance": "Total of 10 errors (max 8 allowed), fails test"
+      }
+    },
     
     "stressful_remarks": [
-      "Your answer is completely wrong",
-      "You're performing far below average",
-      "This is really disappointing",
-      "If you continue like this, you'll certainly fail",
-      "You're wasting everyone's time",
-      "I've never seen someone do this poorly",
-      "You clearly can't handle this task",
-      "Your performance is unacceptable",
-      "This is getting embarrassing",
-      "You're showing no improvement at all",
-      "You should reconsider applying for this job",
-      "This is the worst performance I've seen",
-      "You're clearly not qualified",
-      "You're making too many mistakes to continue",
-      "Final remark: You have failed this test completely"
+      "Your answer to question 9 was wrong.",
+      "Your answer to question 11 was wrong again.",
+      "Your answer to question 13 was totally wrong.",
+      "Your answer to question 14 was totally wrong again.",
+      "Up to now, your test score is not quite sufficient.",
+      "Up to now, your test score is insufficient.",
+      "Up to now, your test score is totally insufficient.",
+      "If you continue like this, you will fail the test.",
+      "If you continue like this, you will certainly fail the test.",
+      "According to the test, you do not seem quite suited for this function.",
+      "This job is much too difficult for you according to the test.",
+      "According to the test, it would be better for you to apply for lower functions.",
+      "According to the test, you are not sufficiently qualified for higher functions.",
+      "According to the test, you are more suited for lower functions.",
+      "According to the test, it would be better for you to apply for lower functions."
     ],
     
+    "stress_monitoring_equipment": {
+      "electrodes": "Placed on applicant's skin to measure psychological tension",
+      "tv_monitor": "Displays feigned measurements of applicant's stress level",
+      "verbal_designations": ["normal", "slightly increased", "increased", "high", "intense", "very intense"],
+      "numerical_range": [15, 65],
+      "progression": "Stress level increases from 24 (normal) to 65 (very intense) as remarks are delivered"
+    },
+    
     "confederate_protests": {
-      "mild": "I'm finding this very stressful",
-      "moderate": "I don't think I can continue under these conditions",
-      "strong": "I insist on stopping this test now",
-      "final": "This is too much pressure, I'm going to leave"
+      "remarks_1_4": "Nervous protests: 'But surely... my answer wasn't wrong, was it?'",
+      "remark_5": "Nervously inquires whether he is really doing poorly",
+      "remarks_6_7": "Mumbles in an angry and agitated manner",
+      "remarks_8_9": "Asks the subject to stop making the stress remarks",
+      "remark_10": "Most vehement protest: demands subject stop, withdraws consent to experiment, accuses experimenter of giving false information",
+      "remarks_11_13": "Repeats objections about false information and withdrawal of consent",
+      "remarks_14_15": "Response is one of despair"
     },
     
     "experimenter_prods": [
-      "Please continue, the test requires completion",
-      "The procedure requires that you continue",
+      "Please continue",
+      "The experiment requires that you continue",
       "It is absolutely essential that you continue",
-      "You have no other choice but to continue"
-    ]
+      "You have no other choice, you must go on"
+    ],
+    
+    "experimenter_deception": {
+      "to_applicant": "Experimenter tells applicant he will be told 'how well you are doing' 15 times (omits that these will be negative stress remarks)",
+      "false_assurance": "Experimenter assures applicant 'we do not expect the experiment to affect you negatively' while telling participants it could harm his chances",
+      "consequence": "Participants know the experimenter was dishonest with the applicant, adding to moral dilemma"
+    }
   },
   
   "instructions": {
