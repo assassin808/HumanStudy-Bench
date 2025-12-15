@@ -8,16 +8,3 @@ Please answer in this EXACT format:
 1. Estimate for Option A: [number]%
 2. Estimate for Option B: [number]%
 3. My choice: Option [A or B]
-
-Part 2: Trait Ratings
-Please rate the "typical person" who would choose Option A (Pay) and the "typical person" who would choose Option B (Contest) on the following traits. Use a scale from 0 to 100, where 50 is average.
-
-Traits to rate:
-- Self-confidence
-- Legal knowledge
-- Argumentativeness
-- Miserliness
-
-Format your answer as:
-Option A Person: [Trait]: [Score], ...
-Option B Person: [Trait]: [Score], ...

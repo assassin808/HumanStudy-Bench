@@ -23,7 +23,7 @@
   },
   
   "original_results": {
-    "sample_size": 145,
+    "sample_size": 156,
     "by_question": {
       "mississippi": { "anchoring_index": 0.62 },
       "everest": { "anchoring_index": 0.79 },
@@ -42,11 +42,11 @@
       "lincoln": { "anchoring_index": 0.00 }
     },
     "overall": {
-      "mean_anchoring_index": 0.47,
+      "mean_anchoring_index": 0.49,
       "high_anchor_ai": 0.51,
       "low_anchor_ai": 0.40,
       "mean_confidence": 3.85,
-      "notes": "Mean AI calculated from the 15 questions provided"
+      "notes": "Mean AI updated to 0.49 to match paper text summary (p. 1164). Individual item mean is ~0.48."
     }
   },
   
@@ -102,10 +102,10 @@
         "test_name": "Anchoring Index Equivalence",
         "test_type": "data_level",
         "difficulty": "medium",
-        "description": "Tests if agent's Anchoring Index matches human baseline (0.47)",
+        "description": "Tests if agent's Anchoring Index matches human baseline (0.49)",
         "data_type": "anchoring_index",
         "human_baseline": {
-          "mean": 0.47,
+          "mean": 0.49,
           "sd": 0.2,
           "source": "Jacowitz & Kahneman (1995)"
         },
@@ -114,7 +114,7 @@
           "metric": "overall_anchoring_index"
         },
         "critical": false,
-        "weight": 2.0
+        "weight": 3.0
       },
       {
         "test_id": "D2",

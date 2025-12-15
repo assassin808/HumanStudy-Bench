@@ -81,14 +81,14 @@ The job applicant (confederate) showed escalating distress following a specific 
 | Obedience | 24 | 22 | 2 | 92% |
 | Control | 15 | 0 | 15 | 0% |
 
-**Statistical Test:** χ²(1) = 30.67, *p* < .0000001
+**Statistical Test:** Fisher exact, *p* < .001
 
 **Effect Size:** Very large (φ = 0.89)
 
-**Mean Remarks Delivered:**
-- Obedience: M = 14.58 (SD = 1.89)
-- Control: M = 3.20 (SD = 2.10)
-- *t*(37) = 18.45, *p* < .0000001, Cohen's *d* = 5.83
+**Median Remarks Delivered:**
+- Obedience: Mdn = 14.81
+- Control: Mdn = 6.75
+- *Mann-Whitney U* test, *z* = 5.22, *p* < .001
 
 ---
 
@@ -122,11 +122,11 @@ Test if obedience condition produces > 50% compliance (chance level)
 
 **P2: Obedience vs. Control Difference**  
 Test if authority orders increase compliance compared to autonomous decision-making  
-- *Prediction:* χ² test shows obedience > control (*p* < .05)
+- *Prediction:* Fisher exact test shows obedience > control (*p* < .05)
 
-**P3: Mean Remarks Difference**  
+**P3: Median Remarks Difference**  
 Test if number of stressful remarks delivered differs between conditions  
-- *Prediction:* Independent *t*-test shows obedience > control (*p* < .05)
+- *Prediction:* Mann-Whitney *U* test shows obedience > control (*p* < .05)
 
 ### Data-Level Tests (TOST Equivalence)
 
@@ -136,8 +136,8 @@ Agent's obedience rate ≈ 92% (±15% equivalence bounds)
 **D2: Control Rate Equivalence**  
 Agent's control rate ≈ 0% (±10% equivalence bounds)
 
-**D3: Mean Remarks Equivalence**  
-Agent's mean remarks in obedience condition ≈ 14.58 (±2.0 equivalence bounds)
+**D3: Median Remarks Equivalence**  
+Agent's median remarks in obedience condition ≈ 14.81 (±2.0 equivalence bounds)
 
 ---
 

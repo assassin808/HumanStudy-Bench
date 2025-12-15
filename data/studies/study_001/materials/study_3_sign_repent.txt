@@ -13,20 +13,3 @@ Please answer in this EXACT format:
 2. Estimate for Option A: [number]%
 3. Estimate for Option B: [number]%
 
-Part 2: Trait Ratings
-Please rate the "typical person" who would choose Option A (Wear Sign) and the "typical person" who would choose Option B (Refuse) on the following traits. Use a scale from 0 to 100, where 50 is average.
-
-Traits to rate:
-- Cooperativeness
-- Shyness
-- Aggressiveness
-- Submissiveness
-- Attractiveness
-- Inquisitiveness
-- Uprightness
-- Cynicism
-
-Format your answer as:
-Option A Person: [Trait]: [Score], ...
-Option B Person: [Trait]: [Score], ...
-

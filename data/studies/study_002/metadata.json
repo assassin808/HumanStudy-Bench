@@ -42,15 +42,15 @@
   },
   
   "sample": {
-    "original_n": 145,
+    "original_n": 156,
     "population": "undergraduate_students",
-    "institution": "Stanford University",
+    "institution": "University of California, Berkeley",
     "recruitment": "course_credit"
   },
   
   "key_findings": {
     "main_effect": "Anchoring effect demonstrated across multiple estimation tasks",
-    "typical_anchoring_index": 0.40,
+    "typical_anchoring_index": 0.49,
     "effect_size_range": "0.3 to 0.5",
     "robustness": "Effect persists even with obviously random anchors"
   },

@@ -128,13 +128,13 @@ class Study001Config(BaseStudyConfig):
                                      random_seed: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Generate participant profiles.
-        Design:
-        - Study 1: 4 scenarios (Between-Subjects)
-        - Study 3: 2 scenarios (Between-Subjects)
-        - Study 2: 1 scenario (Full Questionnaire)
+        Design based on Ross et al. (1977):
+        - Study 1: 80 participants per scenario (4 scenarios) = 320 total
+        - Study 2: 80 participants (Questionnaire)
+        - Study 3: 104 participants (52 per scenario)
+        Total Original N = 504
         
-        We treat "Study 2 Full Questionnaire" as just another "task condition" 
-        alongside the story scenarios.
+        This implementation distributes n_participants proportionally to the original study sizes.
         """
         if random_seed is not None:
             np.random.seed(random_seed)
@@ -142,25 +142,55 @@ class Study001Config(BaseStudyConfig):
         
         profiles = []
         
-        # Create list of distinct tasks
-        tasks = []
-        for s in self.study_1_scenarios:
-            tasks.append({"scenario": s, "type": "story"})
-        for s in self.study_3_scenarios:
-            tasks.append({"scenario": s, "type": "sign"})
+        # Define weights based on original paper counts
+        scenario_weights = {
+            "study_1_supermarket": 80,
+            "study_1_term_paper": 80,
+            "study_1_traffic_ticket": 80,
+            "study_1_space_program": 80,
+            "study_2_questionnaire_full": 80,
+            "study_3_sign_joes": 51,
+            "study_3_sign_repent": 53
+        }
         
-        # Add Study 2 as a single task type
-        tasks.append({"scenario": "study_2_questionnaire_full", "type": "questionnaire_full"})
+        total_weight = sum(scenario_weights.values()) # 504
+        
+        # Calculate counts for each scenario
+        scenario_counts = {}
+        current_total = 0
+        
+        # First pass: floor division
+        for scenario, weight in scenario_weights.items():
+            count = int(n_participants * weight / total_weight)
+            scenario_counts[scenario] = count
+            current_total += count
             
-        # Distribute tasks evenly
-        n_tasks = len(tasks)
-        assignments = []
-        base_count = n_participants // n_tasks
-        remainder = n_participants % n_tasks
+        # Second pass: distribute remainder
+        remainder = n_participants - current_total
+        if remainder > 0:
+            # Distribute to scenarios with largest weights first (or just round robin)
+            # Here we just add to the first 'remainder' scenarios for simplicity,
+            # or we could look at fractional parts for better accuracy.
+            # Given the numbers, simple distribution is fine.
+            keys = list(scenario_weights.keys())
+            for i in range(remainder):
+                scenario_counts[keys[i % len(keys)]] += 1
         
-        for i in range(n_tasks):
-            count = base_count + (1 if i < remainder else 0)
-            assignments.extend([tasks[i]] * count)
+        # Generate profiles
+        assignments = []
+        for scenario, count in scenario_counts.items():
+            # Determine task type
+            if "study_1" in scenario:
+                t_type = "story"
+            elif "study_2" in scenario:
+                t_type = "questionnaire_full"
+            else:
+                t_type = "sign"
+                
+            assignments.extend([{
+                "scenario": scenario,
+                "type": t_type
+            }] * count)
             
         random.shuffle(assignments)
         

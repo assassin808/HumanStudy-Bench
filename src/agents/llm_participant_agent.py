@@ -616,12 +616,17 @@ Do you understand? Please briefly acknowledge in a natural way (as a real partic
         
         # Strategy 0.5: Extract first number from response
         # Useful when response is like "I estimate 36 families" or "3.5 million"
-        # Support both integers and decimals (e.g., "3.5", "2.7", "0.15")
-        number_match = re.search(r'\b(\d+(?:\.\d+)?)\b', response_text)
+        # Support integers, decimals, and comma-separated numbers (e.g., "29,032", "1,000")
+        number_match = re.search(r'\b(\d+(?:,\d+)*(?:\.\d+)?)\b', response_text)
         if number_match:
             # Only use numeric parsing if response doesn't contain A/B/C choice indicators
             if not re.search(r'\b(PROGRAM|OPTION)\s+[ABC]\b', response_upper):
-                return number_match.group(1)
+                # Return the number (we keep commas to preserve the original format, 
+                # or we could strip them. Study configs usually handle parsing.)
+                # But to be safe for simple int() conversions, maybe we should strip?
+                # The previous behavior returned the substring. Let's return the substring 
+                # but ensure it captures the full number.
+                return number_match.group(1).replace(",", "")
         
         # Strategy 1: Look for "PROGRAM A/B" or "OPTION A/B/C" patterns
         program_match = re.search(r'\b(PROGRAM|OPTION)\s+([A-F])\b', response_upper)

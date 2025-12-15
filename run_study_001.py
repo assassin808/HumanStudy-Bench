@@ -90,8 +90,8 @@ class MockStudy001Agent(LLMParticipantAgent):
 
 def main():
     parser = argparse.ArgumentParser(description="Run Study 001")
-    parser.add_argument("--n-participants", type=int, default=20,
-                       help="Number of participants")
+    parser.add_argument("--n-participants", type=int, default=504,
+                       help="Number of participants (Default: 504, matching original Study 1+2+3)")
     parser.add_argument("--model", type=str, default="mistralai/mistral-nemo",
                        help="Model name")
     parser.add_argument("--mock", action="store_true", 

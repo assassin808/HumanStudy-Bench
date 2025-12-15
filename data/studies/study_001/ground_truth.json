@@ -32,7 +32,7 @@
         "test_name": "Study 2 FCE Significance",
         "test_type": "phenomenon_level",
         "difficulty": "medium",
-        "description": "Tests if the overall FCE across 34 items in Study 2 is significantly greater than 0 (p < 0.05)",
+        "description": "Tests if the overall FCE across 35 items in Study 2 is significantly greater than 0 (p < 0.05)",
         "method": {
           "test": "one_sample_t_test",
           "source_field": "study_2_overall_effect",
@@ -128,30 +128,30 @@
   "original_results": {
     "study_1": {
       "study_1_supermarket": {
-        "pay_estimate_by_payers": 75.6,
-        "pay_estimate_by_nonpayers": 57.3,
+        "sign_estimate_by_signers": 75.6,
+        "sign_estimate_by_refusers": 57.3,
         "fce": 18.3
       },
       "study_1_term_paper": {
-        "ask_estimate_by_askers": 67.4,
-        "ask_estimate_by_nonaskers": 45.9,
+        "individual_estimate_by_individual_choosers": 67.4,
+        "individual_estimate_by_group_choosers": 45.9,
         "fce": 21.5
       },
       "study_1_traffic_ticket": {
-        "contest_estimate_by_contesters": 71.8,
-        "contest_estimate_by_payers": 51.7,
+        "pay_estimate_by_payers": 71.8,
+        "pay_estimate_by_contesters": 51.7,
         "fce": 20.1
       },
       "study_1_space_program": {
-        "increase_estimate_by_supporters": 47.9,
-        "increase_estimate_by_opponents": 39.0,
+        "support_estimate_by_supporters": 47.9,
+        "support_estimate_by_opponents": 39.0,
         "fce": 8.9
       }
     },
     "study_2": {
-      "description": "Questionnaire (34 items)",
+      "description": "Questionnaire (35 items)",
       "overall_fce": 10.5,
-      "note": "Average difference across 34 items in original study was roughly 10-15%"
+      "note": "Average difference across items in original study was roughly 10-15%"
     },
     "study_3": {
       "study_3_sign_joes": {

@@ -242,9 +242,21 @@ class Study002Config(BaseStudyConfig):
             # AI = (Median_High - Median_Low) / (Anchor_High - Anchor_Low)
             anchor_high = self.question_info[q]["high"]
             anchor_low = self.question_info[q]["low"]
+            ref_calibration = self.question_info[q]["ref"]
+            
             denominator = anchor_high - anchor_low
             
             ai = (median_high - median_low) / denominator if denominator != 0 else 0
+            
+            # Calculate High and Low Anchor Effects separately for P2 test
+            # AI_high = (Median_High - Median_Calibration) / (Anchor_High - Median_Calibration)
+            # AI_low = (Median_Calibration - Median_Low) / (Median_Calibration - Anchor_Low)
+            
+            denom_high = anchor_high - ref_calibration
+            denom_low = ref_calibration - anchor_low
+            
+            ai_high = (median_high - ref_calibration) / denom_high if denom_high != 0 else 0
+            ai_low = (ref_calibration - median_low) / denom_low if denom_low != 0 else 0
             
             # T-test
             t_stat, p_val = 0.0, 1.0
@@ -266,6 +278,8 @@ class Study002Config(BaseStudyConfig):
                 "high_confidence": float(mean_conf_high),
                 "low_confidence": float(mean_conf_low),
                 "anchoring_index": float(ai),
+                "high_anchor_ai": float(ai_high),
+                "low_anchor_ai": float(ai_low),
                 "p_value": float(p_val) if not np.isnan(p_val) else 1.0
             }
             

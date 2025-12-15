@@ -15,6 +15,7 @@
     
     {"id": "gender", "category": "Personal characteristics", "option_a": "Male", "option_b": "Female"},
     {"id": "eyes", "category": "Personal characteristics", "option_a": "Brown eyes", "option_b": "Blue eyes"},
+    {"id": "magazines", "category": "Personal characteristics", "option_a": "Subscribe to magazines on list", "option_b": "Do not subscribe"},
     {"id": "first_born", "category": "Personal characteristics", "option_a": "First-born child", "option_b": "Laterborn child"},
     {"id": "hometown", "category": "Personal characteristics", "option_a": "Hometown > 200,000", "option_b": "Hometown < 200,000"},
     
@@ -42,4 +43,3 @@
     {"id": "et", "category": "Political expectations", "option_a": "Discovery of extraterrestrial life by year 2000", "option_b": "No discovery by year 2000"}
   ]
 }
-

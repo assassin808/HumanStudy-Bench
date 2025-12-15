@@ -314,3 +314,4 @@ Meeus, W. H. J., & Raaijmakers, Q. A. W. (1986). Administrative obedience: Carry
 
 The study_005 implementation now accurately reflects the original Meeus & Raaijmakers (1986) study design, maintaining theoretical fidelity to the administrative violence construct while adapting the paradigm for LLM participant testing.
 
+

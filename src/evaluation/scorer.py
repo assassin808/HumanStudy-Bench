@@ -180,8 +180,8 @@ class Scorer:
         p_raw_score = total_weighted_p_score / total_p_weight if total_p_weight > 0 else 0.0
         d_raw_score = total_weighted_d_score / total_d_weight if total_d_weight > 0 else 0.0
         
-        # Apply 2:1 weighting
-        overall_score = (p_raw_score * 2.0 + d_raw_score * 1.0) / 3.0
+        # Apply 3:1 weighting as requested
+        overall_score = (p_raw_score * 3.0 + d_raw_score * 1.0) / 4.0
         
         return {
             "study_id": study.id,
@@ -589,40 +589,47 @@ class Scorer:
             vals1 = []
             vals2 = []
             
-            # Specific logic for high_anchor_ai vs low_anchor_ai
-            # Since our current structure computes one AI per question, we need to calculate
-            # AI_high and AI_low separately.
-            # AI_high = (Mean_High - Calibration) / (High - Calibration)
-            # AI_low = (Mean_Low - Calibration) / (Low - Calibration)
-            # BUT currently we only have combined AI.
-            # Let's check if we can approximate or if we need to change aggregation.
-            # Actually, the Study 002 config computes ONE anchoring_index per question based on (High - Low).
-            # So we cannot do a paired t-test on "high_anchor_ai" vs "low_anchor_ai" per question 
-            # unless we redefine what those mean or change the aggregation.
+            # Support for P2: High vs Low Asymmetry
+            # Requires high_anchor_ai and low_anchor_ai fields in question data
+            if var1_name == "high_anchor_ai" and var2_name == "low_anchor_ai":
+                for q_data in by_question.values():
+                    v1 = q_data.get("high_anchor_ai")
+                    v2 = q_data.get("low_anchor_ai")
+                    
+                    if v1 is not None and v2 is not None:
+                        vals1.append(v1)
+                        vals2.append(v2)
+            else:
+                # Generic extraction not yet implemented for other pairs
+                return {"score": 0.0, "passed": False, "details": {"error": f"Unsupported variable pair: {var1_name}, {var2_name}"}}
             
-            # For now, let's look at what P2 in ground_truth expects: "High vs Low Asymmetry".
-            # It asks for "variable_1": "high_anchor_ai", "variable_2": "low_anchor_ai".
-            # This implies we should have calculated these separately.
+            if not vals1:
+                return {"score": 0.0, "passed": False, "details": {"error": "No data found for paired t-test"}}
             
-            # Let's check Study 002 aggregation again. 
-            # It computes "anchoring_index": float(ai) where ai = (median_high - median_low) / denominator.
+            # Perform paired t-test
+            t_stat, p_value = stats.ttest_rel(vals1, vals2, alternative=alternative)
             
-            # To support P2 properly, we need to calculate AI_high and AI_low separately in Study 002 config.
-            # However, without calibration group data (we don't have it simulated), we can't compute separate AIs.
-            # Original paper used Calibration group. We are using the "ref" value in config as proxy?
+            # Check significance
+            is_significant = p_value < 0.05
             
-            # Workaround: If we can't extract the variables, fail gracefully.
-            # OR: Modify this test to check something else we DO have, e.g., High Confidence vs Low Confidence?
-            # But P2 is specifically about Asymmetry.
+            # Check direction (mean diff)
+            mean1 = np.mean(vals1)
+            mean2 = np.mean(vals2)
             
-            # Let's assume we can't run P2 as defined without calibration data.
-            # But wait, we can use "ref" (calibration median) from config!
-            # Study 002 config has "ref".
+            passed = is_significant
             
-            # I will implement a simplified version that tries to compute these if possible, 
-            # or fails if data missing.
+            details = {
+                "variable_1": var1_name,
+                "variable_2": var2_name,
+                "mean_1": float(mean1),
+                "mean_2": float(mean2),
+                "n": len(vals1),
+                "t_statistic": float(t_stat),
+                "p_value": float(p_value),
+                "significant": bool(is_significant)
+            }
             
-            return {"score": 0.0, "passed": False, "details": {"error": "Data for paired t-test not available"}}
+            return {"score": 1.0 if passed else 0.0, "passed": bool(passed), "details": details}
             
         except Exception as e:
             return {"score": 0.0, "passed": False, "details": {"error": str(e)}}

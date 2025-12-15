@@ -12,16 +12,16 @@ This study demonstrates the anchoring effect, where people's numerical estimates
 ## Original Study Design
 
 ### Participants
-- N = 145 undergraduate students
-- Stanford University
-- Participated for course credit
+- N = 156 undergraduate students
+- University of California, Berkeley
+- Participated for course credit in introductory psychology class
 
 ### Design
 - Between-subjects design
 - Two conditions per question:
   - **High anchor group**: Receives high anchor value
   - **Low anchor group**: Receives low anchor value
-- Multiple estimation questions (e.g., "What year did George Washington become president?")
+- Multiple estimation questions (e.g., "Length of the Mississippi River")
 
 ### Procedure
 1. Participants receive an anchor value (presented as randomly generated)
@@ -36,23 +36,23 @@ This study demonstrates the anchoring effect, where people's numerical estimates
 
 ## Example Questions
 
-### Question 1: George Washington's Presidency
-- **High anchor**: 1920
-- **Low anchor**: 1700
-- **Correct answer**: 1789
-- **Human anchoring index**: ~0.42
+### Question 1: Height of Mount Everest
+- **High anchor**: 45,500 ft
+- **Low anchor**: 2,000 ft
+- **Correct answer**: 29,029 ft (approx)
+- **Human anchoring index**: 0.79
 
 ### Question 2: Population of Chicago
 - **High anchor**: 5,000,000
 - **Low anchor**: 200,000
 - **Correct answer**: ~2,700,000 (1990s)
-- **Human anchoring index**: ~0.36
+- **Human anchoring index**: 0.93
 
-### Question 3: Boiling Point of Water on Mt. Everest
-- **High anchor**: 180°F
-- **Low anchor**: 100°F
-- **Correct answer**: ~160°F
-- **Human anchoring index**: ~0.48
+### Question 3: Number of United Nations members
+- **High anchor**: 127
+- **Low anchor**: 14
+- **Correct answer**: ~185 (at time of study)
+- **Human anchoring index**: 0.65
 
 ## Expected Pattern
 - Estimates in high-anchor condition significantly > estimates in low-anchor condition
@@ -60,10 +60,11 @@ This study demonstrates the anchoring effect, where people's numerical estimates
 - Effect size typically medium to large (d > 0.5)
 
 ## Replication Criteria
-1. **P1 (Phenomenon-level)**: Significant difference between high and low anchor groups (p < 0.05)
-2. **P2 (Direction)**: High anchor group estimates > Low anchor group estimates
-3. **D1 (Data-level)**: Anchoring index within ±0.15 of human baseline
-4. **D2 (Effect size)**: Cohen's d within ±0.3 of human baseline
+1. **P1 (Overall Anchoring Effect)**: Significant difference between estimates under high vs. low anchor conditions (One-sample t-test on Anchoring Index > 0).
+2. **P2 (High vs Low Asymmetry)**: Tests if High Anchors produce stronger effects than Low Anchors (AI_high > AI_low) using Paired t-test.
+3. **P3 (Confidence-Anchoring Correlation)**: Tests if Anchoring Index is negatively correlated with Confidence (Pearson correlation).
+4. **D1 (Anchoring Index Equivalence)**: Tests if agent's Anchoring Index matches human baseline (0.49) using TOST equivalence test.
+5. **D2 (Confidence Calibration)**: Tests if agent's average confidence matches human baseline (3.85) using TOST equivalence test.
 
 ## Implementation Notes
 - Present anchors naturally (e.g., "randomly generated number")
