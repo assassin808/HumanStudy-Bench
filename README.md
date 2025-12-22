@@ -324,17 +324,12 @@ Traditional hypothesis testing asks "Is there a difference?" This is wrong for r
 
 ## Documentation
 
-- Getting started: `docs/getting_started.md`
-- Agent guide: `docs/llm_participant_agent_guide.md`
-- Prompt builder: `docs/prompt_builder_guide.md`
-- OpenRouter: `docs/openrouter_guide.md`
-- Benchmark overview: `docs/benchmark_overview.md`
-- Evaluation metrics: `docs/evaluation_metrics.md`
-- **Two-tier evaluation framework**: `docs/TWO_TIER_EVALUATION_FRAMEWORK.md`
+- Quick Start: `docs/QUICKSTART.md`
+- API Reference: `docs/api_reference.md`
 
 ## Contributing
 
-Issues and PRs are welcome. See `docs/paper_curation_guide.md` for adding new studies.
+Issues and PRs are welcome. See `docs/QUICKSTART.md` for adding new studies.
 
 ## Citation
 

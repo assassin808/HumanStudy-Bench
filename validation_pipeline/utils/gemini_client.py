@@ -8,13 +8,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 try:
-    import google.generativeai as genai
+    import google.genai as genai
 except ImportError:
     try:
-        from google import genai
+        # Fallback to old API for backward compatibility
+        import google.generativeai as genai
     except ImportError:
         raise ImportError(
-            "Google Gemini SDK not installed. Install with: pip install google-generativeai"
+            "Google Gemini SDK not installed. Install with: pip install google-genai"
         )
 
 # Load environment variables
@@ -40,7 +41,12 @@ class GeminiClient:
             )
         
         # Configure the API
-        genai.configure(api_key=api_key)
+        # Both old and new API use genai.configure()
+        try:
+            genai.configure(api_key=api_key)
+        except Exception as e:
+            raise RuntimeError(f"Failed to configure Gemini API: {e}")
+        
         self.api_key = api_key
         self.model = model
         self._uploaded_files: Dict[str, Any] = {}  # Cache for uploaded files
@@ -66,7 +72,17 @@ class GeminiClient:
         
         # Upload file
         try:
-            uploaded_file = genai.upload_file(path=str(file_path))
+            # Both old and new API should support genai.upload_file()
+            # Try the standard method first
+            if hasattr(genai, 'upload_file'):
+                uploaded_file = genai.upload_file(path=str(file_path))
+            elif hasattr(genai, 'File') and hasattr(genai.File, 'create'):
+                # Alternative API structure (if available)
+                uploaded_file = genai.File.create(path=str(file_path))
+            else:
+                # Last resort: try direct call (might work)
+                uploaded_file = genai.upload_file(path=str(file_path))
+            
             self._uploaded_files[cache_key] = uploaded_file
             return uploaded_file
         except Exception as e:

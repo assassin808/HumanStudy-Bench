@@ -1,6 +1,8 @@
 # Validation Pipeline Dependencies
 
-# Google Gemini API
+# Google Gemini API (new package - preferred)
+google-genai>=0.1.0
+# Fallback to old package if new one not available
 google-generativeai>=0.3.0
 
 # PDF processing
