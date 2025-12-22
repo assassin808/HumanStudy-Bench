@@ -59,27 +59,43 @@ python generation_pipeline/run.py --stage 1 --refine
 python generation_pipeline/run.py --stage 2 --refine
 ```
 
-### Generate Study Files
+### Stage 3: Generate Study Files
 
-After stage 2 review is approved, use the pipeline programmatically:
+After stage 2 review is approved, generate the study files:
 
-```python
-from generation_pipeline.pipeline import GenerationPipeline
+```bash
+# Auto-detect study_id from paper_id
+python generation_pipeline/run.py --stage 3
 
-pipeline = GenerationPipeline()
-stage2_json = Path("generation_pipeline/outputs/{paper_id}_stage2_extraction.json")
-
-# Generate study files
-pipeline.generate_study(stage2_json, study_id="study_005")
+# Or specify study_id explicitly
+python generation_pipeline/run.py --stage 3 --study-id study_001
 ```
 
 This generates:
 - `data/studies/{study_id}/metadata.json`
 - `data/studies/{study_id}/specification.json`
 - `data/studies/{study_id}/ground_truth.json`
+- `data/studies/{study_id}/materials/` (all scenario/questionnaire files)
 - `src/studies/{study_id}_config.py`
 
 **Note**: Generated config class needs manual refinement. Also update `get_study_config()` factory function in `src/core/study_config.py`.
+
+### Complete Workflow
+
+```bash
+# 1. Stage 1: Filter
+python generation_pipeline/run.py --stage 1
+
+# 2. Review stage1_filter.md, then run Stage 2
+python generation_pipeline/run.py --stage 2
+
+# 3. Review stage2_extraction.md, then generate study files
+python generation_pipeline/run.py --stage 3 --study-id study_001
+
+# If you need to refine:
+python generation_pipeline/run.py --stage 2 --refine
+python generation_pipeline/run.py --stage 1 --refine
+```
 
 ## Requirements
 

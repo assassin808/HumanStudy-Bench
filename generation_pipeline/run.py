@@ -49,13 +49,18 @@ def main():
         "--stage",
         type=int,
         required=True,
-        choices=[1, 2],
-        help="Stage to run (1=Filter, 2=Extraction)"
+        choices=[1, 2, 3],
+        help="Stage to run (1=Filter, 2=Extraction, 3=Generate Study Files)"
     )
     parser.add_argument(
         "--refine",
         action="store_true",
         help="Refine current stage (re-run with existing review)"
+    )
+    parser.add_argument(
+        "--study-id",
+        type=str,
+        help="Study ID for stage 3 (e.g., study_001). If not provided, will be inferred from paper_id"
     )
     parser.add_argument(
         "--output-dir",
@@ -122,9 +127,35 @@ def main():
                 stage1_json = find_latest_stage_file(1, args.output_dir)
                 pdf_path = find_pdf_in_current_dir()
                 pipeline.run_stage2(stage1_json, pdf_path)
+        
+        elif args.stage == 3:
+            # Generate study files
+            stage2_json = find_latest_stage_file(2, args.output_dir)
+            
+            # Determine study_id
+            if args.study_id:
+                study_id = args.study_id
+            else:
+                # Infer from stage2 JSON
+                import json
+                stage2_result = json.loads(stage2_json.read_text(encoding='utf-8'))
+                paper_id = stage2_result.get('paper_id', 'unknown')
+                # Convert paper_id to study_id format
+                study_id = f"study_{paper_id.split('_')[-1]}" if '_' in paper_id else f"study_{paper_id}"
+                # If paper_id doesn't have number, use 001 as default
+                if not any(c.isdigit() for c in study_id):
+                    study_id = "study_001"
+            
+            print(f"Generating study files for {study_id}")
+            result = pipeline.generate_study(stage2_json, study_id)
+            print(f"\n✓ Study generated successfully!")
+            print(f"  Study directory: {result['study_dir']}")
+            print(f"  Materials: {len(result.get('materials', []))} files")
     
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 

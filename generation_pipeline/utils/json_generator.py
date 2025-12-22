@@ -84,17 +84,21 @@ class JSONGenerator:
         if not studies:
             raise ValueError("No studies found")
         
-        # Aggregate participants across all studies
+        # Aggregate participants across all studies and sub-studies
         total_n = 0
         all_demographics = {}
         population = None
         recruitment_source = None
+        
+        # Collect participant info from each sub-study
+        sub_study_participants = {}
         
         # Collect design factors from sub-studies
         factors = []
         factor_names = set()
         
         for study in studies:
+            # First try overall_participants
             overall_participants = study.get('overall_participants', {})
             if overall_participants:
                 total_n += overall_participants.get('total_n', 0)
@@ -103,11 +107,41 @@ class JSONGenerator:
                 if not recruitment_source:
                     recruitment_source = overall_participants.get('recruitment_source', '')
                 demos = overall_participants.get('demographics', {})
-                if demos:
+                if demos and isinstance(demos, dict):
                     all_demographics.update(demos)
             
-            # Extract design factors
+            # Extract from sub-studies (more accurate)
             sub_studies = study.get('sub_studies', [])
+            for sub_study in sub_studies:
+                sub_id = sub_study.get('sub_study_id', '')
+                sub_participants = sub_study.get('participants', {})
+                
+                if sub_participants:
+                    sub_n = sub_participants.get('n', 0)
+                    if sub_n:
+                        total_n += sub_n
+                        sub_study_participants[sub_id] = {
+                            "n": sub_n,
+                            "population": sub_participants.get('population', ''),
+                            "recruitment_source": sub_participants.get('recruitment_source', '')
+                        }
+                    
+                    if not population:
+                        population = sub_participants.get('population', '')
+                    if not recruitment_source:
+                        recruitment_source = sub_participants.get('recruitment_source', '')
+                    
+                    # Parse demographics (could be string or dict)
+                    sub_demos = sub_participants.get('demographics', {})
+                    if isinstance(sub_demos, str):
+                        # Try to extract structured info from string
+                        if 'age' in sub_demos.lower() or 'gender' in sub_demos.lower():
+                            # Keep as note for now
+                            pass
+                    elif isinstance(sub_demos, dict) and sub_demos:
+                        all_demographics.update(sub_demos)
+            
+            # Extract design factors
             if sub_studies:
                 # Create a factor for scenarios/conditions
                 scenario_levels = [ss.get('sub_study_id', '') for ss in sub_studies if ss.get('sub_study_id')]
@@ -119,15 +153,27 @@ class JSONGenerator:
                     })
                     factor_names.add('scenario')
         
+        # If no demographics extracted, try to infer from paper or use defaults
+        if not all_demographics:
+            # Common defaults for psychology studies
+            all_demographics = {}
+        
+        # Build participants section
+        participants_section = {
+            "n": total_n,
+            "population": population or "Not specified",
+            "recruitment_source": recruitment_source or "Not specified",
+            "demographics": all_demographics
+        }
+        
+        # Add sub-study participant breakdown if available
+        if sub_study_participants:
+            participants_section["by_sub_study"] = sub_study_participants
+        
         return {
             "study_id": study_id,
             "title": extraction_result.get('paper_title', ''),
-            "participants": {
-                "n": total_n,
-                "population": population or "Not specified",
-                "recruitment_source": recruitment_source or "Not specified",
-                "demographics": all_demographics
-            },
+            "participants": participants_section,
             "design": {
                 "type": "Mixed",  # TODO: Extract from study design
                 "factors": factors
