@@ -7,12 +7,15 @@ from typing import Optional, Dict, Any, List, Union
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Try new API first, fallback to old API
 try:
     import google.genai as genai
+    USE_NEW_API = True
 except ImportError:
     try:
         # Fallback to old API for backward compatibility
         import google.generativeai as genai
+        USE_NEW_API = False
     except ImportError:
         raise ImportError(
             "Google Gemini SDK not installed. Install with: pip install google-genai"
@@ -40,16 +43,24 @@ class GeminiClient:
                 "Please set it in .env file or as environment variable."
             )
         
-        # Configure the API
-        # Both old and new API use genai.configure()
-        try:
-            genai.configure(api_key=api_key)
-        except Exception as e:
-            raise RuntimeError(f"Failed to configure Gemini API: {e}")
-        
         self.api_key = api_key
         self.model = model
         self._uploaded_files: Dict[str, Any] = {}  # Cache for uploaded files
+        
+        # Initialize based on API version
+        if USE_NEW_API:
+            # New API: use Client
+            try:
+                self.client = genai.Client(api_key=api_key)
+            except Exception as e:
+                raise RuntimeError(f"Failed to initialize Gemini Client: {e}")
+        else:
+            # Old API: use configure
+            try:
+                genai.configure(api_key=api_key)
+                self.client = None  # Old API doesn't use client
+            except Exception as e:
+                raise RuntimeError(f"Failed to configure Gemini API: {e}")
     
     def upload_file(self, file_path: Path) -> Any:
         """
@@ -72,15 +83,11 @@ class GeminiClient:
         
         # Upload file
         try:
-            # Both old and new API should support genai.upload_file()
-            # Try the standard method first
-            if hasattr(genai, 'upload_file'):
-                uploaded_file = genai.upload_file(path=str(file_path))
-            elif hasattr(genai, 'File') and hasattr(genai.File, 'create'):
-                # Alternative API structure (if available)
-                uploaded_file = genai.File.create(path=str(file_path))
+            if USE_NEW_API:
+                # New API: use client.files.upload(file=...)
+                uploaded_file = self.client.files.upload(file=str(file_path))
             else:
-                # Last resort: try direct call (might work)
+                # Old API: use genai.upload_file()
                 uploaded_file = genai.upload_file(path=str(file_path))
             
             self._uploaded_files[cache_key] = uploaded_file
@@ -108,41 +115,47 @@ class GeminiClient:
             Generated text response
         """
         try:
-            # Create generation config
-            generation_config = genai.types.GenerationConfig(
-                temperature=temperature,
-            )
-            if max_tokens:
-                generation_config.max_output_tokens = max_tokens
-            
-            # Create model instance
-            model = genai.GenerativeModel(
-                model_name=self.model,
-                system_instruction=system_instruction,
-            )
-            
-            # Generate content
-            response = model.generate_content(
-                prompt,
-                generation_config=generation_config,
-            )
-            return response.text
-        except AttributeError:
-            # Fallback for different API versions
-            try:
-                model = genai.GenerativeModel(
-                    model_name=self.model,
-                )
-                response = model.generate_content(
-                    prompt,
-                    generation_config={
-                        "temperature": temperature,
-                        "max_output_tokens": max_tokens,
-                    } if max_tokens else {"temperature": temperature},
+            if USE_NEW_API:
+                # New API: use client.models.generate_content()
+                # Build generation config
+                config_dict = {}
+                if temperature is not None:
+                    config_dict['temperature'] = temperature
+                if max_tokens is not None:
+                    config_dict['max_output_tokens'] = max_tokens
+                if system_instruction is not None:
+                    config_dict['system_instruction'] = system_instruction
+                
+                config = genai.types.GenerateContentConfig(**config_dict) if config_dict else None
+                
+                # Prepare content
+                contents = prompt
+                
+                # Generate content
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=contents,
+                    config=config,
                 )
                 return response.text
-            except Exception as e:
-                raise RuntimeError(f"Error generating content with Gemini API: {e}")
+            else:
+                # Old API: use GenerativeModel
+                generation_config = genai.types.GenerationConfig(
+                    temperature=temperature,
+                )
+                if max_tokens:
+                    generation_config.max_output_tokens = max_tokens
+                
+                model = genai.GenerativeModel(
+                    model_name=self.model,
+                    system_instruction=system_instruction,
+                )
+                
+                response = model.generate_content(
+                    prompt,
+                    generation_config=generation_config,
+                )
+                return response.text
         except Exception as e:
             raise RuntimeError(f"Error generating content with Gemini API: {e}")
     
@@ -204,4 +217,3 @@ class GeminiClient:
                 f"Failed to parse JSON response: {e}\n"
                 f"Response text: {response_text[:500]}"
             )
-

@@ -11,6 +11,8 @@ PyPDF2>=3.0.0
 # Environment variables
 python-dotenv>=1.0.0
 
+httpx[socks]
+
 # JSON handling (usually included in Python, but listed for clarity)
 # json - built-in
 
