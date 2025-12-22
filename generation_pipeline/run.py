@@ -11,6 +11,9 @@ import argparse
 import sys
 from pathlib import Path
 
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from generation_pipeline.pipeline import GenerationPipeline
 from generation_pipeline.utils.review_parser import ReviewParser
 

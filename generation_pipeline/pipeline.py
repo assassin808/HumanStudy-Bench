@@ -5,13 +5,17 @@ Coordinates filters, extractors, and generators to create study configurations.
 """
 
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from generation_pipeline.filters.replicability_filter import ReplicabilityFilter
 from generation_pipeline.extractors.study_data_extractor import StudyDataExtractor
 from generation_pipeline.generators.config_generator import ConfigGenerator
-from generation_pipeline.generators.json_generator import JSONGenerator
+from generation_pipeline.utils.json_generator import JSONGenerator
 from generation_pipeline.utils.gemini_client import GeminiClient
 from generation_pipeline.utils.review_parser import ReviewParser
 from generation_pipeline.utils.output_formatter import OutputFormatter

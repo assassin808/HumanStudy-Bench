@@ -6,8 +6,12 @@ and participant profiles from papers.
 """
 
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Any
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from generation_pipeline.extractors.base_extractor import BaseExtractor
 from generation_pipeline.utils.document_loader import DocumentLoader
@@ -150,8 +154,11 @@ Provide your analysis in JSON format:
     
     def _parse_response(self, response: str, stage1_json: Dict[str, Any]) -> Dict[str, Any]:
         """Parse LLM response"""
+        if response is None:
+            raise ValueError("LLM response is None")
+        
         # Extract JSON from response
-        response_text = response.strip()
+        response_text = response.strip() if isinstance(response, str) else str(response).strip()
         
         # Remove markdown code blocks if present
         if '```json' in response_text:
@@ -169,6 +176,10 @@ Provide your analysis in JSON format:
                 result = json.loads(json_match.group())
             else:
                 raise ValueError(f"Could not parse JSON from response: {response_text[:200]}")
+        
+        # Ensure result is a dict
+        if not isinstance(result, dict):
+            result = {}
         
         # Add paper_id from stage1
         result['paper_id'] = stage1_json.get('paper_id', 'unknown')

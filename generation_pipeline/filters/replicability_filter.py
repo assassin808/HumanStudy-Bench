@@ -5,8 +5,12 @@ Filters papers based on whether they can be replicated using LLM agents.
 """
 
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Any
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from generation_pipeline.filters.base_filter import BaseFilter
 from generation_pipeline.utils.document_loader import DocumentLoader
@@ -103,8 +107,11 @@ IMPORTANT: Only include experiments that have quantitative/statistical data. If 
     
     def _parse_response(self, response: str, pdf_path: Path) -> Dict[str, Any]:
         """Parse LLM response"""
+        if response is None:
+            raise ValueError("LLM response is None")
+        
         # Extract JSON from response (may have markdown code blocks)
-        response_text = response.strip()
+        response_text = response.strip() if isinstance(response, str) else str(response).strip()
         
         # Remove markdown code blocks if present
         if '```json' in response_text:
@@ -122,6 +129,10 @@ IMPORTANT: Only include experiments that have quantitative/statistical data. If 
                 result = json.loads(json_match.group())
             else:
                 raise ValueError(f"Could not parse JSON from response: {response_text[:200]}")
+        
+        # Ensure result is a dict
+        if not isinstance(result, dict):
+            result = {}
         
         # Add paper_id (derived from PDF filename)
         paper_id = pdf_path.stem.replace(' ', '_').replace('-', '_').lower()
