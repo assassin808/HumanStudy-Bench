@@ -54,12 +54,21 @@ class StudyDataExtractor(BaseExtractor):
         prompt = self._build_prompt(stage1_json, pdf_path.name, len(pdf_info))
         
         # Call LLM (file first, then text prompt)
-        response = self.client.generate_content(
-            prompt=[uploaded_file, prompt]
-        )
+        try:
+            response = self.client.generate_content(
+                prompt=[uploaded_file, prompt]
+            )
+        except Exception as e:
+            raise RuntimeError(f"Error calling LLM: {e}")
+        
+        if response is None:
+            raise ValueError("LLM returned None response")
         
         # Parse response
         result = self._parse_response(response, stage1_json)
+        
+        if result is None:
+            raise ValueError("Parsed result is None")
         
         return result
     
@@ -72,82 +81,121 @@ class StudyDataExtractor(BaseExtractor):
 STAGE 1 FILTER RESULTS:
 {experiments_info}
 
-Your task is to extract detailed information for each REPLICABLE experiment identified in Stage 1:
+Your task is to extract COMPLETE information for each REPLICABLE experiment/study identified in Stage 1.
 
-For each replicable experiment/study, extract:
+For EACH replicable study/experiment, extract:
 
-1. STUDY INFORMATION:
-   - Study ID/Number (e.g., "Study 1", "Experiment 1")
+1. STUDY STRUCTURE:
+   - Study ID (e.g., "Study 1", "Study 2")
    - Study name/description
-   - Core psychological phenomenon (e.g., "False Consensus Effect", "Anchoring Effect")
+   - Core psychological phenomenon
+   - List ALL sub-studies/scenarios/conditions within this study (e.g., Study 1 has 4 scenarios: supermarket, term_paper, traffic_ticket, space_program)
 
-2. RESEARCH QUESTIONS WITH STATISTICAL DATA:
-   For each research question that has quantitative/statistical data:
-   - RQ ID and description
-   - Statistical method used (t-test, chi-square, ANOVA, etc.)
-   - Statistical results:
-     * Test type
-     * Statistic value (t, F, chi-square, etc.)
-     * p-value
-     * Degrees of freedom
-     * Effect size (Cohen's d, eta-squared, etc.)
-   - Descriptive statistics (means, standard deviations, proportions, etc.)
+2. MATERIALS/QUESTIONS FOR EACH SUB-STUDY:
+   For each sub-study/scenario:
+   - Sub-study ID (e.g., "study_1_supermarket", "study_2_items")
+   - Type: "scenario" (story/text), "questionnaire" (items/questions), or "task" (specific task)
+   - Content: Extract the actual text/content of scenarios, questions, or items
+   - For questionnaires: List all items/questions with their options
 
-3. PARTICIPANT PROFILE:
-   - Sample size (N)
+3. PARTICIPANT INFORMATION (FOR EACH SUB-STUDY):
+   - N for each sub-study/scenario
    - Population description
    - Recruitment source
    - Demographics (age range, gender distribution, etc.)
-   - Any other relevant participant information
+   - Note: If different sub-studies have different N, list them separately
+
+4. HUMAN DATA (ORIGINAL RESULTS):
+   For each sub-study/scenario, extract:
+   - All reported means, percentages, proportions
+   - Standard deviations (if reported)
+   - Sample sizes
+   - Any calculated metrics (e.g., FCE = False Consensus Effect magnitude)
+   - Organize by condition/group (e.g., "signers" vs "refusers", "choosers" vs "non-choosers")
+
+5. STATISTICAL TESTS:
+   For each statistical test reported:
+   - Test type (t-test, ANOVA, chi-square, etc.)
+   - Test statistic value
+   - p-value
+   - Degrees of freedom
+   - Effect size (if reported)
+   - Which sub-study/scenario it applies to
 
 IMPORTANT:
-- Extract ALL statistical data from the paper (phenomenon-level)
-- Include exact values from tables and text
-- Note page numbers/sections where data is found
-- If information is missing, mark as "missing" or "not reported"
+- Extract ALL sub-studies/scenarios mentioned in the paper
+- Extract the ACTUAL TEXT of scenarios/questions (not just descriptions)
+- Extract ALL human data values (means, percentages, etc.) for each sub-study
+- Organize data by sub-study, not just by overall study
+- Include page numbers/table references for all data
 
 Provide your analysis in JSON format:
 {{
     "studies": [
         {{
             "study_id": "Study 1",
-            "study_name": "Name or description",
-            "phenomenon": "Core psychological phenomenon",
-            "research_questions": [
+            "study_name": "Hypothetical Scenarios",
+            "phenomenon": "False Consensus Effect",
+            "sub_studies": [
                 {{
-                    "rq_id": "RQ1",
-                    "description": "Research question description",
-                    "has_quantitative_data": true,
-                    "has_statistical_analysis": true,
-                    "statistical_method": "t_test",
-                    "statistical_results": {{
-                        "test_type": "independent_t_test",
-                        "statistic": 2.5,
-                        "p_value": 0.01,
-                        "df": 100,
-                        "effect_size": {{
-                            "type": "cohens_d",
-                            "value": 0.5
+                    "sub_study_id": "study_1_supermarket",
+                    "type": "scenario",
+                    "content": "Full text of the scenario/story...",
+                    "participants": {{
+                        "n": 80,
+                        "population": "Stanford University Undergraduates",
+                        "recruitment_source": "...",
+                        "demographics": {{...}}
+                    }},
+                    "human_data": {{
+                        "sign_estimate_by_signers": 75.6,
+                        "sign_estimate_by_refusers": 57.3,
+                        "fce": 18.3
+                    }},
+                    "statistical_tests": [
+                        {{
+                            "test_type": "t_test",
+                            "statistic": 2.5,
+                            "p_value": 0.01,
+                            "df": 78,
+                            "paper_location": "Page X, Table Y"
                         }}
-                    }},
-                    "descriptive_statistics": {{
-                        "condition_1": {{"mean": 75.0, "sd": 12.5, "n": 50}},
-                        "condition_2": {{"mean": 65.0, "sd": 10.0, "n": 50}}
-                    }},
-                    "paper_location": "Page 5, Table 1"
+                    ]
                 }}
             ],
-            "participants": {{
-                "n": 504,
+            "overall_participants": {{
+                "total_n": 320,
                 "population": "Stanford University Undergraduates",
-                "recruitment_source": "Introductory Psychology Course",
-                "demographics": {{
-                    "age_range": [18, 22],
-                    "gender_distribution": {{"male": 50, "female": 50}}
-                }},
-                "completeness": "complete",
-                "missing_fields": []
+                "recruitment_source": "...",
+                "demographics": {{...}}
             }}
+        }},
+        {{
+            "study_id": "Study 2",
+            "study_name": "Questionnaire",
+            "phenomenon": "False Consensus Effect",
+            "sub_studies": [
+                {{
+                    "sub_study_id": "study_2_items",
+                    "type": "questionnaire",
+                    "content": "List of all 35 items with options",
+                    "items": [
+                        {{
+                            "id": "shy",
+                            "category": "Shy/Outgoing",
+                            "option_a": "...",
+                            "option_b": "..."
+                        }}
+                    ],
+                    "participants": {{
+                        "n": 80,
+                        ...
+                    }},
+                    "human_data": {{
+                        "overall_fce": 10.5
+                    }}
+                }}
+            ]
         }}
     ]
 }}"""

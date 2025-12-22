@@ -65,11 +65,17 @@ class OutputFormatter:
     @staticmethod
     def format_stage2_review(extraction_result: Dict[str, Any]) -> str:
         """Format stage2 extraction results as markdown"""
+        if extraction_result is None:
+            raise ValueError("extraction_result is None")
+        
+        if not isinstance(extraction_result, dict):
+            raise ValueError(f"extraction_result is not a dict: {type(extraction_result)}")
+        
         md = f"""# Stage 2: Study & Data Extraction Review
 
 """
         
-        studies = extraction_result.get('studies', [])
+        studies = extraction_result.get('studies', []) if extraction_result else []
         for study in studies:
             study_id = study.get('study_id', 'Unknown')
             study_name = study.get('study_name', '')
@@ -79,48 +85,43 @@ class OutputFormatter:
 ### Phenomenon
 {study.get('phenomenon', 'N/A')}
 
-### Research Questions with Statistical Data
+### Sub-Studies/Scenarios
 
 """
             
-            rqs = study.get('research_questions', [])
-            for rq in rqs:
-                rq_id = rq.get('rq_id', 'Unknown')
-                md += f"""#### {rq_id}: {rq.get('description', 'N/A')}
-- **Has Quantitative Data**: {'YES' if rq.get('has_quantitative_data', False) else 'NO'}
-- **Has Statistical Analysis**: {'YES' if rq.get('has_statistical_analysis', False) else 'NO'}
-- **Statistical Method**: {rq.get('statistical_method', 'N/A')}
-- **Statistical Results**:
-  - Test type: {rq.get('statistical_results', {}).get('test_type', 'N/A')}
-  - Statistic value: {rq.get('statistical_results', {}).get('statistic', 'N/A')}
-  - p-value: {rq.get('statistical_results', {}).get('p_value', 'N/A')}
-  - df: {rq.get('statistical_results', {}).get('df', 'N/A')}
-  - Effect size: {rq.get('statistical_results', {}).get('effect_size', {}).get('value', 'N/A')}
-- **Descriptive Statistics**: {json.dumps(rq.get('descriptive_statistics', {}), indent=2)}
+            sub_studies = study.get('sub_studies', [])
+            for sub_study in sub_studies:
+                sub_id = sub_study.get('sub_study_id', 'Unknown')
+                sub_type = sub_study.get('type', 'scenario')
+                content_preview = sub_study.get('content', '')[:200] + "..." if len(sub_study.get('content', '')) > 200 else sub_study.get('content', 'N/A')
+                
+                md += f"""#### {sub_id} ({sub_type})
+- **Content Preview**: {content_preview}
+- **Participants N**: {sub_study.get('participants', {}).get('n', 'N/A')}
+- **Human Data**: {json.dumps(sub_study.get('human_data', {}), indent=2)}
+- **Statistical Tests**: {len(sub_study.get('statistical_tests', []))} test(s)
 
 #### Checklist:
-- [ ] Phenomenon correctly identified
-- [ ] All RQs with statistical data identified
-- [ ] Statistical methods correctly extracted
-- [ ] Statistical results correctly extracted
-- [ ] Descriptive statistics correctly extracted
+- [ ] Content correctly extracted
+- [ ] Participant N correct
+- [ ] Human data correctly extracted
+- [ ] Statistical tests correctly identified
 
 #### Comments:
 [填写]
 
 """
             
-            participants = study.get('participants', {})
-            md += f"""### Participant Profile
-- **N**: {participants.get('n', 'N/A')}
-- **Population**: {participants.get('population', 'N/A')}
-- **Recruitment Source**: {participants.get('recruitment_source', 'N/A')}
-- **Demographics**: {json.dumps(participants.get('demographics', {}), indent=2)}
-- **Completeness**: {participants.get('completeness', 'unknown')}
-- **Missing Fields**: {', '.join(participants.get('missing_fields', [])) or 'None'}
+            # Overall participants
+            overall_participants = study.get('overall_participants', {})
+            md += f"""### Overall Participant Profile
+- **Total N**: {overall_participants.get('total_n', 'N/A')}
+- **Population**: {overall_participants.get('population', 'N/A')}
+- **Recruitment Source**: {overall_participants.get('recruitment_source', 'N/A')}
+- **Demographics**: {json.dumps(overall_participants.get('demographics', {}), indent=2)}
 
 #### Checklist:
-- [ ] N correctly extracted
+- [ ] Total N correctly extracted
 - [ ] Demographics correctly extracted
 - [ ] All available information captured
 

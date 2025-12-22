@@ -116,7 +116,13 @@ class GenerationPipeline:
         print(f"Running Stage 2: Study & Data Extraction")
         
         # Load stage1 results
+        if not stage1_json_path.exists():
+            raise FileNotFoundError(f"Stage1 JSON file not found: {stage1_json_path}")
+        
         stage1_result = json.loads(stage1_json_path.read_text(encoding='utf-8'))
+        
+        if not isinstance(stage1_result, dict):
+            raise ValueError(f"Stage1 result is not a dictionary: {type(stage1_result)}")
         
         # Run extractor
         result = self.extractor.process(stage1_result, pdf_path)
@@ -193,6 +199,9 @@ class GenerationPipeline:
             json.dumps(ground_truth, indent=2, ensure_ascii=False), encoding='utf-8'
         )
         
+        # Generate materials files
+        material_files = self.json_generator.generate_materials(extraction_result, study_dir)
+        
         # Generate Config class
         config_path = Path("src/studies") / f"{study_id}_config.py"
         self.config_generator.generate(extraction_result, study_id, config_path)
@@ -202,6 +211,7 @@ class GenerationPipeline:
         print(f"  - {study_dir / 'specification.json'}")
         print(f"  - {study_dir / 'ground_truth.json'}")
         print(f"  - {config_path}")
+        print(f"  - {len(material_files)} material files")
         print("\nNOTE: Config class needs manual refinement. Update get_study_config() factory function.")
         
         return {
@@ -209,6 +219,7 @@ class GenerationPipeline:
             "metadata": study_dir / "metadata.json",
             "specification": study_dir / "specification.json",
             "ground_truth": study_dir / "ground_truth.json",
-            "config": config_path
+            "config": config_path,
+            "materials": material_files
         }
 
