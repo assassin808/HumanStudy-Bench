@@ -3,7 +3,7 @@ Google Gemini API Client for Validation Pipeline
 """
 
 import os
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -43,10 +43,38 @@ class GeminiClient:
         genai.configure(api_key=api_key)
         self.api_key = api_key
         self.model = model
+        self._uploaded_files: Dict[str, Any] = {}  # Cache for uploaded files
+    
+    def upload_file(self, file_path: Path) -> Any:
+        """
+        Upload a file (PDF, image, etc.) to Gemini API.
+        
+        Args:
+            file_path: Path to file to upload
+            
+        Returns:
+            Uploaded file object
+        """
+        file_path = Path(file_path)
+        if not file_path.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        # Check cache
+        cache_key = str(file_path.absolute())
+        if cache_key in self._uploaded_files:
+            return self._uploaded_files[cache_key]
+        
+        # Upload file
+        try:
+            uploaded_file = genai.upload_file(path=str(file_path))
+            self._uploaded_files[cache_key] = uploaded_file
+            return uploaded_file
+        except Exception as e:
+            raise RuntimeError(f"Error uploading file {file_path}: {e}")
     
     def generate_content(
         self,
-        prompt: str,
+        prompt: Union[str, List[Union[str, Any]]],
         system_instruction: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
@@ -55,7 +83,7 @@ class GeminiClient:
         Generate content using Gemini API.
         
         Args:
-            prompt: User prompt
+            prompt: User prompt (str) or list of content parts (can include uploaded files)
             system_instruction: Optional system instruction
             temperature: Sampling temperature (0.0-1.0)
             max_tokens: Maximum tokens to generate
@@ -104,7 +132,7 @@ class GeminiClient:
     
     def generate_structured(
         self,
-        prompt: str,
+        prompt: Union[str, List[Union[str, Any]]],
         system_instruction: Optional[str] = None,
         response_format: str = "json",
         temperature: float = 0.3,
@@ -113,7 +141,7 @@ class GeminiClient:
         Generate structured response (JSON).
         
         Args:
-            prompt: User prompt
+            prompt: User prompt (str) or list of content parts (can include uploaded files)
             system_instruction: Optional system instruction
             response_format: Response format (default: "json")
             temperature: Sampling temperature (lower for more deterministic)
@@ -127,7 +155,12 @@ class GeminiClient:
         if response_format == "json":
             format_instruction = "\n\nPlease respond in valid JSON format only, without markdown code blocks."
         
-        full_prompt = f"{prompt}{format_instruction}"
+        # Handle both string and list prompts
+        if isinstance(prompt, str):
+            full_prompt = f"{prompt}{format_instruction}"
+        else:
+            # For list prompts, append format instruction as text
+            full_prompt = prompt + [format_instruction]
         
         response_text = self.generate_content(
             prompt=full_prompt,

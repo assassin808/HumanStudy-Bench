@@ -262,9 +262,7 @@ See the [LLM Participant Agent Guide](llm_participant_agent_guide.md) for compre
 - Read the [**LLM Participant Agent Guide**](llm_participant_agent_guide.md) for detailed usage
 - Read the [Benchmark Overview](benchmark_overview.md) to understand the design philosophy
 - Check out [API Reference](api_reference.md) for detailed documentation
-- See [examples/](../examples/) directory for complete examples:
-  - `10_llm_participant_demo.py` - Full experiment workflow
-  - `11_custom_profiles.py` - Custom participant profiles
+- See `run_full_benchmark.py` for complete benchmark execution examples
 - Review [Paper Curation Guide](paper_curation_guide.md) if you want to contribute studies
 
 ## Troubleshooting
@@ -285,10 +283,10 @@ pip install -r requirements.txt
 
 ### Study Loading Errors
 
-Validate a study's structure:
+Validate a study's structure using the validation pipeline:
 
 ```bash
-python scripts/validate_study.py study_001
+python validation_pipeline/run_validation.py --study-id study_001
 ```
 
 ## Getting Help

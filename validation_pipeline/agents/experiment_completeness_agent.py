@@ -22,20 +22,29 @@ class ExperimentCompletenessAgent(BaseValidationAgent):
         Returns:
             Validation results with completeness analysis
         """
-        # Extract relevant content
-        pdf_text = self._extract_pdf_text(documents)
+        # Get PDF files (uploaded to Gemini API)
+        pdf_files = self._get_pdf_files(documents)
         study_info = documents.get("study_info", "")
         specification = documents.get("json", {}).get("specification.json", {})
         config_code = documents.get("config_code", "")
         
-        system_instruction = """You are an expert in experimental psychology and research methodology. 
-Your task is to analyze whether all replicable experiments from a research paper have been 
-correctly included in a benchmark implementation. Be thorough and precise in your analysis."""
+        if not pdf_files:
+            raise ValueError("No PDF files found in documents")
         
-        prompt = f"""Analyze the completeness of experiment transfer from the original paper to the benchmark implementation.
-
-ORIGINAL PAPER CONTENT:
-{pdf_text[:50000]}  # Limit to avoid token limits
+        system_instruction = """You are an expert in experimental psychology and research methodology. 
+Your task is to analyze whether all experiments with statistical (quantitative) data from a research paper 
+have been correctly included in a benchmark implementation. Focus on experiments that can be replicated using LLMs.
+Be thorough and precise in your analysis."""
+        
+        # Build prompt with PDF files
+        prompt_parts = []
+        
+        # Add PDF files
+        for pdf_file in pdf_files:
+            prompt_parts.append(pdf_file)
+        
+        # Add text content
+        text_prompt = f"""Analyze the completeness of experiment transfer from the original paper to the benchmark implementation.
 
 STUDY INFORMATION:
 {study_info}
@@ -44,14 +53,18 @@ BENCHMARK SPECIFICATION:
 {specification}
 
 IMPLEMENTATION CODE (if available):
-{config_code[:20000] if config_code else "Not provided"}
+{config_code if config_code else "Not provided"}
 
 Please analyze:
-1. List ALL experiments/studies mentioned in the original paper
-2. For each experiment, determine if it is replicable (has sufficient detail, measurable outcomes, etc.)
-3. Check if each replicable experiment is included in the benchmark implementation
+1. List ALL experiments/studies mentioned in the original paper that contain statistical (quantitative) data
+2. For each experiment, determine if it is replicable using LLM:
+   - NOT replicable if it requires: visual input, time sense/perception, or lacks quantitative data
+   - IS replicable if it involves: emotional simulation, problem-solving, role-playing, hypothetical scenarios, or any text-based tasks with quantitative outcomes
+3. Check if each LLM-replicable experiment with statistical data is included in the benchmark implementation
 4. Identify any missing experiments
 5. Note any experiments that were intentionally excluded and why (if stated)
+
+IMPORTANT: Only include experiments that have statistical (quantitative) data reported in the paper.
 
 Provide your analysis in the following JSON format:
 {{
@@ -59,16 +72,17 @@ Provide your analysis in the following JSON format:
         {{
             "experiment_id": "Study 1",
             "description": "Brief description",
-            "replicable": true/false,
-            "replicable_reason": "Why it is or isn't replicable",
+            "has_statistical_data": true/false,
+            "replicable_using_llm": true/false,
+            "replicable_reason": "Why it is or isn't replicable using LLM (note if requires visual/time sense/lacks quantitative data)",
             "included_in_benchmark": true/false,
             "implementation_details": "How it's implemented or why excluded",
             "notes": "Additional notes"
         }}
     ],
     "completeness_summary": {{
-        "total_experiments": 0,
-        "replicable_experiments": 0,
+        "total_experiments_with_data": 0,
+        "llm_replicable_experiments": 0,
         "included_experiments": 0,
         "missing_experiments": [],
         "intentionally_excluded": [],
@@ -80,25 +94,13 @@ Provide your analysis in the following JSON format:
     ]
 }}
 """
+        prompt_parts.append(text_prompt)
         
-        result = self._generate_response(prompt, system_instruction, structured=True)
+        result = self._generate_response(prompt_parts, system_instruction, structured=True)
         
         return {
             "agent": "ExperimentCompletenessAgent",
             "status": "completed",
             "results": result,
         }
-    
-    def _extract_pdf_text(self, documents: Dict[str, Any]) -> str:
-        """Extract PDF text from documents"""
-        pdfs = documents.get("pdfs", {})
-        if not pdfs:
-            return "No PDF files found"
-        
-        # Combine all PDFs
-        all_text = []
-        for pdf_name, pdf_content in pdfs.items():
-            all_text.append(f"=== {pdf_name} ===\n{pdf_content}")
-        
-        return "\n\n".join(all_text)
 

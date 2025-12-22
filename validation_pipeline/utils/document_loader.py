@@ -2,44 +2,38 @@
 Document Loader for Validation Pipeline
 
 Loads PDF files, markdown files, and Python configuration files.
+PDFs are stored as file paths for direct upload to Gemini API.
 """
 
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import PyPDF2
-import io
 
 
 class DocumentLoader:
     """Loads various document types for validation"""
     
     @staticmethod
-    def load_pdf(pdf_path: Path) -> str:
+    def get_pdf_pages(pdf_path: Path) -> List[int]:
         """
-        Extract text from PDF file.
+        Get total number of pages in PDF file.
         
         Args:
             pdf_path: Path to PDF file
             
         Returns:
-            Extracted text content
+            List of page numbers (1-indexed)
         """
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
         
-        text_content = []
-        
         try:
             with open(pdf_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
-                for page_num, page in enumerate(pdf_reader.pages):
-                    text = page.extract_text()
-                    text_content.append(f"--- Page {page_num + 1} ---\n{text}")
+                return list(range(1, len(pdf_reader.pages) + 1))
         except Exception as e:
             raise RuntimeError(f"Error reading PDF {pdf_path}: {e}")
-        
-        return "\n\n".join(text_content)
     
     @staticmethod
     def load_markdown(md_path: Path) -> str:
@@ -96,6 +90,7 @@ class DocumentLoader:
     def load_study_files(study_path: Path) -> Dict[str, Any]:
         """
         Load all relevant files for a study.
+        PDFs are stored as file paths (not extracted text) for direct upload to Gemini API.
         
         Args:
             study_path: Path to study directory
@@ -105,14 +100,19 @@ class DocumentLoader:
         """
         study_path = Path(study_path)
         
-        # Find PDF files
+        # Find PDF files - store paths and page info instead of extracting text
         pdf_files = list(study_path.glob("*.pdf"))
-        pdf_content = {}
+        pdf_info = {}
         for pdf_file in pdf_files:
             try:
-                pdf_content[pdf_file.name] = DocumentLoader.load_pdf(pdf_file)
+                pages = DocumentLoader.get_pdf_pages(pdf_file)
+                pdf_info[pdf_file.name] = {
+                    "path": str(pdf_file.absolute()),
+                    "page_count": len(pages),
+                    "pages": pages,
+                }
             except Exception as e:
-                print(f"Warning: Could not load PDF {pdf_file.name}: {e}")
+                print(f"Warning: Could not read PDF {pdf_file.name}: {e}")
         
         # Load STUDY_INFO.md
         study_info = None
@@ -135,7 +135,7 @@ class DocumentLoader:
                 json_files[json_file] = DocumentLoader.load_json(json_path)
         
         return {
-            "pdfs": pdf_content,
+            "pdfs": pdf_info,  # Now contains file paths and page info, not text
             "study_info": study_info,
             "markdown": md_content,
             "json": json_files,

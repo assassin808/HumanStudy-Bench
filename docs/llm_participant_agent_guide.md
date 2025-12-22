@@ -349,15 +349,15 @@ assert control_accuracy > 0.95, "控制组准确率应该很高"
 ## 🚀 运行示例
 
 ```bash
-# 1. 完整实验演示
-python examples/10_llm_participant_demo.py
+# 1. 完整实验演示（使用真实 LLM）
+export OPENROUTER_API_KEY="your-key"
+python run_full_benchmark.py --real-llm --model mistralai/mistral-nemo
 
-# 2. 自定义 profiles
-python examples/11_custom_profiles.py
+# 2. 模拟模式（快速测试，不消耗 API）
+python run_full_benchmark.py
 
-# 3. 使用真实 LLM
-export OPENAI_API_KEY="your-key"
-python examples/10_llm_participant_demo.py  # 修改 use_real_llm=True
+# 3. 评估缓存的结果
+python evaluate_results.py --results-dir results/cache
 ```
 
 ## 📖 API 参考
@@ -394,5 +394,5 @@ A:
 
 **更多信息**: 
 - 完整文档: `docs/`
-- 示例代码: `examples/`
+- 主要脚本: `run_full_benchmark.py`, `evaluate_results.py`
 - API 参考: `docs/api_reference.md`

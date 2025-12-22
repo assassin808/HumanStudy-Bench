@@ -700,14 +700,14 @@ data/studies/study_XXX/
 
 ### 下一步
 
-1. ✅ 阅读 `examples/30_prompt_builder_demo.py`
+1. ✅ 查看 `run_full_benchmark.py` 中的使用示例
 2. ✅ 为你的 study 创建模板
 3. ✅ 测试不同 profiles 的效果
 4. ✅ （可选）开发专用 Builder 类
 
 ---
 
-**完整示例代码**：`examples/30_prompt_builder_demo.py`
+**使用示例**：查看 `run_full_benchmark.py` 中如何集成 PromptBuilder
 
 **相关文档**：
 - `docs/llm_participant_agent_guide.md` - LLM Agent 架构

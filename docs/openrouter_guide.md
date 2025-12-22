@@ -27,11 +27,8 @@ export OPENROUTER_API_KEY="sk-or-v1-69c49d4c3f7f9a36bfa5a88a8e60a6d9f94f23a867f4
 ### 3. 运行示例
 
 ```bash
-# 运行 OpenRouter demo
-python examples/40_openrouter_demo.py
-
-# 或使用任何现有示例（会自动使用 mistralai/mistral-nemo）
-python examples/10_llm_participant_demo.py
+# 运行完整 benchmark（使用 OpenRouter 和 mistralai/mistral-nemo）
+python run_full_benchmark.py --real-llm --model mistralai/mistral-nemo
 ```
 
 ---
@@ -422,15 +419,13 @@ response = client.chat.completions.create(
 - ✅ 自动检测 `OPENROUTER_API_KEY` 环境变量
 - ✅ 支持所有 OpenRouter 模型
 - ✅ 保持向后兼容 OpenAI
-- ✅ 新增 `examples/40_openrouter_demo.py`
-- ✅ 新增 `scripts/test_openrouter.py`
-- ✅ 全面测试通过
+- ✅ 通过 `run_full_benchmark.py` 使用
 
 ---
 
 ## 支持
 
 如有问题，请查看：
-- 示例代码: `examples/40_openrouter_demo.py`
-- 测试代码: `scripts/test_openrouter.py`
+- 使用示例: `run_full_benchmark.py`
 - API 参考: `docs/api_reference.md`
+- LLM Participant Agent 指南: `docs/llm_participant_agent_guide.md`

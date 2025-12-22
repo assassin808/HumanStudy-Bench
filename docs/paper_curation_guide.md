@@ -393,10 +393,11 @@ Add entry to `data/registry.json`:
 }
 ```
 
-### Step 6: Test with Example Agent
+### Step 6: Test with Benchmark
 
 ```bash
-python examples/02_run_single_study.py --study_id study_XXX
+# Test a specific study
+python run_full_benchmark.py --study-ids study_XXX --real-llm
 ```
 
 Verify:

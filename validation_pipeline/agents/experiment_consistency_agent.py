@@ -22,21 +22,31 @@ class ExperimentConsistencyAgent(BaseValidationAgent):
         Returns:
             Validation results with consistency analysis
         """
-        pdf_text = self._extract_pdf_text(documents)
+        # Get PDF files (uploaded to Gemini API)
+        pdf_files = self._get_pdf_files(documents)
         study_info = documents.get("study_info", "")
         specification = documents.get("json", {}).get("specification.json", {})
         metadata = documents.get("json", {}).get("metadata.json", {})
         config_code = documents.get("config_code", "")
         
+        if not pdf_files:
+            raise ValueError("No PDF files found in documents")
+        
         system_instruction = """You are an expert in experimental design and methodology. 
 Your task is to compare the experimental setup in the original paper with the benchmark 
 implementation and identify any inconsistencies. Be precise and note both exact matches 
-and intentional modifications."""
+and intentional modifications. Pay special attention to ensuring that questions/tasks are 
+almost exactly the same, with only formatting differences allowed."""
         
-        prompt = f"""Compare the experimental setup between the original paper and the benchmark implementation.
-
-ORIGINAL PAPER:
-{pdf_text[:50000]}
+        # Build prompt with PDF files
+        prompt_parts = []
+        
+        # Add PDF files
+        for pdf_file in pdf_files:
+            prompt_parts.append(pdf_file)
+        
+        # Add text content
+        text_prompt = f"""Compare the experimental setup between the original paper and the benchmark implementation.
 
 STUDY INFORMATION:
 {study_info}
@@ -48,15 +58,20 @@ BENCHMARK SPECIFICATION:
 {specification}
 
 IMPLEMENTATION CODE:
-{config_code[:20000] if config_code else "Not provided"}
+{config_code if config_code else "Not provided"}
 
 For each aspect of the experimental design, compare:
 1. Participant characteristics (N, demographics, recruitment)
 2. Experimental procedure and steps
-3. Materials and stimuli
+3. Materials and stimuli - CRITICAL: Questions/tasks must be almost exactly the same, only formatting differences are allowed
 4. Dependent variables and measures
 5. Statistical analyses
 6. Conditions and manipulations
+
+IMPORTANT: For questions, tasks, and stimuli:
+- They must be almost exactly the same as in the original paper
+- Only formatting differences (e.g., whitespace, line breaks, markdown formatting) are acceptable
+- Any changes to wording, content, or meaning are considered inconsistencies
 
 For each inconsistency found:
 - Mark whether it's an intentional modification or an error
@@ -77,7 +92,14 @@ Provide your analysis in JSON format:
             "notes": "Additional notes"
         }},
         "procedure": {{...}},
-        "materials": {{...}},
+        "materials": {{
+            "original": "Exact questions/tasks from paper",
+            "benchmark": "Questions/tasks from implementation",
+            "consistent": true/false,
+            "modification_type": "exact_match|formatting_only|intentional_modification|error|unclear",
+            "validation_method": "How to validate this aspect",
+            "notes": "Note any wording or content differences (not just formatting)"
+        }},
         "measures": {{...}},
         "analyses": {{...}},
         "conditions": {{...}}
@@ -104,24 +126,13 @@ Provide your analysis in JSON format:
     ]
 }}
 """
+        prompt_parts.append(text_prompt)
         
-        result = self._generate_response(prompt, system_instruction, structured=True)
+        result = self._generate_response(prompt_parts, system_instruction, structured=True)
         
         return {
             "agent": "ExperimentConsistencyAgent",
             "status": "completed",
             "results": result,
         }
-    
-    def _extract_pdf_text(self, documents: Dict[str, Any]) -> str:
-        """Extract PDF text from documents"""
-        pdfs = documents.get("pdfs", {})
-        if not pdfs:
-            return "No PDF files found"
-        
-        all_text = []
-        for pdf_name, pdf_content in pdfs.items():
-            all_text.append(f"=== {pdf_name} ===\n{pdf_content}")
-        
-        return "\n\n".join(all_text)
 

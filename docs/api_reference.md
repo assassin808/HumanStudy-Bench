@@ -297,37 +297,7 @@ Score agent across all benchmark studies.
 
 ### `Validator`
 
-Validates agent results and study data.
-
-**Location**: `src/evaluation/validator.py`
-
-#### Methods
-
-##### `validate_results(results: Dict, schema: Dict) -> Tuple[bool, List[str]]`
-
-Validate agent results against schema.
-
-**Parameters**:
-- `results`: Agent results dictionary
-- `schema`: Expected schema
-
-**Returns**: Tuple of (is_valid, list_of_errors)
-
-**Example**:
-```python
-from src.evaluation.validator import Validator
-
-validator = Validator()
-is_valid, errors = validator.validate_results(agent_results, results_schema)
-
-if not is_valid:
-    for error in errors:
-        print(f"Validation error: {error}")
-```
-
-##### `validate_study(study: Study) -> Tuple[bool, List[str]]`
-
-Validate study data integrity.
+> **Note**: The `Validator` class is not yet implemented in the current version. Study validation is handled through the `Study.validate()` method and schema validation in the core modules.
 
 ---
 
@@ -368,78 +338,13 @@ print(f"Cohen's d: {d:.2f}")
 
 ## Utility Functions
 
-### Data Loading
-
-**Location**: `src/utils/loaders.py`
-
-##### `load_json(filepath: Path) -> Dict`
-
-Load and parse JSON file.
-
-##### `load_study_metadata(study_path: Path) -> Dict`
-
-Load study metadata.
-
-##### `load_study_specification(study_path: Path) -> Dict`
-
-Load study specification.
-
-### Validation
-
-**Location**: `src/utils/validators.py`
-
-##### `validate_json_schema(data: Dict, schema: Dict) -> bool`
-
-Validate data against JSON schema.
-
-##### `check_required_fields(data: Dict, required_fields: List[str]) -> List[str]`
-
-Check for required fields.
-
-### Parsing
-
-**Location**: `src/utils/parsers.py`
-
-##### `parse_statistical_test(test_dict: Dict) -> StatisticalTest`
-
-Parse statistical test from dictionary.
+> **Note**: Utility functions for data loading, validation, and parsing are currently integrated into the core modules (`Study`, `HumanStudyBench`) rather than being in separate utility modules. JSON loading is handled directly in the core classes.
 
 ---
 
 ## Visualization
 
-### `BenchmarkPlotter`
-
-Create visualizations of benchmark results.
-
-**Location**: `src/visualization/plots.py`
-
-#### Methods
-
-##### `plot_overall_scores(results: Dict, save_path: str = None)`
-
-Plot overall benchmark scores.
-
-##### `plot_by_domain(results: Dict, save_path: str = None)`
-
-Plot scores by domain.
-
-##### `plot_by_difficulty(results: Dict, save_path: str = None)`
-
-Plot scores by difficulty level.
-
-##### `plot_study_details(study_results: Dict, save_path: str = None)`
-
-Plot detailed results for a single study.
-
-**Example**:
-```python
-from src.visualization.plots import BenchmarkPlotter
-
-plotter = BenchmarkPlotter()
-plotter.plot_overall_scores(results, save_path="results/scores.png")
-plotter.plot_by_domain(results, save_path="results/by_domain.png")
-```
+> **Note**: Visualization functionality is not yet implemented in the current version. Results are available as structured dictionaries that can be visualized using external plotting libraries (matplotlib, plotly, etc.) or by using the `evaluate_results.py` script for result analysis.
 
 ---
 
@@ -510,72 +415,38 @@ except StudyNotFoundError as e:
 
 ## Type Hints
 
-### Common Types
-
-**Location**: `src/core/types.py`
-
-```python
-from typing import TypedDict, List, Dict, Any
-
-class StudyMetadata(TypedDict):
-    id: str
-    title: str
-    authors: List[str]
-    year: int
-    domain: str
-
-class DescriptiveStats(TypedDict):
-    mean: float
-    sd: float
-    n: int
-
-class InferentialStats(TypedDict):
-    statistic: float
-    p_value: float
-    df: int | List[int]
-    effect_size: str
-    effect_size_value: float
-```
+> **Note**: Type hints are defined inline in the source code rather than in a separate `types.py` module. See the actual class definitions in `src/core/study.py`, `src/core/benchmark.py`, and `src/evaluation/scorer.py` for type information.
 
 ---
 
 ## Command Line Interface
 
-### Run Evaluation
+> **Note**: A dedicated CLI module is not yet implemented. Instead, use the following scripts:
+> - `run_full_benchmark.py` - Run experiments on studies
+> - `evaluate_results.py` - Evaluate cached results without making API calls
+> - `validation_pipeline/run_validation.py` - Validate study data
 
+**Example**:
 ```bash
-python -m src.cli evaluate \
-    --agent my_agent \
-    --study-ids study_001 study_002 \
-    --output results/run_001.json
-```
+# Run full benchmark
+python run_full_benchmark.py --real-llm --model mistralai/mistral-nemo
 
-### Validate Study
-
-```bash
-python -m src.cli validate \
-    --study-id study_001
-```
-
-### Generate Report
-
-```bash
-python -m src.cli report \
-    --results results/run_001.json \
-    --output results/report.html
+# Evaluate cached results
+python evaluate_results.py --results-dir results/cache
 ```
 
 ---
 
 ## Examples
 
-See `examples/` directory for complete working examples:
-
-1. `01_load_benchmark.py` - Loading and exploring the benchmark
-2. `02_run_single_study.py` - Running a single study
-3. `03_evaluate_agent.py` - Full agent evaluation
-4. `04_add_new_study.py` - Adding a new study
-5. `05_custom_metrics.py` - Custom evaluation metrics
+> **Note**: Example scripts are not yet in a dedicated `examples/` directory. See the main scripts for usage:
+> - `run_full_benchmark.py` - Complete benchmark execution
+> - `evaluate_results.py` - Result evaluation and analysis
+> 
+> For detailed usage examples, see:
+> - [Getting Started Guide](getting_started.md)
+> - [LLM Participant Agent Guide](llm_participant_agent_guide.md)
+> - [Study Config Guide](study_config_guide.md)
 
 ---
 

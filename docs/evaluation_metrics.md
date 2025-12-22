@@ -395,5 +395,5 @@ def compute_kl_divergence(agent_dist, original_dist):
 
 For clarification on metrics:
 - Open an issue on GitHub
-- Check examples/ directory for demonstrations
+- See `run_full_benchmark.py` and `evaluate_results.py` for usage examples
 - Email the maintainers

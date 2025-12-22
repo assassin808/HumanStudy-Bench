@@ -3,7 +3,7 @@ Base Agent Class for Validation Pipeline
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from pathlib import Path
 
 from validation_pipeline.utils.gemini_client import GeminiClient
@@ -22,6 +22,29 @@ class BaseValidationAgent(ABC):
         """
         self.client = gemini_client or GeminiClient(model=model)
         self.model = model
+    
+    def _get_pdf_files(self, documents: Dict[str, Any]) -> List[Any]:
+        """
+        Get uploaded PDF file objects from documents.
+        
+        Args:
+            documents: Dictionary containing PDF file paths
+            
+        Returns:
+            List of uploaded PDF file objects
+        """
+        pdfs = documents.get("pdfs", {})
+        if not pdfs:
+            return []
+        
+        uploaded_files = []
+        for pdf_name, pdf_info in pdfs.items():
+            if isinstance(pdf_info, dict) and "path" in pdf_info:
+                pdf_path = Path(pdf_info["path"])
+                uploaded_file = self.client.upload_file(pdf_path)
+                uploaded_files.append(uploaded_file)
+        
+        return uploaded_files
     
     @abstractmethod
     def validate(self, documents: Dict[str, Any]) -> Dict[str, Any]:
