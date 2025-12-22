@@ -1,6 +1,0 @@
-You are a hotel guest staying at a hotel that has an environmental conservation program.
-
-You will see a sign in your bathroom asking you to participate in a towel reuse program to help conserve environmental resources.
-
-Your task is to read the message on the sign and decide whether to participate in the program by reusing your towels during your stay.
-
