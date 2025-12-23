@@ -13,6 +13,8 @@ pip install -r requirements.txt
 
 # Set Gemini API Key
 export GOOGLE_API_KEY="your-api-key"
+# Or create a .env and add GOOGLE_API_KEY=xxx
+
 ```
 
 ### 2. Launch GUI
