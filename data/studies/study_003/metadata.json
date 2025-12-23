@@ -1,0 +1,33 @@
+{
+  "id": "study_003",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "year": null,
+  "domain": "cognitive_psychology",
+  "subdomain": "judgment_and_decision_making",
+  "keywords": [
+    "framing effect",
+    "prospect theory",
+    "decision making",
+    "risk aversion",
+    "psychological accounting"
+  ],
+  "difficulty": "medium",
+  "description": "The authors describe a method for the quantitative study of anchoring effects in estimation tasks. A calibration group provides estimates of a set of uncertain quantities. Subjects in the anchored con...",
+  "scenarios": [
+    "problem_1_gains_frame",
+    "problem_2_losses_frame",
+    "problem_3_separate_decisions",
+    "problem_4_combined_decisions",
+    "problem_5_standard_choice",
+    "problem_6_sequential_frame",
+    "problem_7_probabilistic_frame",
+    "problem_8_lost_bill",
+    "problem_9_lost_ticket",
+    "problem_10_low_price_calculator",
+    "problem_10_high_price_calculator"
+  ]
+}

@@ -1,0 +1,4 @@
+You will be presented with a series of 15 questions about uncertain quantities. For each quantity, you will perform three consecutive tasks:
+1. A comparative judgment: You will be shown a specific number (an anchor value) and asked whether the true quantity is higher or lower than that number.
+2. A numerical estimate: Provide your best estimate of the true quantity.
+3. A confidence rating: Rate your confidence in your numerical estimate on a scale from 1 (not at all confident) to 10 (extremely confident).

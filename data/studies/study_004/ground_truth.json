@@ -1,0 +1,109 @@
+{
+  "study_id": "study_004",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "year": null,
+  "validation_criteria": {
+    "required_tests": [],
+    "scoring": {
+      "total_weight": 0,
+      "critical_requirement": "All critical tests must pass",
+      "passing_threshold": 0.6
+    }
+  },
+  "original_results": {
+    "study_1": {
+      "birth_order_likelihood": {
+        "item_level_results": [
+          {
+            "item": "birth_sequence_estimation",
+            "median_estimate": 30,
+            "judgment": "75 of 92 Ss judged BGBBBB to be less likely than GBGBBG (p < .01 by sign test)."
+          },
+          {
+            "item": "randomness_comparison",
+            "judgment": "Ss viewed BBBGGG as significantly less likely than GBBGBG (p < .01)."
+          }
+        ]
+      },
+      "high_school_programs": {
+        "results": "67 of 89 Ss guessed that the class belongs to program A (p < .01 by sign test). Note: Objectively, program B is slightly more likely."
+      },
+      "replicability_of_significance": {
+        "median_estimate": 0.85,
+        "statistical_note": "A realistic estimate is lower than .50."
+      },
+      "marble_distribution": {
+        "results": "36 of 52 Ss viewed distribution I as more probable than distribution II (p < .01 by sign test). Note: Objectively, II is more probable."
+      }
+    },
+    "study_2": {
+      "sampling_distribution_tasks": {
+        "summary_results": "Sample size had no effect whatsoever on the subjective sampling distributions. Independent groups produced indistinguishable distributions across N = 10, 100, and 1000 for all three populations (Figures 1a, 1b, 1c)."
+      },
+      "ordinal_sample_size_judgments": {
+        "item_level_results": [
+          {
+            "item": "maternity_ward",
+            "more_than_60_percent_counts": {
+              "larger": 12,
+              "smaller": 10,
+              "same": 28
+            },
+            "less_than_60_percent_counts": {
+              "larger": 9,
+              "smaller": 11,
+              "same": 25
+            }
+          },
+          {
+            "item": "word_length",
+            "more_than_6": {
+              "page": 8,
+              "line": 21,
+              "same": 20
+            },
+            "less_than_6": {
+              "page": 10,
+              "line": 15,
+              "same": 23
+            }
+          },
+          {
+            "item": "median_height",
+            "more_than_5ft11": {
+              "team_3": 7,
+              "team_1": 18,
+              "same": 23
+            },
+            "less_than_5ft11": {
+              "team_3": 14,
+              "team_1": 17,
+              "same": 17
+            }
+          }
+        ],
+        "summary": "The modal answer was 'same' in almost all comparisons. There was no significant preference for the correct answer in any problem."
+      }
+    },
+    "study_3": {
+      "symmetric_binomial_posterior": {
+        "summary_results": "Population proportions (p) had no effect on subjective posterior estimates. Estimates depended on sample ratio (r:b) rather than sample difference (r-b). Median posterior estimates were very close to the stated sample proportion."
+      },
+      "height_posterior_odds": {
+        "median_subjective_odds": {
+          "case_i": 8.0,
+          "case_ii": 2.5
+        },
+        "correct_odds": {
+          "case_i": 16.0,
+          "case_ii": 29.0
+        },
+        "judgment": "A significant majority (86 of 115) assigned a higher value to the single observation (case i) than the sample of 6 (case ii), violating the correct ordering of likelihoods."
+      }
+    }
+  }
+}

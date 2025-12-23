@@ -1,0 +1,20 @@
+[
+  {
+    "id": "marble_dist",
+    "question": "On each round of a game, 20 marbles are distributed at random among five children: Alan, Ben, Carl, Dan, and Ed. Consider the following distributions: I (Alan: 4, Ben: 4, Carl: 5, Dan: 4, Ed: 3) vs II (Alan: 4, Ben: 4, Carl: 4, Dan: 4, Ed: 4). In many rounds of the game, will there be more results of type I or of type II?",
+    "distribution_I": [
+      4,
+      4,
+      5,
+      4,
+      3
+    ],
+    "distribution_II": [
+      4,
+      4,
+      4,
+      4,
+      4
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "study_id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "participants": {
+    "n": 156,
+    "population": "Students at the University of California, Berkeley",
+    "recruitment_source": "Introductory psychology class",
+    "demographics": {},
+    "by_sub_study": {
+      "calibration_group": {
+        "n": 53,
+        "population": "Students at the University of California, Berkeley",
+        "recruitment_source": "Introductory psychology class"
+      },
+      "experimental_anchored_group": {
+        "n": 103,
+        "population": "Students at the University of California, Berkeley",
+        "recruitment_source": "Introductory psychology class"
+      }
+    }
+  },
+  "design": {
+    "type": "Mixed",
+    "factors": [
+      {
+        "name": "Scenario",
+        "levels": [
+          "calibration_group",
+          "experimental_anchored_group"
+        ],
+        "type": "Between-Subjects"
+      }
+    ]
+  },
+  "procedure": {
+    "steps": [
+      "Read scenario/questionnaire description",
+      "Make choice or provide response",
+      "Estimate peer consensus/percentage"
+    ]
+  }
+}

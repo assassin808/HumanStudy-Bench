@@ -1,0 +1,1 @@
+You will be presented with three problems involving sampling processes. For each problem, judge whether a particular outcome is more likely to occur in a small sample, a large sample, or if they are about the same (within 5% of each other).

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sex_distribution",
+    "population": "Distribution of sexes (Binomial, p = .50)",
+    "instruction": "Approximately N babies are born every day in a certain region. On what percentage of days will the number of boys among N babies be as follows: [Categories provided based on N].",
+    "sample_sizes": [
+      10,
+      100,
+      1000
+    ]
+  },
+  {
+    "id": "heartbeat_distribution",
+    "population": "Distribution of heartbeat type (Binomial, p = .80)",
+    "instruction": "Approximately N babies are born every day in a certain region. 80% of all newborns have a heartbeat of type alpha and the remaining 20% have a heartbeat of type beta. For each sample size, produce a sampling distribution for the number of babies born every day with heartbeat of type alpha.",
+    "sample_sizes": [
+      10,
+      100,
+      1000
+    ]
+  },
+  {
+    "id": "height_distribution",
+    "population": "Distribution of height",
+    "instruction": "A regional induction center records the average height of the N men who are examined every day. The average height of the male population lies between 170-175 cm. Frequency of heights decreases with distance from the mean. Produce a sampling distribution of average height in seven categories: up to 160, 160-165, 165-170, 170-175, 175-180, 180-185, more than 185.",
+    "sample_sizes": [
+      10,
+      100,
+      1000
+    ]
+  }
+]

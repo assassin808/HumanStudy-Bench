@@ -98,6 +98,8 @@ For EACH replicable study/experiment, extract:
    - Sub-study ID (e.g., "experiment_1_estimation_tasks")
    - Type: "scenario" (story), "questionnaire" (items), or "task" (procedure)
    - Content: The FULL TEXT of the instructions given to participants.
+     - CRITICAL: Instructions must be SELF-CONTAINED. Do NOT say "similar to Experiment 1". Instead, REPEAT the full instructions from Experiment 1 if they apply.
+     - The simulation agent has NO context of other experiments.
    - Items: If it's a questionnaire or estimation task, LIST ALL SPECIFIC QUESTIONS/ITEMS.
      - Example: If there are 15 estimation questions, list ALL 15 with their specific content (e.g., "Length of Mississippi River").
      - If there are experimental conditions (e.g., Low Anchor vs High Anchor), list the specific parameters for EACH item.

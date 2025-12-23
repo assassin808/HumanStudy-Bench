@@ -1,0 +1,87 @@
+{
+  "study_id": "study_003",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "participants": {
+    "n": 1350,
+    "population": "Students at Stanford University and the University of British Columbia",
+    "recruitment_source": "Not specified",
+    "demographics": {},
+    "by_sub_study": {
+      "problem_1_gains_frame": {
+        "n": 152,
+        "population": "Students at Stanford University and the University of British Columbia",
+        "recruitment_source": ""
+      },
+      "problem_2_losses_frame": {
+        "n": 155,
+        "population": "Students at Stanford University and the University of British Columbia",
+        "recruitment_source": ""
+      },
+      "problem_3_separate_decisions": {
+        "n": 150,
+        "population": "Students at Stanford University and the University of British Columbia",
+        "recruitment_source": ""
+      },
+      "problem_4_combined_decisions": {
+        "n": 86,
+        "population": "Students at Stanford University and the University of British Columbia",
+        "recruitment_source": ""
+      },
+      "problem_5_standard_choice": {
+        "n": 77,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_6_sequential_frame": {
+        "n": 85,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_7_probabilistic_frame": {
+        "n": 81,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_8_lost_bill": {
+        "n": 183,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_9_lost_ticket": {
+        "n": 200,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_10_low_price_calculator": {
+        "n": 93,
+        "population": "",
+        "recruitment_source": ""
+      },
+      "problem_10_high_price_calculator": {
+        "n": 88,
+        "population": "",
+        "recruitment_source": ""
+      }
+    }
+  },
+  "design": {
+    "type": "Mixed",
+    "factors": [
+      {
+        "name": "Scenario",
+        "levels": [
+          "problem_1_gains_frame",
+          "problem_2_losses_frame"
+        ],
+        "type": "Between-Subjects"
+      }
+    ]
+  },
+  "procedure": {
+    "steps": [
+      "Read scenario/questionnaire description",
+      "Make choice or provide response",
+      "Estimate peer consensus/percentage"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+In this study, you will be asked to make judgments and estimates for both numerical quantities (e.g., distances, years) and your willingness to pay (WTP) for various public goods (e.g., environmental protection).
+
+For each estimation item:
+1. Judge whether the quantity is higher or lower than a provided anchor.
+2. State your best numerical estimate.
+
+For each Willingness to Pay (WTP) item:
+1. Answer a referendum-style question: 'Would you be willing to pay X dollars?'
+2. State your maximal willingness to pay for the specified cause.

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "question": "Length of Mississippi River (in miles)"
+  },
+  {
+    "id": "2",
+    "question": "Height of Mount Everest (in feet)"
+  },
+  {
+    "id": "3",
+    "question": "Amount of meat eaten per year by average American (in pounds)"
+  },
+  {
+    "id": "4",
+    "question": "Distance from San Francisco to New York City (in miles)"
+  },
+  {
+    "id": "5",
+    "question": "Height of tallest redwood (in feet)"
+  },
+  {
+    "id": "6",
+    "question": "Number of United Nations members"
+  },
+  {
+    "id": "7",
+    "question": "Number of female professors at the University of California, Berkeley"
+  },
+  {
+    "id": "8",
+    "question": "Population of Chicago (in millions)"
+  },
+  {
+    "id": "9",
+    "question": "Year telephone was invented"
+  },
+  {
+    "id": "10",
+    "question": "Average number of babies born per day in the United States"
+  },
+  {
+    "id": "11",
+    "question": "Maximum speed of house cat (in miles per hour)"
+  },
+  {
+    "id": "12",
+    "amount": "Amount of gas used per month by average American (in gallons)"
+  },
+  {
+    "id": "13",
+    "question": "Number of bars in Berkeley, California"
+  },
+  {
+    "id": "14",
+    "question": "Number of state colleges and universities in California"
+  },
+  {
+    "id": "15",
+    "question": "Number of Lincoln's presidency (e.g., 1st, 16th, etc.)"
+  }
+]

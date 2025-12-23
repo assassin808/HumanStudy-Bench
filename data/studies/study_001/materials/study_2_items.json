@@ -1,0 +1,209 @@
+{
+  "description": "Items from study_2_items",
+  "items": [
+    {
+      "id": "shy",
+      "category": "Personal traits and views",
+      "option_1": "Shy",
+      "option_2": "Not shy"
+    },
+    {
+      "id": "optimistic",
+      "category": "Personal traits and views",
+      "option_1": "Optimistic",
+      "option_2": "Not optimistic"
+    },
+    {
+      "id": "competitive",
+      "category": "Personal traits and views",
+      "option_1": "Competitive",
+      "option_2": "Not competitive"
+    },
+    {
+      "id": "political_left",
+      "category": "Personal traits and views",
+      "option_1": "Politically left of center",
+      "option_2": "Not left of center"
+    },
+    {
+      "id": "womens_lib",
+      "category": "Personal traits and views",
+      "option_1": "Supporter of women's lib",
+      "option_2": "Not a supporter"
+    },
+    {
+      "id": "bread",
+      "category": "Personal preferences",
+      "option_1": "Brown bread",
+      "option_2": "White bread"
+    },
+    {
+      "id": "solitude",
+      "category": "Personal preferences",
+      "option_1": "To be alone",
+      "option_2": "With others"
+    },
+    {
+      "id": "movies",
+      "category": "Personal preferences",
+      "option_1": "Italian movies",
+      "option_2": "French movies"
+    },
+    {
+      "id": "location",
+      "category": "Personal preferences",
+      "option_1": "City life",
+      "option_2": "Country life"
+    },
+    {
+      "id": "sport",
+      "category": "Personal preferences",
+      "option_1": "Basketball",
+      "option_2": "Football"
+    },
+    {
+      "id": "gender",
+      "category": "Personal characteristics",
+      "option_1": "Male",
+      "option_2": "Female"
+    },
+    {
+      "id": "eyes",
+      "category": "Personal characteristics",
+      "option_1": "Brown eyes",
+      "option_2": "Blue eyes"
+    },
+    {
+      "id": "magazines",
+      "category": "Personal characteristics",
+      "option_1": "Subscribe to magazines",
+      "option_2": "Don't subscribe"
+    },
+    {
+      "id": "birth_order",
+      "category": "Personal characteristics",
+      "option_1": "First-born child",
+      "option_2": "Laterborn child"
+    },
+    {
+      "id": "hometown",
+      "category": "Personal characteristics",
+      "option_1": "Hometown > 200,000",
+      "option_2": "Hometown < 200,000"
+    },
+    {
+      "id": "dying",
+      "category": "Personal problems",
+      "option_1": "Think about dying? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "friends",
+      "category": "Personal problems",
+      "option_1": "Hard to make friends? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "temper",
+      "category": "Personal problems",
+      "option_1": "Difficulty controlling temper? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "depressed",
+      "category": "Personal problems",
+      "option_1": "Frequently depressed? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "emotional_needs",
+      "category": "Personal problems",
+      "option_1": "Emotional needs satisfied? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "tv",
+      "category": "Personal activities",
+      "option_1": "Watch TV 30 hours/month? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "tennis",
+      "category": "Personal activities",
+      "option_1": "Play tennis once a week? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "religious",
+      "category": "Personal activities",
+      "option_1": "Attend religious service once a month? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "blood",
+      "category": "Personal activities",
+      "option_1": "Donate blood once a year? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "phone",
+      "category": "Personal activities",
+      "option_1": "Long distance call once a week? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "marriage",
+      "category": "Personal expectations",
+      "option_1": "Marriage by age 30? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "financial",
+      "category": "Personal expectations",
+      "option_1": "Better financial status than parent? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "abroad",
+      "category": "Personal expectations",
+      "option_1": "Live outside U.S. for one year? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "career",
+      "category": "Personal expectations",
+      "option_1": "Great satisfaction from job? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "death_age",
+      "category": "Personal expectations",
+      "option_1": "Death before 70th birthday? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "supreme_court",
+      "category": "Political expectations",
+      "option_1": "Woman in Supreme Court within decade? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "poverty",
+      "category": "Political expectations",
+      "option_1": "Poverty problem reduced in 20 years? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "nuclear",
+      "category": "Political expectations",
+      "option_1": "Nuclear weapon used in 20 years? Yes",
+      "option_2": "No"
+    },
+    {
+      "id": "extraterrestrial",
+      "category": "Political expectations",
+      "option_1": "Discovery of extraterrestrial life by 2000? Yes",
+      "option_2": "No"
+    }
+  ]
+}

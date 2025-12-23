@@ -1,0 +1,1 @@
+For the following populations, you are asked to produce a subjective sampling distribution. You will be given a sample size (N) and several categories. For each category, estimate the percentage of days the outcome will fall into that range. Your total percentages for all categories in a single distribution must add up to approximately 100%.

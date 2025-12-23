@@ -1,0 +1,1 @@
+In this task, you will evaluate the likelihood of different distributions of marbles distributed at random among children. Consider which type of distribution is more likely to occur over many rounds of the game.

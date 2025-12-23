@@ -1,0 +1,1 @@
+Participants judge odds that a sample came from a male population (mean 5'10") vs female (mean 5'4") if: (i) sample is a single person 5'10"; (ii) sample is 6 persons average 5'8".

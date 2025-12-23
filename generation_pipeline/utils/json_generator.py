@@ -66,7 +66,7 @@ class JSONGenerator:
         prompt = f"""You are a metadata generator. Based on the extraction results, generate the domain, subdomain, and keywords for this study.
 
 EXTRACTION RESULTS:
-{extraction_summary[:10000]}...
+{extraction_summary[:120000]}...
 
 TASK:
 Generate a JSON object with:
@@ -126,7 +126,7 @@ Generate the JSON:
             "subdomain": subdomain,
             "keywords": keywords,
             "difficulty": "medium",  # TODO: Determine from study complexity
-            "description": extraction_result.get('paper_abstract', '')[:200] + "...",
+            "description": extraction_result.get('paper_abstract', '')[:2000] + "...",
             "scenarios": scenarios
         }
     
@@ -448,7 +448,7 @@ Generate the JSON:
         prompt = f"""You are a Python code generator. Generate a complete `generate_materials` function that extracts materials for a SIMULATION AGENT.
 
 EXTRACTION RESULTS:
-{extraction_summary[:50000]}...
+{extraction_summary[:120000]}...
 
 TASK:
 Generate a Python function that creates the necessary files for a simulator to run this study.
@@ -462,6 +462,10 @@ REQUIREMENTS:
   - DO NOT generate 15 separate text files unless the format explicitly requires it. JSON is better for simulators.
 - IF the study is a simple scenario (read and react), generate `[sub_study]_scenario.txt`.
 - ALWAYS include the specific questions/text in the files.
+- CRITICAL: Instructions MUST be self-contained. 
+  - Do NOT include text like "similar to Experiment 1" or "as described above".
+  - If the paper references another experiment, RECONSTRUCT the full instructions here.
+  - The agent reading this file knows NOTHING about other experiments.
 - Organize files into `materials_dir`.
 - Ensure file names are consistent with the `sub_study_id`s in the extraction result.
 

@@ -1,0 +1,64 @@
+{
+  "study_id": "study_001",
+  "title": "The “False Consensus Effect”: An Egocentric Bias in Social Perception and Attribution Processes",
+  "participants": {
+    "n": 824,
+    "population": "Stanford University Undergraduates",
+    "recruitment_source": "Introductory psychology class",
+    "demographics": {},
+    "by_sub_study": {
+      "study_1_supermarket": {
+        "n": 80,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      },
+      "study_1_term_paper": {
+        "n": 80,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      },
+      "study_1_traffic_ticket": {
+        "n": 80,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      },
+      "study_1_space_program": {
+        "n": 80,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      },
+      "study_2_questionnaire": {
+        "n": 80,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": ""
+      },
+      "study_3_sandwich_board": {
+        "n": 104,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      }
+    }
+  },
+  "design": {
+    "type": "Mixed",
+    "factors": [
+      {
+        "name": "Scenario",
+        "levels": [
+          "study_1_supermarket",
+          "study_1_term_paper",
+          "study_1_traffic_ticket",
+          "study_1_space_program"
+        ],
+        "type": "Between-Subjects"
+      }
+    ]
+  },
+  "procedure": {
+    "steps": [
+      "Read scenario/questionnaire description",
+      "Make choice or provide response",
+      "Estimate peer consensus/percentage"
+    ]
+  }
+}

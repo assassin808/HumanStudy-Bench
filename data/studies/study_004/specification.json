@@ -1,0 +1,59 @@
+{
+  "study_id": "study_004",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "participants": {
+    "n": 445,
+    "population": "High school students in Israel (grades 10-12, ages 15-18)",
+    "recruitment_source": "College-preparatory high schools",
+    "demographics": {},
+    "by_sub_study": {
+      "birth_order_likelihood": {
+        "n": 92,
+        "population": "High school students in Israel (grades 10-12, ages 15-18)",
+        "recruitment_source": "College-preparatory high schools"
+      },
+      "high_school_programs": {
+        "n": 89,
+        "population": "High school students in Israel (grades 10-12, ages 15-18)",
+        "recruitment_source": ""
+      },
+      "marble_distribution": {
+        "n": 52,
+        "population": "High school students in Israel",
+        "recruitment_source": ""
+      },
+      "ordinal_sample_size_judgments": {
+        "n": 97,
+        "population": "Stanford undergraduates with no background in probability or statistics.",
+        "recruitment_source": ""
+      },
+      "height_posterior_odds": {
+        "n": 115,
+        "population": "University of Michigan students who had at least one course in statistics.",
+        "recruitment_source": ""
+      }
+    }
+  },
+  "design": {
+    "type": "Mixed",
+    "factors": [
+      {
+        "name": "Scenario",
+        "levels": [
+          "birth_order_likelihood",
+          "high_school_programs",
+          "replicability_of_significance",
+          "marble_distribution"
+        ],
+        "type": "Between-Subjects"
+      }
+    ]
+  },
+  "procedure": {
+    "steps": [
+      "Read scenario/questionnaire description",
+      "Make choice or provide response",
+      "Estimate peer consensus/percentage"
+    ]
+  }
+}

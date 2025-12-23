@@ -1,0 +1,92 @@
+[
+  {
+    "id": "1",
+    "question": "Length of Mississippi River (miles)",
+    "low_anchor": 70,
+    "high_anchor": 2000
+  },
+  {
+    "id": "2",
+    "question": "Height of Mount Everest (feet)",
+    "low_anchor": 2000,
+    "high_anchor": 45500
+  },
+  {
+    "id": "3",
+    "question": "Amount of meat eaten per year by average American (pounds)",
+    "low_anchor": 50,
+    "high_anchor": 1000
+  },
+  {
+    "id": "4",
+    "question": "Distance from San Francisco to New York City (miles)",
+    "low_anchor": 1500,
+    "high_anchor": 6000
+  },
+  {
+    "id": "5",
+    "question": "Height of tallest redwood (feet)",
+    "low_anchor": 65,
+    "high_anchor": 550
+  },
+  {
+    "id": "6",
+    "question": "Number of United Nations members",
+    "low_anchor": 14,
+    "high_anchor": 127
+  },
+  {
+    "id": "7",
+    "question": "Number of female professors at UC Berkeley",
+    "low_anchor": 25,
+    "high_anchor": 130
+  },
+  {
+    "id": "8",
+    "question": "Population of Chicago (millions)",
+    "low_anchor": 0.2,
+    "high_anchor": 5.0
+  },
+  {
+    "id": "9",
+    "question": "Year telephone was invented",
+    "low_anchor": 1850,
+    "high_anchor": 1920
+  },
+  {
+    "id": "10",
+    "question": "Average number of babies born per day in the US",
+    "low_anchor": 100,
+    "high_anchor": 50000
+  },
+  {
+    "id": "11",
+    "question": "Maximum speed of house cat (mph)",
+    "low_anchor": 7,
+    "high_anchor": 30
+  },
+  {
+    "id": "12",
+    "question": "Amount of gas used per month by average American (gallons)",
+    "low_anchor": 20,
+    "high_anchor": 80
+  },
+  {
+    "id": "13",
+    "question": "Number of bars in Berkeley, CA",
+    "low_anchor": 10,
+    "high_anchor": 85
+  },
+  {
+    "id": "14",
+    "question": "Number of state colleges and universities in California",
+    "low_anchor": 20,
+    "high_anchor": 100
+  },
+  {
+    "id": "15",
+    "question": "Number of Lincoln's presidency",
+    "low_anchor": 7,
+    "high_anchor": 17
+  }
+]

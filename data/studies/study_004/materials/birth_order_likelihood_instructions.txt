@@ -1,0 +1,1 @@
+This is a study of people’s intuitions about chance. You will be presented with information about birth sequences in families. Your task is to estimate frequencies or compare the likelihood of different sequences based on your intuition. Please answer the following questions as accurately as possible.

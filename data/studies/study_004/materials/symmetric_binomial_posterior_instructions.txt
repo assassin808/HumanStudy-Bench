@@ -1,0 +1,1 @@
+Consider two very large decks of cards, A and B. One deck has been selected by chance. A sample of cards is drawn. Based on the composition of the sample and the known proportions in the decks, estimate the probability (from 0 to 1.0) that the sample was drawn from Deck A.

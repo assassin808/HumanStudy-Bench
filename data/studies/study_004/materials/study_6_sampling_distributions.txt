@@ -1,0 +1,1 @@
+Participants produced subjective sampling distributions for three populations (sexes p=.50, heartbeat type p=.80, and height) across three sample sizes (N = 10, 100, 1000).

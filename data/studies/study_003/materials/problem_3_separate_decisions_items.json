@@ -1,0 +1,30 @@
+[
+  {
+    "id": "decision_i",
+    "question": "Decision (i). Choose between:",
+    "options": [
+      {
+        "id": "A",
+        "text": "a sure gain of $240"
+      },
+      {
+        "id": "B",
+        "text": "25% chance to gain $1000, and 75% chance to gain nothing"
+      }
+    ]
+  },
+  {
+    "id": "decision_ii",
+    "question": "Decision (ii). Choose between:",
+    "options": [
+      {
+        "id": "C",
+        "text": "a sure loss of $750"
+      },
+      {
+        "id": "D",
+        "text": "75% chance to lose $1000, and 25% chance to lose nothing"
+      }
+    ]
+  }
+]

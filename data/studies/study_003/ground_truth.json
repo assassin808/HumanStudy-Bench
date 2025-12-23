@@ -1,0 +1,177 @@
+{
+  "study_id": "study_003",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "year": null,
+  "validation_criteria": {
+    "required_tests": [],
+    "scoring": {
+      "total_weight": 0,
+      "critical_requirement": "All critical tests must pass",
+      "passing_threshold": 0.6
+    }
+  },
+  "original_results": {
+    "study_1": {
+      "problem_1_gains_frame": {
+        "item_level_results": [
+          {
+            "option": "Program A",
+            "percentage": 72
+          },
+          {
+            "option": "Program B",
+            "percentage": 28
+          }
+        ]
+      },
+      "problem_2_losses_frame": {
+        "item_level_results": [
+          {
+            "option": "Program C",
+            "percentage": 22
+          },
+          {
+            "option": "Program D",
+            "percentage": 78
+          }
+        ]
+      }
+    },
+    "study_2": {
+      "problem_3_separate_decisions": {
+        "item_level_results": [
+          {
+            "option": "A",
+            "percentage": 84
+          },
+          {
+            "option": "B",
+            "percentage": 16
+          },
+          {
+            "option": "C",
+            "percentage": 13
+          },
+          {
+            "option": "D",
+            "percentage": 87
+          },
+          {
+            "combination": "A and D (Risk Averse in Gain / Risk Seeking in Loss)",
+            "percentage": 73
+          },
+          {
+            "combination": "B and C",
+            "percentage": 3
+          }
+        ]
+      },
+      "problem_4_combined_decisions": {
+        "item_level_results": [
+          {
+            "option": "A & D",
+            "percentage": 0
+          },
+          {
+            "option": "B & C",
+            "percentage": 100
+          }
+        ]
+      }
+    },
+    "study_3": {
+      "problem_5_standard_choice": {
+        "item_level_results": [
+          {
+            "option": "A",
+            "percentage": 78
+          },
+          {
+            "option": "B",
+            "percentage": 22
+          }
+        ]
+      },
+      "problem_6_sequential_frame": {
+        "item_level_results": [
+          {
+            "option": "C",
+            "percentage": 74
+          },
+          {
+            "option": "D",
+            "percentage": 26
+          }
+        ]
+      },
+      "problem_7_probabilistic_frame": {
+        "item_level_results": [
+          {
+            "option": "E",
+            "percentage": 42
+          },
+          {
+            "option": "F",
+            "percentage": 58
+          }
+        ]
+      }
+    },
+    "study_4": {
+      "problem_8_lost_bill": {
+        "item_level_results": [
+          {
+            "option": "Yes",
+            "percentage": 88
+          },
+          {
+            "option": "No",
+            "percentage": 12
+          }
+        ]
+      },
+      "problem_9_lost_ticket": {
+        "item_level_results": [
+          {
+            "option": "Yes",
+            "percentage": 46
+          },
+          {
+            "option": "No",
+            "percentage": 54
+          }
+        ]
+      }
+    },
+    "study_5": {
+      "problem_10_low_price_calculator": {
+        "item_level_results": [
+          {
+            "option": "Yes",
+            "percentage": 68
+          },
+          {
+            "option": "No",
+            "percentage": 32
+          }
+        ]
+      },
+      "problem_10_high_price_calculator": {
+        "item_level_results": [
+          {
+            "option": "Yes",
+            "percentage": 29
+          },
+          {
+            "option": "No",
+            "percentage": 71
+          }
+        ]
+      }
+    }
+  }
+}

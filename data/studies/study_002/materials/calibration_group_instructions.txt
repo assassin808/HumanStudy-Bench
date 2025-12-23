@@ -1,0 +1,1 @@
+You will be presented with a series of 15 questions about uncertain quantities. For each question, please provide your best numerical estimate of the quantity. After providing your estimate, rate your confidence in your answer on a scale from 1 (not at all confident) to 10 (extremely confident).

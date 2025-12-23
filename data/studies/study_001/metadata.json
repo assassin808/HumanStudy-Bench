@@ -1,0 +1,25 @@
+{
+  "id": "study_001",
+  "title": "The “False Consensus Effect”: An Egocentric Bias in Social Perception and Attribution Processes",
+  "authors": [
+    "Lee Ross",
+    "David Greene",
+    "Pamela House"
+  ],
+  "year": null,
+  "domain": "social_psychology",
+  "subdomain": "social_cognition",
+  "keywords": [
+    "false_consensus_effect"
+  ],
+  "difficulty": "medium",
+  "description": "Evidence from four studies demonstrates that social observers tend to perceive a “false consensus” with respect to the relative commonness of their own responses. A related bias was shown to exist in ...",
+  "scenarios": [
+    "study_1_supermarket",
+    "study_1_term_paper",
+    "study_1_traffic_ticket",
+    "study_1_space_program",
+    "study_2_questionnaire",
+    "study_3_sandwich_board"
+  ]
+}

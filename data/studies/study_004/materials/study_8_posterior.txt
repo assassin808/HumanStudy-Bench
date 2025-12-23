@@ -1,0 +1,1 @@
+Participants estimated posterior probabilities for 10 symmetric binomial problems varying population proportion (p), sample ratio, and sample difference using decks of cards marked X and O.

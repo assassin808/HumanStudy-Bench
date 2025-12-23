@@ -1,0 +1,15 @@
+[
+  {
+    "id": "birth_sequence_estimation",
+    "question": "All families of six children in a city were surveyed. In 72 families the exact order of births of boys and girls was G B G B B G. What is your estimate of the number of families surveyed in which the exact order of births was B G B B B B?",
+    "standard_sequence": "GBGBBG",
+    "target_sequence": "BGBBBB",
+    "standard_frequency": 72
+  },
+  {
+    "id": "randomness_comparison",
+    "question": "Participants were asked to compare the likelihood of two birth sequences: B B B G G G and G B B G B G.",
+    "sequence_1": "BBBGGG",
+    "sequence_2": "GBBGBG"
+  }
+]

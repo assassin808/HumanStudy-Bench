@@ -1,0 +1,27 @@
+[
+  {
+    "id": "est_1",
+    "type": "estimation",
+    "question": "Length of Mississippi River (miles)"
+  },
+  {
+    "id": "est_2",
+    "type": "estimation",
+    "question": "Height of Mount Everest (feet)"
+  },
+  {
+    "id": "est_3",
+    "type": "estimation",
+    "question": "Number of United Nations members"
+  },
+  {
+    "id": "wtp_1",
+    "type": "wtp",
+    "cause": "Saving 50,000 seabirds each year from the effects of offshore oil spills."
+  },
+  {
+    "id": "wtp_2",
+    "type": "wtp",
+    "cause": "Achieving a 20% reduction in automobile accidents in the state over 5 years."
+  }
+]

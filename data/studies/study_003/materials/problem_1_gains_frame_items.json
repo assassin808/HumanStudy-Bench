@@ -1,0 +1,16 @@
+[
+  {
+    "id": "program_a",
+    "question": "Which of the two programs would you favor?",
+    "options": [
+      {
+        "id": "A",
+        "text": "If Program A is adopted, 200 people will be saved."
+      },
+      {
+        "id": "B",
+        "text": "If Program B is adopted, there is 1/3 probability that 600 people will be saved, and 2/3 probability that no people will be saved."
+      }
+    ]
+  }
+]

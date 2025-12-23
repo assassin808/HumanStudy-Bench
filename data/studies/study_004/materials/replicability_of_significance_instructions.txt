@@ -1,0 +1,1 @@
+Imagine you are a research psychologist. You have obtained a significant result in an initial study and are now planning a follow-up. Please estimate the probability of finding a significant result in the replication.

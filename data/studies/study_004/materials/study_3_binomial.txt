@@ -1,0 +1,1 @@
+Given a binomial process with p = 4/5, participants judge the likelihood of a sample of 10 successes and 0 failures versus 6 successes and 4 failures.

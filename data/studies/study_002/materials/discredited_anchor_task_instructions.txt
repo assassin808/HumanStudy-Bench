@@ -1,0 +1,4 @@
+You will be presented with a series of questions about uncertain quantities. For each quantity, you will first be shown a number (an anchor value). Please note that this anchor value has been determined by a process that is not necessarily informative or related to the true value (e.g., it may be randomly generated). Regardless of the anchor's source, perform the following:
+1. Judge whether the true quantity is higher or lower than the provided anchor.
+2. Provide your best numerical estimate of the true quantity.
+3. Rate your confidence in your numerical estimate on a scale from 1 to 10.

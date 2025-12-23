@@ -1,0 +1,26 @@
+{
+  "id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "year": null,
+  "domain": "cognitive_psychology",
+  "subdomain": "judgment_and_decision_making",
+  "keywords": [
+    "anchoring effect",
+    "estimation tasks",
+    "subjective confidence",
+    "anchoring index",
+    "heuristics"
+  ],
+  "difficulty": "medium",
+  "description": "The authors describe a method for the quantitative study of anchoring effects in estimation tasks. A calibration group provides estimates of a set of uncertain quantities. Subjects in the anchored con...",
+  "scenarios": [
+    "calibration_group",
+    "experimental_anchored_group",
+    "discredited_anchor_task",
+    "wtp_vs_estimation"
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "study_id": "study_001",
+  "title": "The “False Consensus Effect”: An Egocentric Bias in Social Perception and Attribution Processes",
+  "authors": [
+    "Lee Ross",
+    "David Greene",
+    "Pamela House"
+  ],
+  "year": null,
+  "validation_criteria": {
+    "required_tests": [
+      {
+        "test_id": "P1",
+        "test_name": "study_1 study_1_supermarket Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_supermarket is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_supermarket_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P2",
+        "test_name": "study_1 study_1_supermarket Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_supermarket is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_supermarket_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P3",
+        "test_name": "study_1 study_1_term_paper Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_term_paper is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_term_paper_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P4",
+        "test_name": "study_1 study_1_term_paper Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_term_paper is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_term_paper_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P5",
+        "test_name": "study_1 study_1_traffic_ticket Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_traffic_ticket is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_traffic_ticket_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P6",
+        "test_name": "study_1 study_1_traffic_ticket Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_traffic_ticket is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_traffic_ticket_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P7",
+        "test_name": "study_1 study_1_space_program Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_space_program is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_space_program_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P8",
+        "test_name": "study_1 study_1_space_program Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_1_space_program is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_1_space_program_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P9",
+        "test_name": "study_2 study_2_questionnaire Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_2_questionnaire is statistically significant (p < 0.05)",
+        "method": {
+          "test": "independent_t_test",
+          "source_field": "study_2_questionnaire_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P10",
+        "test_name": "study_3 study_3_sandwich_board Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_3_sandwich_board is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_3_sandwich_board_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      },
+      {
+        "test_id": "P11",
+        "test_name": "study_3 study_3_sandwich_board Significance",
+        "test_type": "phenomenon_level",
+        "difficulty": "medium",
+        "description": "Tests if the effect in study_3_sandwich_board is statistically significant (p < 0.05)",
+        "method": {
+          "test": "anova",
+          "source_field": "study_3_sandwich_board_effect",
+          "threshold": 0.05,
+          "expected_direction": "positive"
+        },
+        "critical": true,
+        "weight": 1.5
+      }
+    ],
+    "scoring": {
+      "total_weight": 16.5,
+      "critical_requirement": "All critical tests must pass",
+      "passing_threshold": 0.6
+    }
+  },
+  "original_results": {
+    "study_1": {
+      "study_1_supermarket": {
+        "own_choice_distribution": {
+          "sign_release": "66%",
+          "not_sign_release": "34%"
+        },
+        "consensus_estimates_for_signing": {
+          "by_signers": 75.6,
+          "by_refusers": 57.3
+        },
+        "trait_ratings_difference_score": {
+          "by_signers": -29.1,
+          "by_refusers": 24.7
+        }
+      },
+      "study_1_term_paper": {
+        "own_choice_distribution": {
+          "individual_paper": "80%",
+          "group_paper": "20%"
+        },
+        "consensus_estimates_for_individual": {
+          "by_choosers": 67.4,
+          "by_refusers": 45.9
+        },
+        "trait_ratings_difference_score": {
+          "by_choosers": -0.2,
+          "by_refusers": 54.1
+        }
+      },
+      "study_1_traffic_ticket": {
+        "own_choice_distribution": {
+          "pay_fine": "46%",
+          "contest_charge": "54%"
+        },
+        "consensus_estimates_for_paying": {
+          "by_payers": 71.8,
+          "by_contesters": 51.7
+        },
+        "trait_ratings_difference_score": {
+          "by_payers": -41.6,
+          "by_contesters": -19.2
+        }
+      },
+      "study_1_space_program": {
+        "own_choice_distribution": {
+          "vote_for_cutback": "40%",
+          "vote_against_cutback": "60%"
+        },
+        "consensus_estimates_for_cutback": {
+          "by_proponents": 47.9,
+          "by_opponents": 39.0
+        },
+        "trait_ratings_difference_score": {
+          "by_proponents": -11.1,
+          "by_opponents": 0.0
+        }
+      }
+    },
+    "study_2": {
+      "study_2_questionnaire": {
+        "mean_estimates_unweighted_by_category": {
+          "Personal_traits_views": {
+            "by_cat1_raters": 60.0,
+            "by_cat2_raters": 49.5
+          },
+          "Personal_preferences": {
+            "by_cat1_raters": 45.6,
+            "by_cat2_raters": 39.8
+          },
+          "Personal_characteristics": {
+            "by_cat1_raters": 54.9,
+            "by_cat2_raters": 48.7
+          },
+          "Personal_problems": {
+            "by_cat1_raters": 46.6,
+            "by_cat2_raters": 34.0
+          },
+          "Personal_activities": {
+            "by_cat1_raters": 36.4,
+            "by_cat2_raters": 33.0
+          },
+          "Personal_expectations": {
+            "by_cat1_raters": 58.3,
+            "by_cat2_raters": 51.6
+          },
+          "Political_expectations": {
+            "by_cat1_raters": 60.1,
+            "by_cat2_raters": 34.6
+          }
+        }
+      }
+    },
+    "study_3": {
+      "study_3_sandwich_board": {
+        "combined_consensus_estimates_for_wearing": {
+          "by_wearers": 61.4,
+          "by_refusers": 30.4
+        },
+        "trait_ratings_difference_score": {
+          "by_wearers": 0.7,
+          "by_refusers": 60.4
+        }
+      }
+    }
+  }
+}

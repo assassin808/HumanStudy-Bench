@@ -1,0 +1,1 @@
+Based on the provided statistics for male and female heights, estimate the odds that a randomly selected sample comes from the male population given the observed heights.

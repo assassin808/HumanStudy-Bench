@@ -1,0 +1,197 @@
+{
+  "study_id": "study_002",
+  "title": "Measures of Anchoring in Estimation Tasks",
+  "authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "year": null,
+  "validation_criteria": {
+    "required_tests": [],
+    "scoring": {
+      "total_weight": 0,
+      "critical_requirement": "All critical tests must pass",
+      "passing_threshold": 0.6
+    }
+  },
+  "original_results": {
+    "experiment_1": {
+      "calibration_group": {
+        "item_level_results": [
+          {
+            "id": "1",
+            "calibration_median": 800
+          },
+          {
+            "id": "2",
+            "calibration_median": 12000
+          },
+          {
+            "id": "3",
+            "calibration_median": 1800
+          },
+          {
+            "id": "4",
+            "calibration_median": 3200
+          },
+          {
+            "id": "5",
+            "calibration_median": 200
+          },
+          {
+            "id": "6",
+            "calibration_median": 50
+          },
+          {
+            "id": "7",
+            "calibration_median": 50
+          },
+          {
+            "id": "8",
+            "calibration_median": 1.0
+          },
+          {
+            "id": "9",
+            "calibration_median": 1889
+          },
+          {
+            "id": "10",
+            "calibration_median": 2000
+          },
+          {
+            "id": "11",
+            "calibration_median": 18
+          },
+          {
+            "id": "12",
+            "calibration_median": 50
+          },
+          {
+            "id": "13",
+            "calibration_median": 20
+          },
+          {
+            "id": "14",
+            "calibration_median": 30
+          },
+          {
+            "id": "15",
+            "calibration_median": 16
+          }
+        ]
+      },
+      "experimental_anchored_group": {
+        "overall_stats": {
+          "mean_anchoring_index": 0.49,
+          "high_anchor_mean_ai": 0.51,
+          "low_anchor_mean_ai": 0.4,
+          "ai_confidence_correlation": -0.68,
+          "high_vs_low_anchor_test": "t(102) = 7.99, p < .01",
+          "confidence_anchored_vs_calibration": "t(154) = 3.53, p < .001 (Mean ratings: 3.85 vs 2.99)"
+        },
+        "item_level_results": [
+          {
+            "id": "1",
+            "low_anchor_median": 300,
+            "high_anchor_median": 1500,
+            "anchoring_index": 0.62
+          },
+          {
+            "id": "2",
+            "low_anchor_median": 8000,
+            "high_anchor_median": 42550,
+            "anchoring_index": 0.79
+          },
+          {
+            "id": "3",
+            "low_anchor_median": 100,
+            "high_anchor_median": 500,
+            "anchoring_index": 0.42
+          },
+          {
+            "id": "4",
+            "low_anchor_median": 2600,
+            "high_anchor_median": 4000,
+            "anchoring_index": 0.31
+          },
+          {
+            "id": "5",
+            "low_anchor_median": 100,
+            "high_anchor_median": 400,
+            "anchoring_index": 0.62
+          },
+          {
+            "id": "6",
+            "low_anchor_median": 26,
+            "high_anchor_median": 100,
+            "anchoring_index": 0.65
+          },
+          {
+            "id": "7",
+            "low_anchor_median": 50,
+            "high_anchor_median": 95,
+            "anchoring_index": 0.43
+          },
+          {
+            "id": "8",
+            "low_anchor_median": 0.6,
+            "high_anchor_median": 5.05,
+            "anchoring_index": 0.93
+          },
+          {
+            "id": "9",
+            "low_anchor_median": 1870,
+            "high_anchor_median": 1900,
+            "anchoring_index": 0.43
+          },
+          {
+            "id": "10",
+            "low_anchor_median": 1000,
+            "high_anchor_median": 40000,
+            "anchoring_index": 0.78
+          },
+          {
+            "id": "11",
+            "low_anchor_median": 10,
+            "high_anchor_median": 20,
+            "anchoring_index": 0.43
+          },
+          {
+            "id": "12",
+            "low_anchor_median": 40,
+            "high_anchor_median": 60,
+            "anchoring_index": 0.33
+          },
+          {
+            "id": "13",
+            "low_anchor_median": 20,
+            "high_anchor_median": 40,
+            "anchoring_index": 0.27
+          },
+          {
+            "id": "14",
+            "low_anchor_median": 30,
+            "high_anchor_median": 50,
+            "anchoring_index": 0.25
+          },
+          {
+            "id": "15",
+            "low_anchor_median": 16,
+            "high_anchor_median": 16,
+            "anchoring_index": 0.0
+          }
+        ]
+      }
+    },
+    "experiment_2": {
+      "discredited_anchor_task": {
+        "results": "The manipulation of credibility did not reduce the anchoring effect. High anchors (located near the 85th percentile) were judged low 28% of the time; low anchors (located at the 15th percentile) were judged high on 15% of occasions. Anchored estimates were 99.5% consistent with the just-preceding judgment of the anchor."
+      }
+    },
+    "experiment_3": {
+      "wtp_vs_estimation": {
+        "results": "High anchors yielded a large proportion of answers even higher than the anchor. In estimation, 24% of anchored estimates equaled or exceeded the highest anchor (vs 4.2% of calibration answers). In WTP, 15% of respondents shown the highest anchor were at least as high as that anchor (vs 4.6% of calibration responses). A low anchor (set at 25th percentile) pulled responses up in the WTP task; only about 15% of respondents judged the low anchor high or refused to pay the suggested amount."
+      }
+    }
+  }
+}
