@@ -102,27 +102,42 @@ if mode == "Generation Pipeline":
             json_file = Path(f"generation_pipeline/outputs/{paper_id}_stage1_filter.json")
             
             if md_file.exists() and json_file.exists():
-                c1, c2 = st.columns(2)
+                st.markdown("---")
+                # 3-column layout for Stage 1
+                c1, c2, c3 = st.columns([1, 1, 1])
+                
                 with c1:
-                    st.markdown("### Review (Markdown)")
+                    st.markdown("### 📝 Edit Review (MD)")
                     content = md_file.read_text(encoding='utf-8')
-                    
-                    # Markdown Rendering Preview
-                    with st.expander("👁️ Preview Rendered Markdown", expanded=True):
-                        st.markdown(content)
-                        
-                    # Editable text area for refinement
-                    edited_md = st.text_area("Edit Review for Refinement", value=content, height=400)
+                    edited_md = st.text_area("Markdown Editor", value=content, height=600, key="stage1_md_editor")
                     if edited_md != content:
                         md_file.write_text(edited_md, encoding='utf-8')
+                        st.rerun()
                     
-                    if st.button("Refine Stage 1"):
+                    if st.button("Refine Stage 1 with Comments"):
                         with st.spinner("Refining Stage 1..."):
                             gen_pipeline.run_stage1(st.session_state.pdf_path)
                             st.rerun()
                             
                 with c2:
-                    st.markdown("### Data (JSON)")
+                    st.markdown("### 👁️ Preview Review")
+                    st.markdown(md_file.read_text(encoding='utf-8'))
+                    
+                with c3:
+                    st.markdown("### 🔢 Edit Data (JSON)")
+                    json_content = json_file.read_text(encoding='utf-8')
+                    # Use text_area for raw JSON editing
+                    edited_json_str = st.text_area("JSON Editor", value=json_content, height=600, key="stage1_json_editor")
+                    if st.button("Save JSON Changes", key="save_stage1_json"):
+                        try:
+                            # Validate JSON before saving
+                            json_obj = json.loads(edited_json_str)
+                            json_file.write_text(json.dumps(json_obj, indent=2, ensure_ascii=False), encoding='utf-8')
+                            st.success("JSON saved!")
+                        except json.JSONDecodeError as e:
+                            st.error(f"Invalid JSON: {e}")
+                    
+                    st.markdown("#### Visual Data Tree")
                     st.json(json.loads(json_file.read_text(encoding='utf-8')))
 
     with tab2:
@@ -144,25 +159,40 @@ if mode == "Generation Pipeline":
             json_file = Path(f"generation_pipeline/outputs/{paper_id}_stage2_extraction.json")
             
             if md_file.exists() and json_file.exists():
-                c1, c2 = st.columns(2)
+                st.markdown("---")
+                # 3-column layout for Stage 2
+                c1, c2, c3 = st.columns([1, 1, 1])
+                
                 with c1:
-                    st.markdown("### Review (Markdown)")
+                    st.markdown("### 📝 Edit Extraction (MD)")
                     content = md_file.read_text(encoding='utf-8')
-                    
-                    # Markdown Rendering Preview
-                    with st.expander("👁️ Preview Rendered Markdown", expanded=True):
-                        st.markdown(content)
-                        
-                    edited_md = st.text_area("Edit Stage 2 Review", value=content, height=400, key="stage2_md")
+                    edited_md = st.text_area("Markdown Editor", value=content, height=600, key="stage2_md_editor")
                     if edited_md != content:
                         md_file.write_text(edited_md, encoding='utf-8')
+                        st.rerun()
                     
-                    if st.button("Refine Stage 2"):
+                    if st.button("Refine Stage 2 with Comments"):
                         with st.spinner("Refining Stage 2..."):
                             gen_pipeline.run_stage2(st.session_state.stage1_json, st.session_state.pdf_path)
                             st.rerun()
+                            
                 with c2:
-                    st.markdown("### Data (JSON)")
+                    st.markdown("### 👁️ Preview Extraction")
+                    st.markdown(md_file.read_text(encoding='utf-8'))
+                    
+                with c3:
+                    st.markdown("### 🔢 Edit Data (JSON)")
+                    json_content = json_file.read_text(encoding='utf-8')
+                    edited_json_str = st.text_area("JSON Editor", value=json_content, height=600, key="stage2_json_editor")
+                    if st.button("Save JSON Changes", key="save_stage2_json"):
+                        try:
+                            json_obj = json.loads(edited_json_str)
+                            json_file.write_text(json.dumps(json_obj, indent=2, ensure_ascii=False), encoding='utf-8')
+                            st.success("JSON saved!")
+                        except json.JSONDecodeError as e:
+                            st.error(f"Invalid JSON: {e}")
+                    
+                    st.markdown("#### Visual Data Tree")
                     st.json(json.loads(json_file.read_text(encoding='utf-8')))
 
     with tab3:
