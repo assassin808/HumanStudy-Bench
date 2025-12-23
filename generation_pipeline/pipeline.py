@@ -162,17 +162,17 @@ class GenerationPipeline:
         study_dir: Optional[Path] = None
     ) -> Dict[str, Any]:
         """
-        Generate study files (JSON + Config class).
+        Run stage 3 (JSON files + materials).
         
         Args:
             stage2_json_path: Path to stage2 JSON result
             study_id: Study ID (e.g., "study_005")
-            study_dir: Directory to save study files (default: data/studies/{study_id})
+            study_dir: Directory to save study files
             
         Returns:
             Dictionary with paths to generated files
         """
-        print(f"Generating study: {study_id}")
+        print(f"Running Stage 3: Generating JSON and materials for {study_id}")
         
         # Load stage2 results
         extraction_result = json.loads(stage2_json_path.read_text(encoding='utf-8'))
@@ -183,7 +183,7 @@ class GenerationPipeline:
         study_dir = Path(study_dir)
         study_dir.mkdir(parents=True, exist_ok=True)
         
-        # Find PDF for context (used for metadata and materials generation)
+        # Find PDF for context
         pdf_path = None
         pdf_files = list(study_dir.glob("*.pdf"))
         if pdf_files:
@@ -213,15 +213,14 @@ class GenerationPipeline:
             pdf_path=pdf_path
         )
         
-        print(f"\nStudy generated:")
+        print(f"\nStage 3 complete:")
         print(f"  - {study_dir / 'metadata.json'}")
         print(f"  - {study_dir / 'specification.json'}")
         print(f"  - {study_dir / 'ground_truth.json'}")
         print(f"  - {len(material_files)} material files")
         print(f"\nNext steps:")
-        print(f"  1. Review generated materials files")
-        print(f"  2. Generate config when ready to run experiments: python generation_pipeline/generate_config.py --study-id {study_id}")
-        print(f"  3. Run validation: python validation_pipeline/run_validation.py {study_id}")
+        print(f"  1. Review generated materials")
+        print(f"  2. Run Stage 4 to generate config: python generation_pipeline/run.py --stage 4 --study-id {study_id}")
         
         return {
             "study_dir": study_dir,
@@ -230,4 +229,54 @@ class GenerationPipeline:
             "ground_truth": study_dir / "ground_truth.json",
             "materials": material_files
         }
+
+    def run_stage4(
+        self,
+        stage2_json_path: Path,
+        study_id: str,
+        study_dir: Optional[Path] = None
+    ) -> Path:
+        """
+        Run stage 4 (Config/Agent generation).
+        
+        Args:
+            stage2_json_path: Path to stage2 JSON result
+            study_id: Study ID
+            study_dir: Study directory
+            
+        Returns:
+            Path to generated config file
+        """
+        print(f"Running Stage 4: Generating StudyConfig Agent for {study_id}")
+        
+        # Load stage2 results
+        extraction_result = json.loads(stage2_json_path.read_text(encoding='utf-8'))
+        
+        # Determine study directory
+        if study_dir is None:
+            study_dir = Path("data/studies") / study_id
+        
+        # Find PDF for context
+        pdf_path = None
+        pdf_files = list(study_dir.glob("*.pdf"))
+        if pdf_files:
+            pdf_path = pdf_files[0]
+            
+        # Generate study config class
+        config_path = Path("src/studies") / f"{study_id}_config.py"
+        self.config_generator.generate(
+            extraction_result,
+            study_id,
+            config_path,
+            pdf_path=pdf_path,
+            study_dir=study_dir
+        )
+        
+        print(f"\nStage 4 complete:")
+        print(f"  - Generated: {config_path}")
+        print(f"\nNext steps:")
+        print(f"  1. Review the generated config")
+        print(f"  2. Run benchmark: python run_full_benchmark.py --studies {study_id}")
+        
+        return config_path
 

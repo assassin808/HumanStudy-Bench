@@ -60,6 +60,17 @@ class ConfigGenerator:
             if pdf_files:
                 pdf_path = pdf_files[0]
         
+        # Load all study data for context
+        study_context = {}
+        if study_dir:
+            for json_file in ["metadata.json", "specification.json", "ground_truth.json"]:
+                p = study_dir / json_file
+                if p.exists():
+                    try:
+                        study_context[json_file] = json.loads(p.read_text(encoding='utf-8'))
+                    except:
+                        pass
+        
         # Load example config for reference
         example_config = self._load_example_config()
         
@@ -69,7 +80,8 @@ class ConfigGenerator:
             study_id,
             pdf_path,
             example_config,
-            study_dir
+            study_dir,
+            study_context
         )
         
         # Write to file
@@ -77,32 +89,28 @@ class ConfigGenerator:
         output_path.write_text(code, encoding='utf-8')
         
         return output_path
-    
-    def _load_example_config(self) -> str:
-        """Load example config for reference"""
-        example_path = Path("src/studies/study_001_config.py")
-        if example_path.exists():
-            return example_path.read_text(encoding='utf-8')
-        return ""
-    
+
     def _generate_code_with_llm(
         self,
         extraction_result: Dict[str, Any],
         study_id: str,
         pdf_path: Optional[Path],
         example_config: str,
-        study_dir: Optional[Path]
+        study_dir: Optional[Path],
+        study_context: Dict[str, Any] = None
     ) -> str:
         """Generate Python code using LLM"""
         # Prepare extraction data summary
         extraction_summary = json.dumps(extraction_result, indent=2, ensure_ascii=False)
+        context_summary = json.dumps(study_context or {}, indent=2, ensure_ascii=False)
         
         # Build prompt
         prompt = self._build_prompt(
             extraction_summary,
             study_id,
             example_config,
-            study_dir
+            study_dir,
+            context_summary
         )
         
         # Call LLM (with PDF if available)
@@ -124,13 +132,14 @@ class ConfigGenerator:
         code = self._extract_code_from_response(response)
         
         return code
-    
+
     def _build_prompt(
         self,
         extraction_summary: str,
         study_id: str,
         example_config: str,
-        study_dir: Optional[Path]
+        study_dir: Optional[Path],
+        context_summary: str = ""
     ) -> str:
         """Build prompt for LLM"""
         materials_info = ""
@@ -139,55 +148,66 @@ class ConfigGenerator:
             if materials_dir.exists():
                 materials = list(materials_dir.glob("*"))
                 materials_info = f"""
-MATERIALS AVAILABLE:
+MATERIALS AVAILABLE IN {materials_dir}:
 {chr(10).join(f"  - {m.name}" for m in materials)}
 """
         
-        return f"""You are a Python code generator. Generate a complete StudyConfig class based on the extraction results.
+        return f"""You are a Python code generator for HumanStudyBench. Your task is to generate a complete `{study_id}_config.py` file that encapsulates all logic for running and evaluating a psychological study.
 
 STUDY ID: {study_id}
 
-EXTRACTION RESULTS (from paper):
+STUDY CONTEXT (metadata, specification, ground_truth):
+{context_summary}
+
+EXTRACTION RESULTS (detailed extraction from paper):
 {extraction_summary}
+
 {materials_info}
-EXAMPLE CONFIG (study_001_config.py - for reference):
+
+EXAMPLE CONFIG (for reference structure):
 ```python
 {example_config[:3000]}...
 ```
 
 TASK:
-Generate a complete Python file for {study_id}_config.py that:
+Generate a complete, production-ready Python file `{study_id}_config.py`.
 
-1. **Implements BaseStudyConfig** with all required methods:
-   - `create_trials()`: Generate trial data based on study design
-   - `aggregate_results()`: Aggregate and calculate statistics from raw results
-   - `get_prompt_builder()`: Return a PromptBuilder subclass (if needed)
-   - `custom_scoring()`: Optional custom scoring logic
+CORE REQUIREMENTS:
+1. **Inherit from `BaseStudyConfig`**:
+   - Import it from `src.core.study_config` (or use relative import if preferred).
+   - Implement `create_trials(self, n_trials=None)`.
+   - Implement `aggregate_results(self, raw_results)`.
+   - Implement `custom_scoring(self, results, ground_truth)`.
 
-2. **Based on extraction results**:
-   - Use the sub-studies/scenarios from extraction
-   - Implement trial generation matching the study design
-   - Implement result aggregation matching the statistical methods
-   - Extract data correctly from participant responses
+2. **Unified Interaction Interface**:
+   - The config must act as the primary interface between the simulator and the study data.
+   - It should know exactly which Research Questions (RQs) and sub-studies are being tested.
 
-3. **Follow the example structure**:
-   - Similar to study_001_config.py
-   - Include PromptBuilder subclass if needed
-   - Include helper methods for parsing responses
-   - Include statistical calculations
+3. **Sub-studies & Statistical Tests**:
+   - Identify the specific Research Questions (RQs) or sub-studies from the extraction results.
+   - Each sub-study should have corresponding statistical tests (e.g., t-test, ANOVA) that match what was reported in the paper.
+   - Use `scipy.stats` or the provided `MetricsCalculator` for calculations.
 
-4. **Key requirements**:
-   - Must be complete, runnable Python code
-   - Must correctly extract data from responses
-   - Must calculate statistics matching the paper's methods
-   - Must handle all sub-studies/scenarios from extraction
+4. **Trials & Items**:
+   - `create_trials` must generate specific trials based on the items found in the `materials/` directory (e.g., from `_items.json` or `_instructions.txt`).
+   - Each trial should include all necessary fields for the LLM participant to respond (e.g., question text, anchors, options).
 
-OUTPUT:
-Provide ONLY the complete Python code, starting with the docstring and imports.
-Do not include markdown code blocks or explanations outside the code.
-The code should be production-ready and complete.
+5. **Prompt Building**:
+   - If the study requires custom prompt logic (e.g., specific system messages for different conditions), implement a `PromptBuilder` subclass inside this file.
+   - Override `get_prompt_builder(self)` in your config class to return this custom builder.
 
-Generate the complete {study_id}_config.py file:
+6. **Results Aggregation & Evaluation**:
+   - `aggregate_results` must parse the raw LLM responses, extract numerical or categorical data, and perform the EXACT statistical tests mentioned in the ground truth.
+   - `custom_scoring` should compare the calculated statistics against the `ground_truth` and return a dictionary of scores (0.0 to 1.0) for each test.
+
+7. **Conciseness & Encapsulation**:
+   - Follow the "Occam's Razor" principle: keep it simple but complete.
+   - All study-specific logic must be contained within this file.
+
+OUTPUT FORMAT:
+Provide ONLY the complete Python code. No markdown code blocks, no explanations. The file must start with imports and end with the class definition and registration.
+
+Generate the complete `{study_id}_config.py` now:
 """
     
     def _extract_code_from_response(self, response: str) -> str:

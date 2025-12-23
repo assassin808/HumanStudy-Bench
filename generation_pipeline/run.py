@@ -61,8 +61,8 @@ def main():
         "--stage",
         type=int,
         required=True,
-        choices=[1, 2, 3],
-        help="Stage to run (1=Filter, 2=Extraction, 3=Generate Study Files)"
+        choices=[1, 2, 3, 4],
+        help="Stage to run (1=Filter, 2=Extraction, 3=JSON/Materials, 4=Config/Agent)"
     )
     parser.add_argument(
         "--refine",
@@ -141,7 +141,7 @@ def main():
                 pipeline.run_stage2(stage1_json, pdf_path)
         
         elif args.stage == 3:
-            # Generate study files
+            # Generate study JSON and materials
             stage2_json = find_latest_stage_file(2, args.output_dir)
             
             # Determine study_id
@@ -152,17 +152,35 @@ def main():
                 import json
                 stage2_result = json.loads(stage2_json.read_text(encoding='utf-8'))
                 paper_id = stage2_result.get('paper_id', 'unknown')
-                # Convert paper_id to study_id format
                 study_id = f"study_{paper_id.split('_')[-1]}" if '_' in paper_id else f"study_{paper_id}"
-                # If paper_id doesn't have number, use 001 as default
                 if not any(c.isdigit() for c in study_id):
                     study_id = "study_001"
             
-            print(f"Generating study files for {study_id}")
+            print(f"Generating study JSON and materials for {study_id}")
             result = pipeline.generate_study(stage2_json, study_id)
-            print(f"\n✓ Study generated successfully!")
-            print(f"  Study directory: {result['study_dir']}")
-            print(f"  Materials: {len(result.get('materials', []))} files")
+            print(f"\n✓ Stage 3 complete!")
+            print(f"  Files saved to: {result['study_dir']}")
+            
+        elif args.stage == 4:
+            # Generate StudyConfig Agent
+            stage2_json = find_latest_stage_file(2, args.output_dir)
+            
+            # Determine study_id
+            if args.study_id:
+                study_id = args.study_id
+            else:
+                # Infer from stage2 JSON
+                import json
+                stage2_result = json.loads(stage2_json.read_text(encoding='utf-8'))
+                paper_id = stage2_result.get('paper_id', 'unknown')
+                study_id = f"study_{paper_id.split('_')[-1]}" if '_' in paper_id else f"study_{paper_id}"
+                if not any(c.isdigit() for c in study_id):
+                    study_id = "study_001"
+            
+            print(f"Generating StudyConfig Agent for {study_id}")
+            config_path = pipeline.run_stage4(stage2_json, study_id)
+            print(f"\n✓ Stage 4 complete!")
+            print(f"  Agent code saved to: {config_path}")
     
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

@@ -196,29 +196,19 @@ def get_study_config(
     
     Returns:
         Study 配置实例
-    
-    Raises:
-        ValueError: 如果找不到对应的配置类
-    
-    Example:
-        >>> config = get_study_config("study_003", Path("data/studies/study_003"), spec)
-        >>> trials = config.create_trials()
-        >>> builder = config.get_prompt_builder()
     """
-    # Lazy import to avoid circular dependency
-    # 新增 study 时在这里添加 import
-    if study_id == "study_001":
-        from src.studies.study_001_config import Study001Config
-    elif study_id == "study_002":
-        from src.studies.study_002_config import Study002Config
-    elif study_id == "study_003":
-        from src.studies.study_003_config import Study003Config
-    elif study_id == "study_004":
-        from src.studies.study_004_config import Study004Config
-    elif study_id == "study_005":
-        from src.studies.study_005_config import Study005Config
-    elif study_id == "study_006":
-        from src.studies.study_006_config import Study006Config
+    # 尝试动态加载 src/studies 目录下的配置
+    import importlib
+    import pkgutil
+    import src.studies
+    
+    # 遍历 src.studies 模块下的所有子模块并导入它们
+    # 这会触发所有的 @StudyConfigRegistry.register 装饰器
+    for _, name, _ in pkgutil.iter_modules(src.studies.__path__, src.studies.__name__ + "."):
+        try:
+            importlib.import_module(name)
+        except Exception as e:
+            print(f"Warning: Could not import study config {name}: {e}")
     
     config = StudyConfigRegistry.create_config(study_id, study_path, specification)
     
