@@ -45,7 +45,7 @@ class GenerationPipeline:
         # Initialize components
         self.filter = ReplicabilityFilter(self.client)
         self.extractor = StudyDataExtractor(self.client)
-        self.config_generator = ConfigGenerator()
+        self.config_generator = ConfigGenerator(model=model, api_key=api_key)
         self.json_generator = JSONGenerator()
     
     def run_stage1(self, pdf_path: Path) -> Tuple[Path, Path, Dict[str, Any]]:
@@ -202,9 +202,22 @@ class GenerationPipeline:
         # Generate materials files
         material_files = self.json_generator.generate_materials(extraction_result, study_dir)
         
-        # Generate Config class
+        # Generate Config class (with LLM refinement)
         config_path = Path("src/studies") / f"{study_id}_config.py"
-        self.config_generator.generate(extraction_result, study_id, config_path)
+        
+        # Find PDF for context
+        pdf_path = None
+        pdf_files = list(study_dir.glob("*.pdf"))
+        if pdf_files:
+            pdf_path = pdf_files[0]
+        
+        self.config_generator.generate(
+            extraction_result,
+            study_id,
+            config_path,
+            pdf_path=pdf_path,
+            study_dir=study_dir
+        )
         
         print(f"Study generated:")
         print(f"  - {study_dir / 'metadata.json'}")

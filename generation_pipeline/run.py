@@ -18,13 +18,25 @@ from generation_pipeline.pipeline import GenerationPipeline
 from generation_pipeline.utils.review_parser import ReviewParser
 
 
-def find_pdf_in_current_dir() -> Path:
-    """Find PDF file in current directory"""
+def find_pdf_in_current_dir(study_id: str = None) -> Path:
+    """Find PDF file in current directory or study directory"""
+    # If study_id is provided, try to find PDF in study directory first
+    if study_id:
+        study_dir = Path("data/studies") / study_id
+        if study_dir.exists():
+            pdf_files = list(study_dir.glob("*.pdf"))
+            if pdf_files:
+                return pdf_files[0]
+    
+    # Fall back to current directory
     current_dir = Path.cwd()
     pdf_files = list(current_dir.glob("*.pdf"))
     
     if len(pdf_files) == 0:
-        raise FileNotFoundError("No PDF file found in current directory")
+        if study_id:
+            raise FileNotFoundError(f"No PDF file found in current directory or data/studies/{study_id}/")
+        else:
+            raise FileNotFoundError("No PDF file found in current directory")
     elif len(pdf_files) > 1:
         raise ValueError(f"Multiple PDF files found: {[f.name for f in pdf_files]}")
     
@@ -60,7 +72,7 @@ def main():
     parser.add_argument(
         "--study-id",
         type=str,
-        help="Study ID for stage 3 (e.g., study_001). If not provided, will be inferred from paper_id"
+        help="Study ID (e.g., study_001). Used to find PDF in data/studies/{study_id}/ for stage 1&2, and for generating files in stage 3"
     )
     parser.add_argument(
         "--output-dir",
@@ -98,11 +110,11 @@ def main():
                 print(f"Review status: {review_status['action']}")
                 
                 # Re-run stage1
-                pdf_path = find_pdf_in_current_dir()
+                pdf_path = find_pdf_in_current_dir(args.study_id)
                 pipeline.run_stage1(pdf_path)
             else:
                 # Run stage1
-                pdf_path = find_pdf_in_current_dir()
+                pdf_path = find_pdf_in_current_dir(args.study_id)
                 pipeline.run_stage1(pdf_path)
         
         elif args.stage == 2:
@@ -120,12 +132,12 @@ def main():
                 
                 # Re-run stage2
                 stage1_json = find_latest_stage_file(1, args.output_dir)
-                pdf_path = find_pdf_in_current_dir()
+                pdf_path = find_pdf_in_current_dir(args.study_id)
                 pipeline.run_stage2(stage1_json, pdf_path)
             else:
                 # Run stage2
                 stage1_json = find_latest_stage_file(1, args.output_dir)
-                pdf_path = find_pdf_in_current_dir()
+                pdf_path = find_pdf_in_current_dir(args.study_id)
                 pipeline.run_stage2(stage1_json, pdf_path)
         
         elif args.stage == 3:

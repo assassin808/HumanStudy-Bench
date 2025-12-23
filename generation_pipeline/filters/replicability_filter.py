@@ -50,9 +50,15 @@ class ReplicabilityFilter(BaseFilter):
         prompt = self._build_prompt(pdf_path.name, len(pdf_info))
         
         # Call LLM (file first, then text prompt)
-        response = self.client.generate_content(
-            prompt=[uploaded_file, prompt]
-        )
+        try:
+            response = self.client.generate_content(
+                prompt=[uploaded_file, prompt]
+            )
+        except Exception as e:
+            raise RuntimeError(f"Error calling LLM API: {e}. Please check your GOOGLE_API_KEY environment variable.")
+        
+        if response is None:
+            raise ValueError("LLM returned None response. Check API key and network connection.")
         
         # Parse response
         result = self._parse_response(response, pdf_path)

@@ -59,10 +59,10 @@ class StudyDataExtractor(BaseExtractor):
                 prompt=[uploaded_file, prompt]
             )
         except Exception as e:
-            raise RuntimeError(f"Error calling LLM: {e}")
+            raise RuntimeError(f"Error calling LLM API: {e}. Please check your GOOGLE_API_KEY environment variable.")
         
         if response is None:
-            raise ValueError("LLM returned None response")
+            raise ValueError("LLM returned None response. Check API key and network connection.")
         
         # Parse response
         result = self._parse_response(response, stage1_json)

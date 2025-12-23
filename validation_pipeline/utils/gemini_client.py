@@ -95,17 +95,19 @@ class GeminiClient:
         except Exception as e:
             raise RuntimeError(f"Error uploading file {file_path}: {e}")
     
-    def generate_content(
+    def _generate_content_with_model(
         self,
+        model_name: str,
         prompt: Union[str, List[Union[str, Any]]],
         system_instruction: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
     ) -> str:
         """
-        Generate content using Gemini API.
+        Internal method to generate content with a specific model.
         
         Args:
+            model_name: Model name to use
             prompt: User prompt (str) or list of content parts (can include uploaded files)
             system_instruction: Optional system instruction
             temperature: Sampling temperature (0.0-1.0)
@@ -113,6 +115,9 @@ class GeminiClient:
             
         Returns:
             Generated text response
+            
+        Raises:
+            RuntimeError: If RECITATION finish_reason is detected
         """
         try:
             if USE_NEW_API:
@@ -126,6 +131,32 @@ class GeminiClient:
                 if system_instruction is not None:
                     config_dict['system_instruction'] = system_instruction
                 
+                # Disable all safety filters
+                try:
+                    if hasattr(genai.types, 'SafetySetting'):
+                        safety_settings = [
+                            genai.types.SafetySetting(
+                                category=genai.types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                                threshold=genai.types.HarmBlockThreshold.BLOCK_NONE,
+                            ),
+                            genai.types.SafetySetting(
+                                category=genai.types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                                threshold=genai.types.HarmBlockThreshold.BLOCK_NONE,
+                            ),
+                            genai.types.SafetySetting(
+                                category=genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                                threshold=genai.types.HarmBlockThreshold.BLOCK_NONE,
+                            ),
+                            genai.types.SafetySetting(
+                                category=genai.types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                                threshold=genai.types.HarmBlockThreshold.BLOCK_NONE,
+                            ),
+                        ]
+                        config_dict['safety_settings'] = safety_settings
+                except (AttributeError, TypeError) as e:
+                    # If safety settings not available, continue without them
+                    pass
+                
                 config = genai.types.GenerateContentConfig(**config_dict) if config_dict else None
                 
                 # Prepare content
@@ -133,11 +164,46 @@ class GeminiClient:
                 
                 # Generate content
                 response = self.client.models.generate_content(
-                    model=self.model,
+                    model=model_name,
                     contents=contents,
                     config=config,
                 )
-                return response.text
+                
+                # Check for finish_reason before accessing text
+                if hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'finish_reason'):
+                        finish_reason = candidate.finish_reason
+                        if finish_reason and finish_reason.name == 'RECITATION':
+                            error_msg = f"Response has no text content. Finish reason: RECITATION"
+                            if hasattr(candidate, 'safety_ratings') and candidate.safety_ratings:
+                                safety_ratings = candidate.safety_ratings
+                                error_msg += f" Safety ratings: {safety_ratings}"
+                            else:
+                                error_msg += " Safety ratings: None"
+                            error_msg += " This may indicate the content was blocked or filtered."
+                            raise RuntimeError(error_msg)
+                
+                # Try to access text, with fallback error handling
+                try:
+                    return response.text
+                except (AttributeError, ValueError) as e:
+                    # Additional check if text access fails
+                    if hasattr(response, 'candidates') and response.candidates:
+                        candidate = response.candidates[0]
+                        finish_reason_str = "unknown"
+                        if hasattr(candidate, 'finish_reason'):
+                            finish_reason = candidate.finish_reason
+                            finish_reason_str = finish_reason.name if hasattr(finish_reason, 'name') else str(finish_reason)
+                        error_msg = f"Response has no text content. Finish reason: {finish_reason_str}"
+                        if hasattr(candidate, 'safety_ratings') and candidate.safety_ratings:
+                            safety_ratings = candidate.safety_ratings
+                            error_msg += f" Safety ratings: {safety_ratings}"
+                        else:
+                            error_msg += " Safety ratings: None"
+                        error_msg += " This may indicate the content was blocked or filtered."
+                        raise RuntimeError(error_msg)
+                    raise
             else:
                 # Old API: use GenerativeModel
                 generation_config = genai.types.GenerationConfig(
@@ -146,18 +212,143 @@ class GeminiClient:
                 if max_tokens:
                     generation_config.max_output_tokens = max_tokens
                 
+                # Disable all safety filters for old API
+                safety_settings = [
+                    {
+                        "category": genai.types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                        "threshold": genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    },
+                    {
+                        "category": genai.types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                        "threshold": genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    },
+                    {
+                        "category": genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                        "threshold": genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    },
+                    {
+                        "category": genai.types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                        "threshold": genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    },
+                ]
+                
                 model = genai.GenerativeModel(
-                    model_name=self.model,
+                    model_name=model_name,
                     system_instruction=system_instruction,
+                    safety_settings=safety_settings,
                 )
                 
                 response = model.generate_content(
                     prompt,
                     generation_config=generation_config,
                 )
-                return response.text
+                
+                # Check for finish_reason before accessing text (old API)
+                if hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'finish_reason'):
+                        finish_reason = candidate.finish_reason
+                        # Handle both enum and string finish_reasons
+                        finish_reason_str = finish_reason.name if hasattr(finish_reason, 'name') else str(finish_reason)
+                        if finish_reason_str == 'RECITATION' or (isinstance(finish_reason, int) and finish_reason == 4):
+                            error_msg = f"Response has no text content. Finish reason: RECITATION"
+                            if hasattr(candidate, 'safety_ratings') and candidate.safety_ratings:
+                                safety_ratings = candidate.safety_ratings
+                                error_msg += f" Safety ratings: {safety_ratings}"
+                            else:
+                                error_msg += " Safety ratings: None"
+                            error_msg += " This may indicate the content was blocked or filtered."
+                            raise RuntimeError(error_msg)
+                
+                # Try to access text, with fallback error handling
+                try:
+                    return response.text
+                except (AttributeError, ValueError) as e:
+                    # Additional check if text access fails
+                    if hasattr(response, 'candidates') and response.candidates:
+                        candidate = response.candidates[0]
+                        finish_reason_str = "unknown"
+                        if hasattr(candidate, 'finish_reason'):
+                            finish_reason = candidate.finish_reason
+                            finish_reason_str = finish_reason.name if hasattr(finish_reason, 'name') else str(finish_reason)
+                        error_msg = f"Response has no text content. Finish reason: {finish_reason_str}"
+                        if hasattr(candidate, 'safety_ratings') and candidate.safety_ratings:
+                            safety_ratings = candidate.safety_ratings
+                            error_msg += f" Safety ratings: {safety_ratings}"
+                        else:
+                            error_msg += " Safety ratings: None"
+                        error_msg += " This may indicate the content was blocked or filtered."
+                        raise RuntimeError(error_msg)
+                    raise
         except Exception as e:
             raise RuntimeError(f"Error generating content with Gemini API: {e}")
+    
+    def generate_content(
+        self,
+        prompt: Union[str, List[Union[str, Any]]],
+        system_instruction: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        """
+        Generate content using Gemini API with automatic fallback on RECITATION errors.
+        
+        Args:
+            prompt: User prompt (str) or list of content parts (can include uploaded files)
+            system_instruction: Optional system instruction
+            temperature: Sampling temperature (0.0-1.0)
+            max_tokens: Maximum tokens to generate
+            
+        Returns:
+            Generated text response
+        """
+        # Fallback models to try if RECITATION error occurs
+        fallback_models = [
+            self.model,  # First try: configured model
+            "models/gemini-flash-latest",  # Second try: flash latest
+            "models/gemini-flash-latest",  # Third try: flash latest again
+        ]
+        
+        last_error = None
+        for attempt, model_name in enumerate(fallback_models, 1):
+            try:
+                return self._generate_content_with_model(
+                    model_name=model_name,
+                    prompt=prompt,
+                    system_instruction=system_instruction,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+            except RuntimeError as e:
+                error_msg = str(e)
+                # Check if this is a RECITATION error (check multiple patterns)
+                is_recitation_error = (
+                    "RECITATION" in error_msg.upper() or 
+                    "Finish reason: RECITATION" in error_msg or
+                    "finish_reason" in error_msg.lower() and "RECITATION" in error_msg.upper()
+                )
+                
+                if is_recitation_error:
+                    last_error = e
+                    if attempt < len(fallback_models):
+                        # Try next fallback model
+                        print(f"⚠️  RECITATION error with {model_name}, trying fallback model {fallback_models[attempt]}...")
+                        continue
+                    else:
+                        # All models failed with RECITATION
+                        raise RuntimeError(
+                            f"All fallback models failed with RECITATION error. "
+                            f"Tried: {', '.join(fallback_models)}. "
+                            f"Last error: {error_msg}"
+                        )
+                else:
+                    # Non-RECITATION error, re-raise immediately
+                    raise
+        
+        # If we get here, all attempts failed
+        if last_error:
+            raise last_error
+        raise RuntimeError("Failed to generate content with all fallback models")
     
     def generate_structured(
         self,
