@@ -82,117 +82,73 @@ STAGE 1 FILTER RESULTS:
 {experiments_info}
 
 Your task is to extract COMPLETE information for each REPLICABLE experiment/study identified in Stage 1.
+The goal is to enable a simulation agent to REPLICATE the study.
 
 For EACH replicable study/experiment, extract:
 
 1. STUDY STRUCTURE:
-   - Study ID (e.g., "Study 1", "Study 2")
+   - Study ID (e.g., "Study 1", "Experiment 2")
    - Study name/description
    - Core psychological phenomenon
-   - List ALL sub-studies/scenarios/conditions within this study (e.g., Study 1 has 4 scenarios: supermarket, term_paper, traffic_ticket, space_program)
+   - List ALL sub-studies/scenarios/conditions within this study.
+   - NOTE: A "sub-study" or "condition" is the level at which data is collected (e.g., "High Anchor Group", "Low Anchor Group", or "Estimation Task").
 
-2. MATERIALS/QUESTIONS FOR EACH SUB-STUDY:
-   For each sub-study/scenario:
-   - Sub-study ID (e.g., "study_1_supermarket", "study_2_items")
-   - Type: "scenario" (story/text), "questionnaire" (items/questions), or "task" (specific task)
-   - Content: Extract the actual text/content of scenarios, questions, or items
-   - For questionnaires: List all items/questions with their options
+2. MATERIALS/QUESTIONS (CRITICAL):
+   For each sub-study/scenario/task:
+   - Sub-study ID (e.g., "experiment_1_estimation_tasks")
+   - Type: "scenario" (story), "questionnaire" (items), or "task" (procedure)
+   - Content: The FULL TEXT of the instructions given to participants.
+   - Items: If it's a questionnaire or estimation task, LIST ALL SPECIFIC QUESTIONS/ITEMS.
+     - Example: If there are 15 estimation questions, list ALL 15 with their specific content (e.g., "Length of Mississippi River").
+     - If there are experimental conditions (e.g., Low Anchor vs High Anchor), list the specific parameters for EACH item.
 
-3. PARTICIPANT INFORMATION (FOR EACH SUB-STUDY):
-   - N for each sub-study/scenario
+3. PARTICIPANT INFORMATION:
+   - N for each sub-study/condition
    - Population description
    - Recruitment source
-   - Demographics (age range, gender distribution, etc.)
-   - Note: If different sub-studies have different N, list them separately
+   - Demographics (age, gender, etc.)
 
-4. HUMAN DATA (ORIGINAL RESULTS):
-   For each sub-study/scenario, extract:
-   - All reported means, percentages, proportions
-   - Standard deviations (if reported)
-   - Sample sizes
-   - Any calculated metrics (e.g., FCE = False Consensus Effect magnitude)
-   - Organize by condition/group (e.g., "signers" vs "refusers", "choosers" vs "non-choosers")
-
-5. STATISTICAL TESTS:
-   For each statistical test reported:
-   - Test type (t-test, ANOVA, chi-square, etc.)
-   - Test statistic value
-   - p-value
-   - Degrees of freedom
-   - Effect size (if reported)
-   - Which sub-study/scenario it applies to
+4. HUMAN DATA (GROUND TRUTH):
+   For each sub-study/scenario/item:
+   - Report the actual results found in the paper.
+   - If available, report ITEM-LEVEL results (e.g., the mean estimate for "Mississippi River" in Low vs High anchor).
+   - Report statistical test results (t-test, F-test, etc.) with values (t, p, df).
 
 IMPORTANT:
-- Extract ALL sub-studies/scenarios mentioned in the paper
-- Extract the ACTUAL TEXT of scenarios/questions (not just descriptions)
-- Extract ALL human data values (means, percentages, etc.) for each sub-study
-- Organize data by sub-study, not just by overall study
-- Include page numbers/table references for all data
+- Extract ALL sub-studies/scenarios mentioned in the paper.
+- Extract the ACTUAL TEXT of questions/items (not just "Participants answered 15 questions").
+- Extract ITEM-LEVEL data if available (this is crucial for ground truth).
+- Organize data by sub-study.
 
 Provide your analysis in JSON format:
 {{
     "studies": [
         {{
-            "study_id": "Study 1",
-            "study_name": "Hypothetical Scenarios",
-            "phenomenon": "False Consensus Effect",
+            "study_id": "Experiment 1",
+            "study_name": "Anchoring Estimation",
+            "phenomenon": "Anchoring Effect",
             "sub_studies": [
                 {{
-                    "sub_study_id": "study_1_supermarket",
-                    "type": "scenario",
-                    "content": "Full text of the scenario/story...",
-                    "participants": {{
-                        "n": 80,
-                        "population": "Stanford University Undergraduates",
-                        "recruitment_source": "...",
-                        "demographics": {{...}}
-                    }},
-                    "human_data": {{
-                        "sign_estimate_by_signers": 75.6,
-                        "sign_estimate_by_refusers": 57.3,
-                        "fce": 18.3
-                    }},
-                    "statistical_tests": [
-                        {{
-                            "test_type": "t_test",
-                            "statistic": 2.5,
-                            "p_value": 0.01,
-                            "df": 78,
-                            "paper_location": "Page X, Table Y"
-                        }}
-                    ]
-                }}
-            ],
-            "overall_participants": {{
-                "total_n": 320,
-                "population": "Stanford University Undergraduates",
-                "recruitment_source": "...",
-                "demographics": {{...}}
-            }}
-        }},
-        {{
-            "study_id": "Study 2",
-            "study_name": "Questionnaire",
-            "phenomenon": "False Consensus Effect",
-            "sub_studies": [
-                {{
-                    "sub_study_id": "study_2_items",
-                    "type": "questionnaire",
-                    "content": "List of all 35 items with options",
+                    "sub_study_id": "experiment_1_estimation_tasks",
+                    "type": "task",
+                    "content": "Participants were asked...",
                     "items": [
                         {{
-                            "id": "shy",
-                            "category": "Shy/Outgoing",
-                            "option_a": "...",
-                            "option_b": "..."
+                            "id": "1",
+                            "question": "Length of Mississippi River",
+                            "low_anchor": 70,
+                            "high_anchor": 2000
                         }}
                     ],
-                    "participants": {{
-                        "n": 80,
-                        ...
-                    }},
+                    "participants": {{ "n": 100, ... }},
                     "human_data": {{
-                        "overall_fce": 10.5
+                        "item_level_results": [
+                            {{
+                                "question": "Length of Mississippi River",
+                                "low_anchor_mean": 500,
+                                "high_anchor_mean": 1500
+                            }}
+                        ]
                     }}
                 }}
             ]

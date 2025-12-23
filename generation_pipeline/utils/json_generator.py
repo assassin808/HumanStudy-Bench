@@ -4,21 +4,45 @@ and materials files
 """
 
 import json
+import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from validation_pipeline.utils.gemini_client import GeminiClient
 
 
 class JSONGenerator:
     """Generate JSON files compatible with existing study format"""
     
-    @staticmethod
-    def generate_metadata(extraction_result: Dict[str, Any], study_id: str) -> Dict[str, Any]:
+    def __init__(
+        self,
+        model: str = "models/gemini-3-flash-preview",
+        api_key: Optional[str] = None
+    ):
         """
-        Generate metadata.json compatible with study001-004 format.
+        Initialize JSON generator.
+        
+        Args:
+            model: Gemini model to use for LLM-based materials generation
+            api_key: Optional API key
+        """
+        self.client = GeminiClient(model=model, api_key=api_key)
+    
+    def generate_metadata(
+        self,
+        extraction_result: Dict[str, Any],
+        study_id: str,
+        pdf_path: Optional[Path] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate metadata.json using LLM to infer domain/subdomain and structure.
         
         Args:
             extraction_result: Results from stage2 extraction
             study_id: Study ID (e.g., "study_005")
+            pdf_path: Optional path to PDF file for context
             
         Returns:
             Dictionary matching metadata.json format
@@ -36,30 +60,68 @@ class JSONGenerator:
                 if sub_id:
                     scenarios.append(sub_id)
         
-        # Extract domain/subdomain from paper (try to infer from phenomenon)
-        study = studies[0]
-        phenomenon = study.get('phenomenon', '').lower()
+        # Use LLM to infer domain/subdomain and keywords
+        extraction_summary = json.dumps(extraction_result, indent=2, ensure_ascii=False)
         
-        domain = None
-        subdomain = None
-        if 'consensus' in phenomenon or 'social' in phenomenon:
-            domain = "social_psychology"
-            subdomain = "social_cognition"
-        elif 'anchoring' in phenomenon or 'framing' in phenomenon:
-            domain = "cognitive_psychology"
-            subdomain = "judgment_and_decision_making"
-        elif 'representativeness' in phenomenon:
-            domain = "cognitive_psychology"
-            subdomain = "judgment_and_decision_making"
+        prompt = f"""You are a metadata generator. Based on the extraction results, generate the domain, subdomain, and keywords for this study.
+
+EXTRACTION RESULTS:
+{extraction_summary[:10000]}...
+
+TASK:
+Generate a JSON object with:
+- domain: The psychological domain (e.g., "social_psychology", "cognitive_psychology", "developmental_psychology")
+- subdomain: The specific subdomain (e.g., "social_cognition", "judgment_and_decision_making", "memory")
+- keywords: List of relevant keywords (3-5 keywords)
+
+OUTPUT FORMAT (JSON only):
+{{
+    "domain": "domain_name",
+    "subdomain": "subdomain_name",
+    "keywords": ["keyword1", "keyword2", "keyword3"]
+}}
+
+Generate the JSON:
+"""
         
-        # Extract keywords from phenomenon
-        keywords = [phenomenon.replace(' ', '_')] if phenomenon else []
+        try:
+            if pdf_path and pdf_path.exists():
+                uploaded_file = self.client.upload_file(pdf_path)
+                response = self.client.generate_content(
+                    prompt=[uploaded_file, prompt],
+                    temperature=0.3
+                )
+            else:
+                response = self.client.generate_content(prompt=prompt, temperature=0.3)
+            
+            if response:
+                # Parse LLM response
+                llm_metadata = self._parse_json_response(response)
+                domain = llm_metadata.get('domain')
+                subdomain = llm_metadata.get('subdomain')
+                keywords = llm_metadata.get('keywords', [])
+            else:
+                domain = None
+                subdomain = None
+                keywords = []
+        except Exception as e:
+            print(f"Warning: Error generating metadata with LLM: {e}")
+            domain = None
+            subdomain = None
+            keywords = []
+        
+        # Extract keywords from phenomenon if LLM didn't provide
+        if not keywords:
+            study = studies[0]
+            phenomenon = study.get('phenomenon', '')
+            if phenomenon:
+                keywords = [phenomenon.replace(' ', '_')]
         
         return {
             "id": study_id,
             "title": extraction_result.get('paper_title', ''),
             "authors": extraction_result.get('paper_authors', []),
-            "year": extraction_result.get('paper_year'),  # Should be extracted in stage2
+            "year": extraction_result.get('paper_year'),
             "domain": domain,
             "subdomain": subdomain,
             "keywords": keywords,
@@ -67,6 +129,26 @@ class JSONGenerator:
             "description": extraction_result.get('paper_abstract', '')[:200] + "...",
             "scenarios": scenarios
         }
+    
+    def _parse_json_response(self, response: str) -> Dict[str, Any]:
+        """Parse JSON from LLM response"""
+        response_text = response.strip()
+        
+        # Remove markdown code blocks if present
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+        
+        try:
+            return json.loads(response_text)
+        except json.JSONDecodeError:
+            # Try to extract JSON object
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+            return {}
     
     @staticmethod
     def generate_specification(extraction_result: Dict[str, Any], study_id: str) -> Dict[str, Any]:
@@ -118,6 +200,16 @@ class JSONGenerator:
                 
                 if sub_participants:
                     sub_n = sub_participants.get('n', 0)
+                    # Handle string 'n' (e.g. "20", "approx 20")
+                    if isinstance(sub_n, str):
+                        import re
+                        # Extract first number found
+                        match = re.search(r'\d+', sub_n)
+                        if match:
+                            sub_n = int(match.group())
+                        else:
+                            sub_n = 0
+                            
                     if sub_n:
                         total_n += sub_n
                         sub_study_participants[sub_id] = {
@@ -273,10 +365,179 @@ class JSONGenerator:
             "original_results": original_results
         }
     
-    @staticmethod
-    def generate_materials(extraction_result: Dict[str, Any], study_dir: Path) -> List[Path]:
+    def generate_materials(
+        self,
+        extraction_result: Dict[str, Any],
+        study_dir: Path,
+        pdf_path: Optional[Path] = None
+    ) -> List[Path]:
         """
-        Generate materials files for each sub-study.
+        Generate materials files using LLM-based dynamic function generation.
+        
+        This method uses LLM to generate a study-specific generate_materials function
+        that knows how to extract complete materials from the extraction_result.
+        
+        Args:
+            extraction_result: Results from stage2 extraction
+            study_dir: Study directory path
+            pdf_path: Optional path to PDF file for context
+            
+        Returns:
+            List of generated material file paths
+        """
+        # Use LLM to generate a study-specific materials generation function
+        materials_generator_code = self._generate_materials_function_with_llm(
+            extraction_result,
+            pdf_path
+        )
+        
+        # Execute the generated function
+        materials_dir = study_dir / "materials"
+        materials_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create a namespace for executing the generated code
+        namespace = {
+            'json': json,
+            'Path': Path,
+            'materials_dir': materials_dir,
+            'extraction_result': extraction_result,
+            'study_dir': study_dir
+        }
+        
+        try:
+            exec(materials_generator_code, namespace)
+            # Call the generated function
+            if 'generate_materials' in namespace:
+                generated_files = namespace['generate_materials'](extraction_result, materials_dir)
+            else:
+                generated_files = namespace.get('generated_files', [])
+            
+            # Ensure all items are Path objects
+            generated_files = [Path(f) if not isinstance(f, Path) else f for f in generated_files]
+            
+            if not generated_files:
+                print(f"Warning: Generated function returned no files, falling back to basic generation")
+                generated_files = self._generate_materials_basic(extraction_result, study_dir)
+        except Exception as e:
+            print(f"Warning: Error executing generated materials function: {e}")
+            import traceback
+            traceback.print_exc()
+            # Fallback to basic generation
+            generated_files = self._generate_materials_basic(extraction_result, study_dir)
+        
+        return generated_files
+    
+    def _generate_materials_function_with_llm(
+        self,
+        extraction_result: Dict[str, Any],
+        pdf_path: Optional[Path]
+    ) -> str:
+        """
+        Use LLM to generate a study-specific generate_materials function.
+        
+        Args:
+            extraction_result: Results from stage2 extraction
+            pdf_path: Optional path to PDF file
+            
+        Returns:
+            Python code string for the generated function
+        """
+        extraction_summary = json.dumps(extraction_result, indent=2, ensure_ascii=False)
+        
+        # Build prompt
+        prompt = f"""You are a Python code generator. Generate a complete `generate_materials` function that extracts materials for a SIMULATION AGENT.
+
+EXTRACTION RESULTS:
+{extraction_summary[:50000]}...
+
+TASK:
+Generate a Python function that creates the necessary files for a simulator to run this study.
+1. Analyze the structure of the study (is it a survey? a scenario choice? an estimation task?).
+2. Generate `items.json` files for structured data (lists of questions, stimuli, etc.).
+3. Generate `instructions.txt` files for the prompt/instructions given to the agent.
+4. Return a list of generated file paths.
+
+REQUIREMENTS:
+- IF the study involves iterating over items (e.g. 15 estimation questions), generate a SINGLE `[sub_study]_items.json` file containing the list.
+  - DO NOT generate 15 separate text files unless the format explicitly requires it. JSON is better for simulators.
+- IF the study is a simple scenario (read and react), generate `[sub_study]_scenario.txt`.
+- ALWAYS include the specific questions/text in the files.
+- Organize files into `materials_dir`.
+- Ensure file names are consistent with the `sub_study_id`s in the extraction result.
+
+EXAMPLE STRUCTURE:
+```python
+def generate_materials(extraction_result, materials_dir):
+    from pathlib import Path
+    import json
+    
+    generated_files = []
+    studies = extraction_result.get('studies', [])
+    
+    for study in studies:
+        for sub in study.get('sub_studies', []):
+            sub_id = sub.get('sub_study_id', 'unknown')
+            
+            # 1. Generate Instructions/Procedure
+            content = sub.get('content', '')
+            if content:
+                path = materials_dir / f"{{sub_id}}_instructions.txt"
+                path.write_text(content, encoding='utf-8')
+                generated_files.append(path)
+            
+            # 2. Generate Items (if any)
+            items = sub.get('items', [])
+            if items:
+                path = materials_dir / f"{{sub_id}}_items.json"
+                path.write_text(json.dumps(items, indent=2), encoding='utf-8')
+                generated_files.append(path)
+                
+    return generated_files
+```
+
+OUTPUT:
+Provide ONLY the complete Python function code. The function should be production-ready.
+"""
+        
+        # Call LLM (with PDF if available)
+        try:
+            if pdf_path and pdf_path.exists():
+                uploaded_file = self.client.upload_file(pdf_path)
+                response = self.client.generate_content(
+                    prompt=[uploaded_file, prompt]
+                )
+            else:
+                response = self.client.generate_content(prompt=prompt)
+        except Exception as e:
+            raise RuntimeError(f"Error calling LLM API: {e}. Please check your GOOGLE_API_KEY environment variable.")
+        
+        if response is None:
+            raise ValueError("LLM returned None response. Check API key and network connection.")
+        
+        # Extract code from response
+        code = self._extract_code_from_response(response)
+        
+        return code
+    
+    def _extract_code_from_response(self, response: str) -> str:
+        """Extract Python code from LLM response"""
+        response_text = response.strip()
+        
+        # Remove markdown code blocks if present
+        if '```python' in response_text:
+            response_text = response_text.split('```python')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+        
+        return response_text
+    
+    def _generate_materials_basic(
+        self,
+        extraction_result: Dict[str, Any],
+        study_dir: Path
+    ) -> List[Path]:
+        """
+        Basic fallback materials generation (original implementation).
         
         Args:
             extraction_result: Results from stage2 extraction

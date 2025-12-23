@@ -46,7 +46,7 @@ class GenerationPipeline:
         self.filter = ReplicabilityFilter(self.client)
         self.extractor = StudyDataExtractor(self.client)
         self.config_generator = ConfigGenerator(model=model, api_key=api_key)
-        self.json_generator = JSONGenerator()
+        self.json_generator = JSONGenerator(model=model, api_key=api_key)
     
     def run_stage1(self, pdf_path: Path) -> Tuple[Path, Path, Dict[str, Any]]:
         """
@@ -183,8 +183,14 @@ class GenerationPipeline:
         study_dir = Path(study_dir)
         study_dir.mkdir(parents=True, exist_ok=True)
         
+        # Find PDF for context (used for metadata and materials generation)
+        pdf_path = None
+        pdf_files = list(study_dir.glob("*.pdf"))
+        if pdf_files:
+            pdf_path = pdf_files[0]
+        
         # Generate JSON files
-        metadata = self.json_generator.generate_metadata(extraction_result, study_id)
+        metadata = self.json_generator.generate_metadata(extraction_result, study_id, pdf_path=pdf_path)
         specification = self.json_generator.generate_specification(extraction_result, study_id)
         ground_truth = self.json_generator.generate_ground_truth(extraction_result, study_id)
         
@@ -199,40 +205,29 @@ class GenerationPipeline:
             json.dumps(ground_truth, indent=2, ensure_ascii=False), encoding='utf-8'
         )
         
-        # Generate materials files
-        material_files = self.json_generator.generate_materials(extraction_result, study_dir)
-        
-        # Generate Config class (with LLM refinement)
-        config_path = Path("src/studies") / f"{study_id}_config.py"
-        
-        # Find PDF for context
-        pdf_path = None
-        pdf_files = list(study_dir.glob("*.pdf"))
-        if pdf_files:
-            pdf_path = pdf_files[0]
-        
-        self.config_generator.generate(
+        # Generate materials files using LLM-based dynamic generation
+        print(f"\nGenerating materials files using LLM...")
+        material_files = self.json_generator.generate_materials(
             extraction_result,
-            study_id,
-            config_path,
-            pdf_path=pdf_path,
-            study_dir=study_dir
+            study_dir,
+            pdf_path=pdf_path
         )
         
-        print(f"Study generated:")
+        print(f"\nStudy generated:")
         print(f"  - {study_dir / 'metadata.json'}")
         print(f"  - {study_dir / 'specification.json'}")
         print(f"  - {study_dir / 'ground_truth.json'}")
-        print(f"  - {config_path}")
         print(f"  - {len(material_files)} material files")
-        print("\nNOTE: Config class needs manual refinement. Update get_study_config() factory function.")
+        print(f"\nNext steps:")
+        print(f"  1. Review generated materials files")
+        print(f"  2. Generate config when ready to run experiments: python generation_pipeline/generate_config.py --study-id {study_id}")
+        print(f"  3. Run validation: python validation_pipeline/run_validation.py {study_id}")
         
         return {
             "study_dir": study_dir,
             "metadata": study_dir / "metadata.json",
             "specification": study_dir / "specification.json",
             "ground_truth": study_dir / "ground_truth.json",
-            "config": config_path,
             "materials": material_files
         }
 
