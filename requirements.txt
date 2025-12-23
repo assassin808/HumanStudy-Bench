@@ -25,6 +25,10 @@ black>=22.0.0
 flake8>=4.0.0
 mypy>=0.950
 
+# GUI
+streamlit>=1.20.0
+watchdog>=2.1.0
+
 # Optional: For LLM agents
 openai>=1.0.0  # Required for OpenRouter and OpenAI API
 # anthropic>=0.3.0
