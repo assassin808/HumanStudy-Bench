@@ -1,0 +1,57 @@
+[
+  {
+    "category": "Personal traits and views",
+    "item_1": "Shy vs Not shy",
+    "item_2": "Optimistic vs Not",
+    "item_3": "Competitive vs Not",
+    "item_4": "Politically left of center vs Not",
+    "item_5": "Supporter of women\u2019s lib vs Not"
+  },
+  {
+    "category": "Personal preferences",
+    "item_6": "Brown vs White bread",
+    "item_7": "To be alone vs With others",
+    "item_8": "Italian vs French movies",
+    "item_9": "City vs Country life",
+    "item_10": "Basketball vs Football"
+  },
+  {
+    "category": "Personal characteristics",
+    "item_11": "Male vs Female",
+    "item_12": "Brown vs Blue eyes",
+    "item_13": "Subscribe vs Don\u2019t to magazines",
+    "item_14": "First-born vs Laterborn child",
+    "item_15": "Hometown more vs Less than 200,000"
+  },
+  {
+    "category": "Personal problems",
+    "item_16": "Think about dying? Yes vs No",
+    "item_17": "Hard to make friends? Yes vs No",
+    "item_18": "Difficulty controlling temper? Yes vs No",
+    "item_19": "Frequently depressed? Yes vs No",
+    "item_20": "Emotional needs satisfied? Yes vs No"
+  },
+  {
+    "category": "Personal activities",
+    "item_21": "Watch TV 30 hours/month? Yes vs No",
+    "item_22": "Play tennis once a week? Yes vs No",
+    "item_23": "Attend religious service once a month? Yes vs No",
+    "item_24": "Donate blood once a year? Yes vs No",
+    "item_25": "Long distance phone call once a week? Yes vs No"
+  },
+  {
+    "category": "Personal expectations",
+    "item_26": "Marriage by age 30? Yes vs No",
+    "item_27": "Better financial status than parent? Yes vs No",
+    "item_28": "Live outside U.S. for one year in next 20? Yes vs No",
+    "item_29": "Great satisfaction from job or career? Yes vs No",
+    "item_30": "Death before 70th birthday? Yes vs No"
+  },
+  {
+    "category": "Political expectations",
+    "item_31": "Woman in Supreme Court within decade? Yes vs No",
+    "item_32": "Poverty problem reduced in next 20 years? Yes vs No",
+    "item_33": "Nuclear weapon used in warfare in next 20 years? Yes vs No",
+    "item_34": "Discovery of extraterrestrial life by year 2000? Yes vs No"
+  }
+]

@@ -1,0 +1,7 @@
+You will be presented with a series of personal description items. Each item contains two mutually exclusive categories.
+
+FOR EACH ITEM:
+1. SELF-CATEGORIZATION: Categorize yourself into one of the two categories.
+2. PEER ESTIMATION: Estimate the percentage of 'college students in general' (0% to 100%) who fit into the FIRST category listed for that item.
+
+Please provide your responses for all items provided in the accompanying list.

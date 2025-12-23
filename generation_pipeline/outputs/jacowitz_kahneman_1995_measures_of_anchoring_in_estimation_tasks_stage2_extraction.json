@@ -1,0 +1,363 @@
+{
+  "studies": [
+    {
+      "study_id": "Study 1",
+      "study_name": "Determinants of Representativeness",
+      "phenomenon": "Representativeness Heuristic",
+      "sub_studies": [
+        {
+          "sub_study_id": "birth_order_likelihood",
+          "type": "questionnaire",
+          "content": "Participants were presented with information about birth sequences and asked to estimate the frequency of a specific sequence based on a given standard.",
+          "items": [
+            {
+              "id": "birth_sequence_estimation",
+              "question": "All families of six children in a city were surveyed. In 72 families the exact order of births of boys and girls was G B G B B G. What is your estimate of the number of families surveyed in which the exact order of births was B G B B B B?",
+              "standard_sequence": "GBGBBG",
+              "target_sequence": "BGBBBB",
+              "standard_frequency": 72
+            },
+            {
+              "id": "randomness_comparison",
+              "question": "Participants were asked to compare the likelihood of two birth sequences: B B B G G G and G B B G B G.",
+              "sequence_1": "BBBGGG",
+              "sequence_2": "GBBGBG"
+            }
+          ],
+          "participants": {
+            "n": 92,
+            "population": "High school students in Israel (grades 10-12, ages 15-18)",
+            "recruitment_source": "College-preparatory high schools"
+          },
+          "human_data": {
+            "item_level_results": [
+              {
+                "item": "birth_sequence_estimation",
+                "median_estimate": 30,
+                "judgment": "75 of 92 Ss judged BGBBBB to be less likely than GBGBBG (p < .01 by sign test)."
+              },
+              {
+                "item": "randomness_comparison",
+                "judgment": "Ss viewed BBBGGG as significantly less likely than GBBGBG (p < .01)."
+              }
+            ]
+          }
+        },
+        {
+          "sub_study_id": "high_school_programs",
+          "type": "scenario",
+          "content": "Participants were asked to guess the origin of a sample based on population proportions.",
+          "items": [
+            {
+              "id": "program_guess",
+              "question": "There are two programs in a high school. Boys are a majority (65%) in program A, and a minority (45%) in program B. There is an equal number of classes in each of the two programs. You enter a class at random, and observe that 55% of the students are boys. What is your best guess—does the class belong to program A or to program B?"
+            }
+          ],
+          "participants": {
+            "n": 89,
+            "population": "High school students in Israel (grades 10-12, ages 15-18)"
+          },
+          "human_data": {
+            "results": "67 of 89 Ss guessed that the class belongs to program A (p < .01 by sign test). Note: Objectively, program B is slightly more likely."
+          }
+        },
+        {
+          "sub_study_id": "replicability_of_significance",
+          "type": "task",
+          "content": "Participants were asked to estimate the probability of a replication being significant given an initial significant result.",
+          "items": [
+            {
+              "id": "replication_probability",
+              "question": "Suppose you have run an experiment on 20 Ss, and have obtained a significant result which confirms your theory (z = 2.23, p < .05, two-tailed). You now have cause to run an additional group of 10 Ss. What do you think the probability is that the results will be significant, by a one-tailed test, separately for this group?"
+            }
+          ],
+          "participants": {
+            "n": "Not specified",
+            "population": "Participants of a meeting of the Mathematical Psychology Group and of the American Psychological Association (sophisticated psychologists)."
+          },
+          "human_data": {
+            "median_estimate": 0.85,
+            "statistical_note": "A realistic estimate is lower than .50."
+          }
+        },
+        {
+          "sub_study_id": "marble_distribution",
+          "type": "scenario",
+          "content": "Participants judged the probability of two different distributions of marbles among children.",
+          "items": [
+            {
+              "id": "marble_dist",
+              "question": "On each round of a game, 20 marbles are distributed at random among five children: Alan, Ben, Carl, Dan, and Ed. Consider the following distributions: I (Alan: 4, Ben: 4, Carl: 5, Dan: 4, Ed: 3) vs II (Alan: 4, Ben: 4, Carl: 4, Dan: 4, Ed: 4). In many rounds of the game, will there be more results of type I or of type II?",
+              "distribution_I": [
+                4,
+                4,
+                5,
+                4,
+                3
+              ],
+              "distribution_II": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            }
+          ],
+          "participants": {
+            "n": 52,
+            "population": "High school students in Israel"
+          },
+          "human_data": {
+            "results": "36 of 52 Ss viewed distribution I as more probable than distribution II (p < .01 by sign test). Note: Objectively, II is more probable."
+          }
+        }
+      ]
+    },
+    {
+      "study_id": "Study 2",
+      "study_name": "Subjective Sampling Distributions",
+      "phenomenon": "Insensitivity to Sample Size",
+      "sub_studies": [
+        {
+          "sub_study_id": "sampling_distribution_tasks",
+          "type": "task",
+          "content": "Participants produced subjective sampling distributions for three sample sizes (N = 10, 100, 1000) across three different populations. They were asked to assign percentages to categories such that they add up to 100%.",
+          "items": [
+            {
+              "id": "sex_distribution",
+              "population": "Distribution of sexes (Binomial, p = .50)",
+              "instruction": "Approximately N babies are born every day in a certain region. On what percentage of days will the number of boys among N babies be as follows: [Categories provided based on N].",
+              "sample_sizes": [
+                10,
+                100,
+                1000
+              ]
+            },
+            {
+              "id": "heartbeat_distribution",
+              "population": "Distribution of heartbeat type (Binomial, p = .80)",
+              "instruction": "Approximately N babies are born every day in a certain region. 80% of all newborns have a heartbeat of type alpha and the remaining 20% have a heartbeat of type beta. For each sample size, produce a sampling distribution for the number of babies born every day with heartbeat of type alpha.",
+              "sample_sizes": [
+                10,
+                100,
+                1000
+              ]
+            },
+            {
+              "id": "height_distribution",
+              "population": "Distribution of height",
+              "instruction": "A regional induction center records the average height of the N men who are examined every day. The average height of the male population lies between 170-175 cm. Frequency of heights decreases with distance from the mean. Produce a sampling distribution of average height in seven categories: up to 160, 160-165, 165-170, 170-175, 175-180, 180-185, more than 185.",
+              "sample_sizes": [
+                10,
+                100,
+                1000
+              ]
+            }
+          ],
+          "participants": {
+            "n_per_group": "45 to 84 (average 62)",
+            "total_groups": 9,
+            "population": "High school students in Israel (ages 15-18)"
+          },
+          "human_data": {
+            "summary_results": "Sample size had no effect whatsoever on the subjective sampling distributions. Independent groups produced indistinguishable distributions across N = 10, 100, and 1000 for all three populations (Figures 1a, 1b, 1c)."
+          }
+        },
+        {
+          "sub_study_id": "ordinal_sample_size_judgments",
+          "type": "questionnaire",
+          "content": "Participants made direct ordinal judgments about the likelihood of outcomes in small vs. large samples.",
+          "items": [
+            {
+              "id": "maternity_ward",
+              "question": "A certain town is served by two hospitals. In the larger hospital about 45 babies are born each day, and in the smaller hospital about 15 babies are born each day. About 50% of all babies are boys. For a period of 1 year, each hospital recorded the days on which (more/less) than 60% of the babies born were boys. Which hospital do you think recorded more such days?",
+              "choices": [
+                "The larger hospital",
+                "The smaller hospital",
+                "About the same (within 5% of each other)"
+              ]
+            },
+            {
+              "id": "word_length",
+              "question": "An investigator computed the average word-length in every page of a book. Another investigator took the first line in each page and computed the line’s average word-length. The average word-length in the entire book is four. The first investigator counted the number of pages that had an average word-length of 6 or (more/less) and the second investigator counted the number of lines that had an average word-length of 6 or (more/less). Which investigator do you think recorded a larger number of such units?",
+              "choices": [
+                "The page investigator",
+                "The line investigator",
+                "About the same (within 5% of each other)"
+              ]
+            },
+            {
+              "id": "median_height",
+              "question": "Two teams are collecting data. One checks three men a day, and the other checks one man a day. Average height is 5 ft 10 in. The team checking three men ranks them and counts the days on which the height of the middle man is (more/less) than 5 ft 11 in. The other team counts the days on which the man they checked was (taller/shorter) than 5 ft 11 in. Which team counted more such days?",
+              "choices": [
+                "The team checking 3",
+                "The team checking 1",
+                "About the same (within 5% of each other)"
+              ]
+            }
+          ],
+          "participants": {
+            "n": 97,
+            "population": "Stanford undergraduates with no background in probability or statistics."
+          },
+          "human_data": {
+            "item_level_results": [
+              {
+                "item": "maternity_ward",
+                "more_than_60_percent_counts": {
+                  "larger": 12,
+                  "smaller": 10,
+                  "same": 28
+                },
+                "less_than_60_percent_counts": {
+                  "larger": 9,
+                  "smaller": 11,
+                  "same": 25
+                }
+              },
+              {
+                "item": "word_length",
+                "more_than_6": {
+                  "page": 8,
+                  "line": 21,
+                  "same": 20
+                },
+                "less_than_6": {
+                  "page": 10,
+                  "line": 15,
+                  "same": 23
+                }
+              },
+              {
+                "item": "median_height",
+                "more_than_5ft11": {
+                  "team_3": 7,
+                  "team_1": 18,
+                  "same": 23
+                },
+                "less_than_5ft11": {
+                  "team_3": 14,
+                  "team_1": 17,
+                  "same": 17
+                }
+              }
+            ],
+            "summary": "The modal answer was 'same' in almost all comparisons. There was no significant preference for the correct answer in any problem."
+          }
+        }
+      ]
+    },
+    {
+      "study_id": "Study 3",
+      "study_name": "Posterior Probability",
+      "phenomenon": "Insensitivity to Population Proportion and Sample Size",
+      "sub_studies": [
+        {
+          "sub_study_id": "symmetric_binomial_posterior",
+          "type": "task",
+          "content": "Participants estimated the posterior probability that a sample was drawn from one of two symmetric populations.",
+          "items": [
+            {
+              "id": "card_deck_problem",
+              "question": "Consider two very large decks of cards, denoted A and B. In deck A, p of the cards are marked X, and (1-p) are marked O. In deck B, (1-p) of the cards are marked X, and p are marked O. One of the decks has been selected by chance, and N cards have been drawn at random from it, of which r are marked X and b are marked O. What do you think the probability is that the N cards were drawn from deck A?",
+              "conditions": [
+                {
+                  "p": "5/6",
+                  "sample": "4:2",
+                  "median_estimate": 0.7
+                },
+                {
+                  "p": "5/6",
+                  "sample": "8:4",
+                  "median_estimate": 0.7
+                },
+                {
+                  "p": "5/6",
+                  "sample": "40:20",
+                  "median_estimate": 0.7
+                },
+                {
+                  "p": "5/6",
+                  "sample": "18:14",
+                  "median_estimate": 0.6
+                },
+                {
+                  "p": "5/6",
+                  "sample": "5:1",
+                  "median_estimate": 0.83
+                },
+                {
+                  "p": "2/3",
+                  "sample": "4:2",
+                  "median_estimate": 0.68
+                },
+                {
+                  "p": "2/3",
+                  "sample": "8:4",
+                  "median_estimate": 0.7
+                },
+                {
+                  "p": "2/3",
+                  "sample": "40:20",
+                  "median_estimate": 0.7
+                },
+                {
+                  "p": "2/3",
+                  "sample": "18:14",
+                  "median_estimate": 0.58
+                },
+                {
+                  "p": "2/3",
+                  "sample": "5:1",
+                  "median_estimate": 0.85
+                }
+              ]
+            }
+          ],
+          "participants": {
+            "n_per_group": "37 to 79 (average 56)",
+            "total_groups": 10,
+            "population": "High school students in Israel"
+          },
+          "human_data": {
+            "summary_results": "Population proportions (p) had no effect on subjective posterior estimates. Estimates depended on sample ratio (r:b) rather than sample difference (r-b). Median posterior estimates were very close to the stated sample proportion."
+          }
+        },
+        {
+          "sub_study_id": "height_posterior_odds",
+          "type": "scenario",
+          "content": "Participants estimated odds for population identification based on height samples.",
+          "items": [
+            {
+              "id": "height_odds",
+              "question": "The average heights of adult males and females in the US are, respectively, 5 ft 10 in. and 5 ft 4 in. Both distributions are approximately normal with SD = 2.5 in. An investigator selected one population by chance and drew a random sample. What are the odds that he selected the male population if: (i) the sample consists of a single person whose height is 5 ft 10 in.? (ii) the sample consists of 6 persons whose average height is 5 ft 8 in.?"
+            }
+          ],
+          "participants": {
+            "n": 115,
+            "population": "University of Michigan students who had at least one course in statistics."
+          },
+          "human_data": {
+            "median_subjective_odds": {
+              "case_i": 8.0,
+              "case_ii": 2.5
+            },
+            "correct_odds": {
+              "case_i": 16.0,
+              "case_ii": 29.0
+            },
+            "judgment": "A significant majority (86 of 115) assigned a higher value to the single observation (case i) than the sample of 6 (case ii), violating the correct ordering of likelihoods."
+          }
+        }
+      ]
+    }
+  ],
+  "paper_id": "jacowitz_kahneman_1995_measures_of_anchoring_in_estimation_tasks",
+  "paper_title": "Measures of Anchoring in Estimation Tasks",
+  "paper_authors": [
+    "Karen E. Jacowitz",
+    "Daniel Kahneman"
+  ],
+  "paper_abstract": "The authors describe a method for the quantitative study of anchoring effects in estimation tasks. A calibration group provides estimates of a set of uncertain quantities. Subjects in the anchored condition first judge whether a specified number (the anchor) is higher or lower than the true value before estimating each quantity. The anchors are set at predetermined percentiles of the distribution of estimates in the calibration group (15th and 85th percentiles in this study). This procedure permits the transformation of anchored estimates into percentiles in the calibration group, allows pooling of results across problems, and provides a natural measure of the size of the effect. The authors illustrate the method by a demonstration that the initial judgment of the anchor is susceptible to an anchoring-like bias and by an analysis of the relation between anchoring and subjective confidence."
+}

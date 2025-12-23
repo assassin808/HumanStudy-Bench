@@ -1,0 +1,330 @@
+{
+  "studies": [
+    {
+      "study_id": "Study 1",
+      "study_name": "Hypothetical Choice Scenarios",
+      "phenomenon": "False Consensus Effect",
+      "sub_studies": [
+        {
+          "sub_study_id": "study_1_supermarket",
+          "type": "scenario",
+          "content": "As you are leaving your neighborhood supermarket a man in a business suit asks you whether you like shopping in that store. You reply quite honestly that you do like shopping there and indicate that in addition to being close to your home the supermarket seems to have very good meats and produce at reasonably low prices. The man then reveals that a videotape crew has filmed your comments and asks you to sign a release allowing them to use the unedited film for a TV commercial that the supermarket chain is preparing.",
+          "participants": {
+            "n": 80,
+            "population": "Stanford University Undergraduates",
+            "recruitment_source": "Introductory psychology class",
+            "demographics": "Not specified beyond university affiliation"
+          },
+          "human_data": {
+            "own_choice_distribution": {
+              "sign_release": "66%",
+              "not_sign_release": "34%"
+            },
+            "consensus_estimates_for_signing": {
+              "by_signers": 75.6,
+              "by_refusers": 57.3
+            },
+            "trait_ratings_difference_score": {
+              "by_signers": -29.1,
+              "by_refusers": 24.7
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "ANOVA (F-test) for consensus",
+              "statistic": 17.7,
+              "p_value": "< 0.05",
+              "paper_location": "Page 283, Table 1"
+            },
+            {
+              "test_type": "ANOVA (F-test) for trait ratings",
+              "statistic": 17.27,
+              "p_value": "< 0.001",
+              "paper_location": "Page 284, Table 2"
+            }
+          ]
+        },
+        {
+          "sub_study_id": "study_1_term_paper",
+          "type": "scenario",
+          "content": "You arrive for the first day of class in a course in your major area of study. The professor says that the grade in your course will depend on a paper due the final day of the course. He gives the class the option of two alternatives upon which they must vote. They can either do papers individually in the normal way or they can work in teams of three persons who will submit a single paper between them. Your are informed that he will still give out the same number of A’s, B’s, and C’s, etc., but that in the first case every student will be graded individually while the second case all three students who work together get the same grade.",
+          "participants": {
+            "n": 80,
+            "population": "Stanford University Undergraduates",
+            "recruitment_source": "Introductory psychology class"
+          },
+          "human_data": {
+            "own_choice_distribution": {
+              "individual_paper": "80%",
+              "group_paper": "20%"
+            },
+            "consensus_estimates_for_individual": {
+              "by_choosers": 67.4,
+              "by_refusers": 45.9
+            },
+            "trait_ratings_difference_score": {
+              "by_choosers": -0.2,
+              "by_refusers": 54.1
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "ANOVA (F-test) for consensus",
+              "statistic": 16.5,
+              "p_value": "< 0.05",
+              "paper_location": "Page 283, Table 1"
+            },
+            {
+              "test_type": "ANOVA (F-test) for trait ratings",
+              "statistic": 21.83,
+              "p_value": "< 0.001",
+              "paper_location": "Page 284, Table 2"
+            }
+          ]
+        },
+        {
+          "sub_study_id": "study_1_traffic_ticket",
+          "type": "scenario",
+          "content": "While driving through a rural area near your home you are stopped by a county police officer who informs you that you have been clocked (with radar) at 38 miles per hour in a 25-mph zone. You believe this information to be accurate. After the policeman leaves, you inspect your citation and find that the details on the summons regarding weather, visibility, time, and location of violation are highly inaccurate. The citation informs you that you may either pay a $20 fine by mail without appearing in court or you must appear in municipal court within the next two weeks to contest the charge.",
+          "participants": {
+            "n": 80,
+            "population": "Stanford University Undergraduates",
+            "recruitment_source": "Introductory psychology class"
+          },
+          "human_data": {
+            "own_choice_distribution": {
+              "pay_fine": "46%",
+              "contest_charge": "54%"
+            },
+            "consensus_estimates_for_paying": {
+              "by_payers": 71.8,
+              "by_contesters": 51.7
+            },
+            "trait_ratings_difference_score": {
+              "by_payers": -41.6,
+              "by_contesters": -19.2
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "ANOVA (F-test) for consensus",
+              "statistic": 12.8,
+              "p_value": "< 0.05",
+              "paper_location": "Page 283, Table 1"
+            },
+            {
+              "test_type": "ANOVA (F-test) for trait ratings",
+              "statistic": 3.18,
+              "p_value": "< 0.10",
+              "paper_location": "Page 284, Table 2"
+            }
+          ]
+        },
+        {
+          "sub_study_id": "study_1_space_program",
+          "type": "scenario",
+          "content": "It is proposed in Congress that the space program be revived and that large sums be allocated for the manned and unmanned exploration of the moon and planets nearest Earth. Supporters of the proposal argue that it will provide jobs. spur technology, and promote national pride and unity. Opponents argue that a space program will either necessitate higher taxes, or else dram money from important domestic priorities. Furthermore, they deny that it will accomplish the desirable effects claimed by the program’s supporters. Both sides, of course, refute each other’s claims and ultimately a public referendum is held.",
+          "participants": {
+            "n": 80,
+            "population": "Stanford University Undergraduates",
+            "recruitment_source": "Introductory psychology class"
+          },
+          "human_data": {
+            "own_choice_distribution": {
+              "vote_for_cutback": "40%",
+              "vote_against_cutback": "60%"
+            },
+            "consensus_estimates_for_cutback": {
+              "by_proponents": 47.9,
+              "by_opponents": 39.0
+            },
+            "trait_ratings_difference_score": {
+              "by_proponents": -11.1,
+              "by_opponents": 0.0
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "ANOVA (F-test) for consensus",
+              "statistic": 4.9,
+              "p_value": "< 0.05",
+              "paper_location": "Page 283, Table 1"
+            },
+            {
+              "test_type": "ANOVA (F-test) for trait ratings",
+              "statistic": 1.81,
+              "p_value": "> 0.10",
+              "paper_location": "Page 284, Table 2"
+            }
+          ]
+        }
+      ],
+      "overall_participants": {
+        "total_n": 320,
+        "population": "Stanford University Undergraduates",
+        "recruitment_source": "Introductory psychology class"
+      }
+    },
+    {
+      "study_id": "Study 2",
+      "study_name": "Personal Description Questionnaire",
+      "phenomenon": "False Consensus Effect",
+      "sub_studies": [
+        {
+          "sub_study_id": "study_2_questionnaire",
+          "type": "questionnaire",
+          "content": "Participants completed a questionnaire with 35 pairs of mutually exclusive and exhaustive categories across seven domains. They categorized themselves and estimated the percentage of 'college students in general' in each category.",
+          "items": [
+            {
+              "category": "Personal traits and views",
+              "item_1": "Shy vs Not shy",
+              "item_2": "Optimistic vs Not",
+              "item_3": "Competitive vs Not",
+              "item_4": "Politically left of center vs Not",
+              "item_5": "Supporter of women’s lib vs Not"
+            },
+            {
+              "category": "Personal preferences",
+              "item_6": "Brown vs White bread",
+              "item_7": "To be alone vs With others",
+              "item_8": "Italian vs French movies",
+              "item_9": "City vs Country life",
+              "item_10": "Basketball vs Football"
+            },
+            {
+              "category": "Personal characteristics",
+              "item_11": "Male vs Female",
+              "item_12": "Brown vs Blue eyes",
+              "item_13": "Subscribe vs Don’t to magazines",
+              "item_14": "First-born vs Laterborn child",
+              "item_15": "Hometown more vs Less than 200,000"
+            },
+            {
+              "category": "Personal problems",
+              "item_16": "Think about dying? Yes vs No",
+              "item_17": "Hard to make friends? Yes vs No",
+              "item_18": "Difficulty controlling temper? Yes vs No",
+              "item_19": "Frequently depressed? Yes vs No",
+              "item_20": "Emotional needs satisfied? Yes vs No"
+            },
+            {
+              "category": "Personal activities",
+              "item_21": "Watch TV 30 hours/month? Yes vs No",
+              "item_22": "Play tennis once a week? Yes vs No",
+              "item_23": "Attend religious service once a month? Yes vs No",
+              "item_24": "Donate blood once a year? Yes vs No",
+              "item_25": "Long distance phone call once a week? Yes vs No"
+            },
+            {
+              "category": "Personal expectations",
+              "item_26": "Marriage by age 30? Yes vs No",
+              "item_27": "Better financial status than parent? Yes vs No",
+              "item_28": "Live outside U.S. for one year in next 20? Yes vs No",
+              "item_29": "Great satisfaction from job or career? Yes vs No",
+              "item_30": "Death before 70th birthday? Yes vs No"
+            },
+            {
+              "category": "Political expectations",
+              "item_31": "Woman in Supreme Court within decade? Yes vs No",
+              "item_32": "Poverty problem reduced in next 20 years? Yes vs No",
+              "item_33": "Nuclear weapon used in warfare in next 20 years? Yes vs No",
+              "item_34": "Discovery of extraterrestrial life by year 2000? Yes vs No"
+            }
+          ],
+          "participants": {
+            "n": 80,
+            "population": "Stanford University Undergraduates"
+          },
+          "human_data": {
+            "mean_estimates_unweighted_by_category": {
+              "Personal_traits_views": {
+                "by_cat1_raters": 60.0,
+                "by_cat2_raters": 49.5
+              },
+              "Personal_preferences": {
+                "by_cat1_raters": 45.6,
+                "by_cat2_raters": 39.8
+              },
+              "Personal_characteristics": {
+                "by_cat1_raters": 54.9,
+                "by_cat2_raters": 48.7
+              },
+              "Personal_problems": {
+                "by_cat1_raters": 46.6,
+                "by_cat2_raters": 34.0
+              },
+              "Personal_activities": {
+                "by_cat1_raters": 36.4,
+                "by_cat2_raters": 33.0
+              },
+              "Personal_expectations": {
+                "by_cat1_raters": 58.3,
+                "by_cat2_raters": 51.6
+              },
+              "Political_expectations": {
+                "by_cat1_raters": 60.1,
+                "by_cat2_raters": 34.6
+              }
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "t-test (overall trend)",
+              "finding": "Difference in predicted direction for 32 of 34 items.",
+              "paper_location": "Page 286"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "study_id": "Study 3",
+      "study_name": "Hypothetical Sandwich Board Scenario",
+      "phenomenon": "False Consensus Effect",
+      "sub_studies": [
+        {
+          "sub_study_id": "study_3_sandwich_board",
+          "type": "scenario",
+          "content": "It is an official course requirement of your introductory psychology class that you participate as a subject in at least three experiments during the quarter... You decide to sign up for an experiment described as 'a study concerned with attitudes'... The experimenter explains that he is concerned with persuasion and attitude change... he needs subjects to walk around campus for 30 minutes wearing a sandwich board sign which simply says: 'Eat at Joe’s' [or 'Repent']... The experimenter makes it clear that you are not compelled to participate if you are unwilling, but that he would obviously prefer that you go along with his request... Subjects who decide not to participate... will miss the chance to learn something interesting... but they nevertheless will receive credit toward their course requirement.",
+          "participants": {
+            "n": 104,
+            "population": "Stanford University Undergraduates",
+            "recruitment_source": "Introductory psychology class"
+          },
+          "human_data": {
+            "combined_consensus_estimates_for_wearing": {
+              "by_wearers": 61.4,
+              "by_refusers": 30.4
+            },
+            "trait_ratings_difference_score": {
+              "by_wearers": 0.7,
+              "by_refusers": 60.4
+            }
+          },
+          "statistical_tests": [
+            {
+              "test_type": "ANOVA (F-test) for consensus (Combined)",
+              "statistic": 56.2,
+              "p_value": "< 0.001",
+              "paper_location": "Page 292, Table 4"
+            },
+            {
+              "test_type": "ANOVA (F-test) for trait ratings (Combined)",
+              "statistic": 17.79,
+              "p_value": "< 0.001",
+              "paper_location": "Page 294, Table 5"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "paper_id": "4705_ross_et_al_false_consensus_effect",
+  "paper_title": "The “False Consensus Effect”: An Egocentric Bias in Social Perception and Attribution Processes",
+  "paper_authors": [
+    "Lee Ross",
+    "David Greene",
+    "Pamela House"
+  ],
+  "paper_abstract": "Evidence from four studies demonstrates that social observers tend to perceive a “false consensus” with respect to the relative commonness of their own responses. A related bias was shown to exist in the observers’ social inferences. Thus, raters estimated particular responses to be relatively common and relatively unrevealing concerning the actors’ distinguishing personal dispositions when the responses in question were similar to the raters’ own responses; responses differing from those of the rater, by contrast, were perceived to be relatively uncommon and revealing of the actor. These results were obtained both in questionnaire studies presenting subjects with hypothetical situations and choices and in authentic conflict situations. The implications of these findings for our understanding of social perception phenomena and for our analysis of the divergent perceptions of actors and observers are discussed. Finally, cognitive and perceptual mechanisms are proposed which might account for distortions in perceived consensus and for corresponding biases in social inference and attributional processes."
+}

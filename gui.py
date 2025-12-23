@@ -46,9 +46,34 @@ def get_study_ids():
     studies = [d.name for d in Path("data/studies").glob("study_*") if d.is_dir()]
     return sorted(studies)
 
+def infer_study_id(pdf_path: Path):
+    if not pdf_path: return ""
+    # Check if PDF is already in a study directory
+    path_str = str(pdf_path.absolute())
+    if "data/studies/" in path_str:
+        parts = pdf_path.parts
+        for p in parts:
+            if p.startswith("study_"):
+                return p
+    return ""
+
+def get_study_files(study_id):
+    if not study_id:
+        return []
+    study_dir = Path("data/studies") / study_id
+    if not study_dir.exists():
+        return []
+    # Get all files recursively, but filter out some if needed
+    files = list(study_dir.rglob("*"))
+    return sorted([f for f in files if f.is_file()])
+
 # --- Sidebar ---
 st.sidebar.title("🧬 HS-Bench Control")
 mode = st.sidebar.radio("Select Mode", ["Generation Pipeline", "Validation Pipeline"])
+
+def infer_paper_id(pdf_path: Path):
+    if not pdf_path: return ""
+    return pdf_path.stem.replace(' ', '_').replace('-', '_').lower()
 
 # Initialize Pipelines
 gen_pipeline = GenerationPipeline()
@@ -57,6 +82,10 @@ file_modifier = FileModifier()
 
 if mode == "Generation Pipeline":
     st.title("🚀 Generation Pipeline")
+    
+    # Auto-set paper_id if pdf_path is set
+    if st.session_state.pdf_path:
+        st.session_state.paper_id = infer_paper_id(st.session_state.pdf_path)
     
     col1, col2 = st.columns([1, 1])
     
@@ -76,12 +105,40 @@ if mode == "Generation Pipeline":
                 st.rerun()
 
         pdf_options = get_pdf_files()
-        selected_pdf = st.selectbox("Select Paper PDF", options=pdf_options, format_func=lambda x: x.name)
-        st.session_state.pdf_path = selected_pdf
+        # Find index of current pdf_path if it exists
+        pdf_index = 0
+        if st.session_state.pdf_path in pdf_options:
+            pdf_index = pdf_options.index(st.session_state.pdf_path)
+            
+        selected_pdf = st.selectbox("Select Paper PDF", options=pdf_options, index=pdf_index, format_func=lambda x: x.name)
         
-        study_id_input = st.text_input("Target Study ID (e.g., study_005)", value=st.session_state.study_id)
-        if study_id_input:
-            st.session_state.study_id = study_id_input
+        if selected_pdf != st.session_state.pdf_path:
+            st.session_state.pdf_path = selected_pdf
+            # Auto-infer study_id when PDF changes
+            inferred = infer_study_id(selected_pdf)
+            if inferred:
+                st.session_state.study_id = inferred
+            st.rerun()
+        
+        # Study ID Selection
+        st.markdown("---")
+        existing_studies = ["NEW STUDY"] + get_study_ids()
+        
+        # Try to find current study_id in the list
+        study_index = 0
+        if st.session_state.study_id in existing_studies:
+            study_index = existing_studies.index(st.session_state.study_id)
+            
+        selected_study_dropdown = st.selectbox("Load Existing Study or Create New", options=existing_studies, index=study_index)
+        
+        if selected_study_dropdown == "NEW STUDY":
+            study_id_input = st.text_input("New Study ID (e.g., study_005)", value=st.session_state.study_id if st.session_state.study_id.startswith("study_") else "")
+            if study_id_input != st.session_state.study_id:
+                st.session_state.study_id = study_id_input
+        else:
+            if selected_study_dropdown != st.session_state.study_id:
+                st.session_state.study_id = selected_study_dropdown
+                st.rerun()
 
     # Tabs for Stages
     tab1, tab2, tab3 = st.tabs(["Stage 1: Filter", "Stage 2: Extraction", "Stage 3: Generation"])
@@ -207,25 +264,6 @@ if mode == "Generation Pipeline":
                 st.success(f"Study {st.session_state.study_id} generated successfully!")
                 st.write(result)
 
-    # Quick Edit Helper
-    with st.expander("🛠️ Quick File Modifier"):
-        st.info("Use this to fix specific fields in the JSON files using LLM.")
-        target_file = st.selectbox("Select File to Modify", 
-                                  options=[st.session_state.stage1_json, st.session_state.stage2_json],
-                                  format_func=lambda x: x.name if x else "None")
-        context = st.text_area("What should be changed?", placeholder="e.g. The participant count for Study 1 should be 120, not 100.")
-        if st.button("Apply Modification"):
-            if target_file and context:
-                with st.spinner("Modifying file..."):
-                    file_modifier.modify_files(
-                        file_paths=[target_file],
-                        context=context,
-                        apply_changes=True,
-                        pdf_path=st.session_state.pdf_path
-                    )
-                    st.success("File modified successfully!")
-                    st.rerun()
-
 else:
     st.title("✅ Validation Pipeline")
     
@@ -234,6 +272,8 @@ else:
     
     if st.button("Run Full Validation"):
         with st.spinner(f"Validating {selected_study}..."):
+            # Update session state for the quick modifier
+            st.session_state.study_id = selected_study
             results = val_pipeline.validate_study(selected_study)
             st.success("Validation Complete!")
             
@@ -244,3 +284,41 @@ else:
                 st.markdown("---")
                 st.markdown(latest_summary.read_text(encoding='utf-8'))
 
+# --- Quick Edit Helper (Always Available) ---
+st.markdown("---")
+with st.expander("🛠️ Quick File Modifier"):
+    st.info("Use this to fix specific fields in the JSON or text files using LLM.")
+    
+    # Collect available files to modify
+    modifier_options = []
+    
+    # 1. Add current stage files
+    if st.session_state.stage1_json:
+        modifier_options.append(st.session_state.stage1_json)
+    if st.session_state.stage2_json:
+        modifier_options.append(st.session_state.stage2_json)
+        
+    # 2. Add files from the selected study
+    current_study = st.session_state.study_id
+    if current_study:
+        study_files = get_study_files(current_study)
+        for f in study_files:
+            if f not in modifier_options:
+                modifier_options.append(f)
+    
+    target_file = st.selectbox("Select File to Modify", 
+                              options=modifier_options,
+                              format_func=lambda x: str(x),
+                              key="quick_modifier_selectbox")
+    context = st.text_area("What should be changed?", placeholder="e.g. The participant count for Study 1 should be 120, not 100.", key="quick_modifier_context")
+    if st.button("Apply Modification", key="quick_modifier_button"):
+        if target_file and context:
+            with st.spinner(f"Modifying {target_file}..."):
+                file_modifier.modify_files(
+                    file_paths=[target_file],
+                    context=context,
+                    apply_changes=True,
+                    pdf_path=st.session_state.pdf_path
+                )
+                st.success("File modified successfully!")
+                st.rerun()

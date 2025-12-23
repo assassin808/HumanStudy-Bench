@@ -1,0 +1,51 @@
+{
+  "paper_title": "The “False Consensus Effect”: An Egocentric Bias in Social Perception and Attribution Processes",
+  "paper_authors": [
+    "Lee Ross",
+    "David Greene",
+    "Pamela House"
+  ],
+  "paper_abstract": "Evidence from four studies demonstrates that social observers tend to perceive a “false consensus” with respect to the relative commonness of their own responses. A related bias was shown to exist in the observers’ social inferences. Thus, raters estimated particular responses to be relatively common and relatively unrevealing concerning the actors’ distinguishing personal dispositions when the responses in question were similar to the raters’ own responses; responses differing from those of the rater, by contrast, were perceived to be relatively uncommon and revealing of the actor. These results were obtained both in questionnaire studies presenting subjects with hypothetical situations and choices and in authentic conflict situations. The implications of these findings for our understanding of social perception phenomena and for our analysis of the divergent perceptions of actors and observers are discussed. Finally, cognitive and perceptual mechanisms are proposed which might account for distortions in perceived consensus and for corresponding biases in social inference and attributional processes.",
+  "experiments": [
+    {
+      "experiment_id": "Study 1",
+      "experiment_name": "Hypothetical Questionnaire Study",
+      "input": "One of four brief stories (Supermarket Story, Term Paper Story, Traffic Ticket Story, or Space Program Referendum Story) describing a situation culminating in a behavioral choice between two options.",
+      "participants": "320 Stanford undergraduates (80 for each of the four stories).",
+      "output": "Estimates of the percentage of peers who would choose each option, the participant's own hypothetical choice, and personality trait ratings (100-point Likert scales) for a 'typical person' who would choose each of the two options.",
+      "replicable": "YES",
+      "exclusion_reasons": []
+    },
+    {
+      "experiment_id": "Study 2",
+      "experiment_name": "Personal Description Questionnaire Study",
+      "input": "A questionnaire containing 35 person description items across categories: Personal traits and views, Personal preferences, Personal characteristics, Personal problems, Personal activities, Personal expectations, and Political expectations.",
+      "participants": "80 Stanford undergraduates.",
+      "output": "Self-categorization into one of two mutually exclusive categories for each item and estimates of the percentage of 'college students in general' who fit into those categories.",
+      "replicable": "YES",
+      "exclusion_reasons": []
+    },
+    {
+      "experiment_id": "Study 3",
+      "experiment_name": "Hypothetical Sandwich Board Study",
+      "input": "A hypothetical story describing a conflict situation where the participant is asked to walk around campus for 30 minutes wearing a sandwich board sign (either 'Eat at Joe's' or 'Repent').",
+      "participants": "104 Stanford undergraduates.",
+      "output": "Hypothetical choice (agree or refuse), estimated percentage of peers who would agree/refuse, and trait ratings of the 'typical person' making each choice.",
+      "replicable": "YES",
+      "exclusion_reasons": []
+    },
+    {
+      "experiment_id": "Study 4",
+      "experiment_name": "Authentic Conflict Situation Study",
+      "input": "An actual request by an experimenter to wear a sandwich board sign on campus, combined with viewing 'Likes and Dislikes' questionnaires purportedly filled out by two other (real) participants (one who agreed and one who refused).",
+      "participants": "80 Stanford undergraduates.",
+      "output": "Actual behavioral choice (agree or refuse to wear the sign), estimated percentage of peers who would agree/refuse, and trait ratings of specific individuals (the two other 'participants').",
+      "replicable": "YES",
+      "exclusion_reasons": []
+    }
+  ],
+  "overall_replicable": true,
+  "confidence": 1.0,
+  "notes": "All four studies rely on text-based scenarios, questionnaires, and Likert-scale ratings. While Study 4 involves an 'authentic conflict situation' (face-to-face interaction), the experimental stimuli (the request, the sign text, and the target personas' questionnaires) can be accurately described in a text prompt to an LLM agent. The exclusion criteria regarding visual input and time perception are not met, as the 'visual' element of the sign is its text content and the 'authentic' nature is a social context that agents can be instructed to simulate.",
+  "paper_id": "4705_ross_et_al_false_consensus_effect"
+}

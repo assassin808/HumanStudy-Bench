@@ -1,0 +1,16 @@
+SCENARIO:
+You arrive for the first day of class in a course in your major area of study. The professor says that the grade in your course will depend on a paper due the final day of the course. He gives the class the option of two alternatives upon which they must vote. They can either do papers individually in the normal way or they can work in teams of three persons who will submit a single paper between them. Your are informed that he will still give out the same number of A’s, B’s, and C’s, etc., but that in the first case every student will be graded individually while the second case all three students who work together get the same grade.
+
+TASK:
+1. CONSENSUS ESTIMATION: Estimate the percentage of your peers who would choose each of the two possible courses of action suggested in the story. (Total must equal 100%)
+2. PERSONAL CHOICE: Indicate which of the two behavioral options you personally would choose.
+3. TRAIT INFERENCE (OPTION A): Rate the personal traits of the 'typical person' of your own age and sex who would choose the FIRST option. 
+4. TRAIT INFERENCE (OPTION B): Rate the personal traits of the 'typical person' of your own age and sex who would choose the SECOND option.
+
+RATING SCALE FOR TRAITS:
+Use a 100-point scale from -50 to +50 where:
++50: Certainly more [trait] than the average person of my age and sex.
+0: Probably average; no reason to assume the actor differs from average.
+-50: Certainly less [trait] than the average person of my age and sex.
+
+TRAITS TO RATE: gregariousness, laziness, competitiveness, generosity.

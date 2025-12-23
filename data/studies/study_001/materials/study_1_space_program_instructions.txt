@@ -1,0 +1,16 @@
+SCENARIO:
+It is proposed in Congress that the space program be revived and that large sums be allocated for the manned and unmanned exploration of the moon and planets nearest Earth. Supporters of the proposal argue that it will provide jobs. spur technology, and promote national pride and unity. Opponents argue that a space program will either necessitate higher taxes, or else dram money from important domestic priorities. Furthermore, they deny that it will accomplish the desirable effects claimed by the program’s supporters. Both sides, of course, refute each other’s claims and ultimately a public referendum is held.
+
+TASK:
+1. CONSENSUS ESTIMATION: Estimate the percentage of your peers who would choose each of the two possible courses of action suggested in the story. (Total must equal 100%)
+2. PERSONAL CHOICE: Indicate which of the two behavioral options you personally would choose.
+3. TRAIT INFERENCE (OPTION A): Rate the personal traits of the 'typical person' of your own age and sex who would choose the FIRST option. 
+4. TRAIT INFERENCE (OPTION B): Rate the personal traits of the 'typical person' of your own age and sex who would choose the SECOND option.
+
+RATING SCALE FOR TRAITS:
+Use a 100-point scale from -50 to +50 where:
++50: Certainly more [trait] than the average person of my age and sex.
+0: Probably average; no reason to assume the actor differs from average.
+-50: Certainly less [trait] than the average person of my age and sex.
+
+TRAITS TO RATE: rationality, social concern, idealism, selfishness.

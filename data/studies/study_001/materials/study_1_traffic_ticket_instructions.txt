@@ -1,0 +1,16 @@
+SCENARIO:
+While driving through a rural area near your home you are stopped by a county police officer who informs you that you have been clocked (with radar) at 38 miles per hour in a 25-mph zone. You believe this information to be accurate. After the policeman leaves, you inspect your citation and find that the details on the summons regarding weather, visibility, time, and location of violation are highly inaccurate. The citation informs you that you may either pay a $20 fine by mail without appearing in court or you must appear in municipal court within the next two weeks to contest the charge.
+
+TASK:
+1. CONSENSUS ESTIMATION: Estimate the percentage of your peers who would choose each of the two possible courses of action suggested in the story. (Total must equal 100%)
+2. PERSONAL CHOICE: Indicate which of the two behavioral options you personally would choose.
+3. TRAIT INFERENCE (OPTION A): Rate the personal traits of the 'typical person' of your own age and sex who would choose the FIRST option. 
+4. TRAIT INFERENCE (OPTION B): Rate the personal traits of the 'typical person' of your own age and sex who would choose the SECOND option.
+
+RATING SCALE FOR TRAITS:
+Use a 100-point scale from -50 to +50 where:
++50: Certainly more [trait] than the average person of my age and sex.
+0: Probably average; no reason to assume the actor differs from average.
+-50: Certainly less [trait] than the average person of my age and sex.
+
+TRAITS TO RATE: self-confidence, legal knowledge, argumentativeness, miserliness.
