@@ -65,5 +65,8 @@ logs/
 .env
 .env.local
 
+# Drafts
+Adv_draft/
+
 # OS
 Thumbs.db
